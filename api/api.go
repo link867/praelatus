@@ -15,6 +15,7 @@ type Routes struct {
 	Users    *mux.Router
 	Projects *mux.Router
 	Tickets  *mux.Router
+	Labels *mux.Router
 }
 
 // Used in starting the router.
@@ -34,6 +35,7 @@ func Run(port string) {
 	BaseRoutes.Users = BaseRoutes.Root.PathPrefix("/users").Subrouter()
 	BaseRoutes.Projects = BaseRoutes.Root.PathPrefix("/projects").Subrouter()
 	BaseRoutes.Tickets = BaseRoutes.Root.PathPrefix("/tickets").Subrouter()
+	BaseRoutes.Labels = BaseRoutes.Root.PathPrefix("/labels").Subrouter()
 
 	// InitUserRoutes()
 	// InitProjectRoutes()
