@@ -1,5 +1,7 @@
 package migrations
 
+// TODO add field options
+
 const v1body = `
 CREATE TABLE IF NOT EXISTS users (
     id              SERIAL PRIMARY KEY,
@@ -88,7 +90,7 @@ CREATE TABLE IF NOT EXISTS ticket_types (
 
 CREATE TABLE IF NOT EXISTS tickets (
     id           SERIAL PRIMARY KEY,
-	updated_date timestamp,
+	updated_date timestamp DEFAULT current_timestamp,
 	created_date timestamp DEFAULT current_timestamp,
     key          varchar(250) NOT NULL,
     summary      varchar(250) NOT NULL,
@@ -103,10 +105,11 @@ CREATE TABLE IF NOT EXISTS tickets (
 
 CREATE TABLE IF NOT EXISTS field_values (
     id		  SERIAL PRIMARY KEY,
+	name	  varchar(250),
+	data_type varchar(6),
     value     jsonb,
 
     ticket_id integer REFERENCES tickets (id),
-    field_id  integer REFERENCES fields (id)
 );
 CREATE INDEX idxfv ON field_values (value);
 
@@ -124,7 +127,7 @@ CREATE TABLE IF NOT EXISTS database_information (
 
 CREATE TABLE IF NOT EXISTS comments (
 	id SERIAL PRIMARY KEY,
-	updated_date timestamp,
+	updated_date timestamp DEFAULT_current_timestamp,
 	created_date timestamp DEFAULT current_timestamp,
 	body text,
 	author_id integer REFERENCES users (id) NOT NULL,
