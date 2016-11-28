@@ -20,6 +20,7 @@ type User struct {
 	Gravatar   string   `json:"gravatar"`
 	ProfilePic string   `json:"profile_picture"`
 	IsAdmin    bool     `json:"is_admin,omitempty"`
+	IsActive   bool     `json:"is_active,omitempty"`
 	Settings   Settings `json:"settings"`
 }
 
