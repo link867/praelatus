@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     email           varchar(250) NOT NULL,
     full_name       varchar(250) NOT NULL,
     is_admin        boolean DEFAULT false,
+    is_active       boolean DEFAULT true,
     gravatar        varchar(250),
     profile_picture varchar(250)
 );
@@ -123,6 +124,8 @@ CREATE TABLE IF NOT EXISTS database_information (
 
 CREATE TABLE IF NOT EXISTS comments (
 	id SERIAL PRIMARY KEY,
+	updated_date timestamp,
+	created_date timestamp DEFAULT current_timestamp,
 	body text,
 	author_id integer REFERENCES users (id) NOT NULL,
 	ticket_id integer REFERENCES tickets (id) NOT NULL
@@ -133,7 +136,7 @@ CREATE TABLE IF NOT EXISTS labels (
 	name varchar(255)
 );
 
-CREATE TABLE IF NOT EXISTS labels_tickets (
+CREATE TABLE IF NOT EXISTS tickets_labels (
 	label_id integer REFERENCES labels (id),
 	ticket_id integer REFERENCES tickets (id),
 	PRIMARY KEY(label_id, ticket_id)
