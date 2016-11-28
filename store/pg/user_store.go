@@ -53,19 +53,26 @@ func (s *UserStore) GetAll() ([]models.User, error) {
 	return users, nil
 }
 
+// Remove will update the given user into the database.
+func (s *UserStore) Remove(u models.User) error {
+	_, err := s.db.Exec(`DELETE FROM users WHERE id = $1;`, u.ID)
+
+	return handlePqErr(err)
+}
+
 // Save will update the given user into the database.
 func (s *UserStore) Save(u models.User) error {
 	if u.Password == "" {
 		_, err := s.db.Exec(`UPDATE users SET 
-		(username, email, full_name, is_admin) = (?, ?, ?, ?) WHERE id = ?;`,
+		(username, email, full_name, is_admin) = ($1, $2, $3, $4) WHERE id = $5;`,
 			u.Username, u.Email, u.FullName, u.IsAdmin, u.ID)
 
 		return handlePqErr(err)
 	}
 
 	_, err := s.db.Exec(`UPDATE users SET 
-		(username, password, email, full_name, is_admin) = (?, ?, ?, ?) 
-		WHERE id = ?;`,
+		(username, password, email, full_name, is_admin) = ($1, $2, $3, $4) 
+		WHERE id = $5;`,
 		u.Username, u.Password, u.Email, u.FullName, u.IsAdmin, u.ID)
 
 	return handlePqErr(err)
