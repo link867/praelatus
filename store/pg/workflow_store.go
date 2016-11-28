@@ -26,12 +26,12 @@ func (ws *WorkflowStore) Get(p models.Project, w *models.Workflow) error {
 		return handlePqErr(err)
 	}
 
-	err = ws.GetTransitions(w)
+	err = ws.getTransitions(w)
 	return handlePqErr(err)
 }
 
-func getHooks(db *sql.DB, t *models.Transition) error {
-	rows, err := db.Query(`SELECT h.id, endpoint, method, body
+func (ws *WorkflowStore) getHooks(t *models.Transition) error {
+	rows, err := ws.db.Query(`SELECT h.id, endpoint, method, body
 						   FROM hooks AS h
 						   JOIN transitions AS t ON t.id = h.transition_id`)
 	if err != nil {
@@ -52,7 +52,7 @@ func getHooks(db *sql.DB, t *models.Transition) error {
 	return nil
 }
 
-func (ws *WorkflowStore) GetTransitions(w *models.Workflow) error {
+func (ws *WorkflowStore) getTransitions(w *models.Workflow) error {
 	rows, err := ws.db.Query(`SELECT t.id, t.name, 
 									 from_s.name,
 									 row_to_json(to_s.*)
@@ -79,7 +79,7 @@ func (ws *WorkflowStore) GetTransitions(w *models.Workflow) error {
 			return handlePqErr(err)
 		}
 
-		err = getHooks(ws.db, &t)
+		err = ws.getHooks(&t)
 		if err != nil {
 			return handlePqErr(err)
 		}
@@ -101,7 +101,7 @@ func workflowsFromRows(rows *sql.Rows, ws *WorkflowStore) ([]models.Workflow, er
 			return workflows, handlePqErr(err)
 		}
 
-		err = ws.GetTransitions(&w)
+		err = ws.getTransitions(&w)
 		if err != nil {
 			return workflows, handlePqErr(err)
 		}
@@ -141,8 +141,7 @@ func (ws *WorkflowStore) GetByProject(p models.Project) ([]models.Workflow, erro
 // New creates a new workflow in the database
 func (ws *WorkflowStore) New(p models.Project, workflow *models.Workflow) error {
 	err := ws.db.QueryRow(`INSERT INTO workflows 
-						   (name, project_id) 
-						   VALUES ($1, $2)
+						   (name, project_id) VALUES ($1, $2)
 						   RETURNING id;`,
 		workflow.Name, p.ID).
 		Scan(&workflow.ID)
@@ -153,6 +152,15 @@ func (ws *WorkflowStore) New(p models.Project, workflow *models.Workflow) error 
 // Save updates a workflow in the database
 func (ws *WorkflowStore) Save(w models.Workflow) error {
 	_, err := ws.db.Exec(`UPDATE workflows SET (name) = ($1)`, w.Name)
+	return handlePqErr(err)
+}
 
+// Remove removes a workflow from the database
+func (ws *WorkflowStore) Remove(w models.Workflow) error {
+	_, err := ws.db.Exec(`
+	DELETE FROM hooks 
+		WHERE transition_id in(SELECT id FROM transitions WHERE workflow_id = $1);
+	DELETE FROM transitions WHERE workflow_id = $1;
+	DELETE FROM workflows WHERE id = $1;`, w.ID)
 	return handlePqErr(err)
 }

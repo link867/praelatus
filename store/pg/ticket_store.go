@@ -10,6 +10,8 @@ import (
 	"github.com/praelatus/backend/store"
 )
 
+// TODO update comment code to make it use the date fields
+
 // TicketStore contains methods for storing and retrieving Tickets from
 // Postgres DB
 type TicketStore struct {
@@ -195,6 +197,14 @@ func (ts *TicketStore) Save(ticket models.Ticket) error {
 	return handlePqErr(err)
 }
 
+// Remove will update an existing ticket in the postgres DB
+func (ts *TicketStore) Remove(ticket models.Ticket) error {
+	_, err := ts.db.Exec(`DELETE FROM field_values WHERE ticket_id = $1;
+						  DELETE FROM tickets_labels WHERE ticket_id = $1;
+						  DELETE FROM tickets WHERE id = $1;`, ticket.ID)
+	return handlePqErr(err)
+}
+
 // New will add a new Ticket to the postgres DB
 func (ts *TicketStore) New(project models.Project, ticket *models.Ticket) error {
 	// TODO update fields?
@@ -250,10 +260,8 @@ func (ts *TicketStore) GetComments(t models.Ticket) ([]models.Comment, error) {
 // NewComment will add a new Comment to the postgres DB
 func (ts *TicketStore) NewComment(t models.Ticket, c *models.Comment) error {
 	err := ts.db.QueryRow(`INSERT INTO comments 
-						   (body, ticket_id, author_id) 
-						   VALUES ($1, $2, $3)
-						   RETURNING id`,
-		c.Body, t.ID, c.Author.ID).
+						   (body, ticket_id, author_id) VALUES ($1, $2, $3)
+						   RETURNING id`, c.Body, t.ID, c.Author.ID).
 		Scan(&c.ID)
 
 	return handlePqErr(err)
@@ -262,11 +270,16 @@ func (ts *TicketStore) NewComment(t models.Ticket, c *models.Comment) error {
 // SaveComment will add a new Comment to the postgres DB
 func (ts *TicketStore) SaveComment(c models.Comment) error {
 	_, err := ts.db.Exec(`UPDATE comments 
-						  SET (body, author_id) 
-						  = ($1, $3)
+						  SET (body, author_id) = ($1, $3)
 						  WHERE id = $4`,
 		c.Body, c.Author.ID, c.ID)
 
+	return handlePqErr(err)
+}
+
+// RemoveComment will add a new Comment to the postgres DB
+func (ts *TicketStore) RemoveComment(c models.Comment) error {
+	_, err := ts.db.Exec("DELETE FROM comments WHERE id = $1", c.ID)
 	return handlePqErr(err)
 }
 

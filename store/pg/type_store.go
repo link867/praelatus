@@ -2,6 +2,7 @@ package pg
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/praelatus/backend/models"
 )
@@ -53,5 +54,23 @@ func (ts *TypeStore) New(tt *models.TicketType) error {
 func (ts *TypeStore) Save(tt models.TicketType) error {
 	_, err := ts.db.Exec(`UPDATE ticket_types 
 						  SET VALUES (name) = ($1)`, tt.Name, tt.ID)
+	return handlePqErr(err)
+}
+
+// Remove remoevs a ticket type from the database.
+func (ts *TypeStore) Remove(tt models.TicketType) error {
+	var c int
+
+	err := ts.db.QueryRow(`SELECT COUNT(id) FROM tickets
+						  WHERE ticket_type_id = $1`, tt.ID).Scan(&c)
+	if err != nil {
+		return handlePqErr(err)
+	}
+
+	if c > 0 {
+		return errors.New("that type is currently in use, refusing to delete")
+	}
+
+	_, err = ts.db.Exec("DELETE FROM ticket_types WHERE id = $1", tt.ID)
 	return handlePqErr(err)
 }

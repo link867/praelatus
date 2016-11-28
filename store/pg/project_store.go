@@ -120,3 +120,18 @@ func (ps *ProjectStore) Save(project models.Project) error {
 
 	return handlePqErr(err)
 }
+
+// Remove updates a Project in the database.
+func (ps *ProjectStore) Remove(project models.Project) error {
+	_, err := ps.db.Exec(`
+	DELETE FROM field_tickettype_project WHERE project_id = $1;
+	DELETE FROM permissions WHERE project_id = $1;
+	DELETE FROM field_values
+		WHERE ticket_id in(SELECT id FROM tickets WHERE project_id = $1);
+	DELETE FROM ticket_labels 
+		WHERE ticket_id in(SELECT id FROM tickets WHERE project_id = $1);
+	DELETE FROM tickets WHERE project_id = $1;
+	DELETE FROM projects WHERE id = $1;`, project.ID)
+
+	return handlePqErr(err)
+}

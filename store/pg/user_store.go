@@ -55,8 +55,9 @@ func (s *UserStore) GetAll() ([]models.User, error) {
 
 // Remove will update the given user into the database.
 func (s *UserStore) Remove(u models.User) error {
-	_, err := s.db.Exec(`DELETE FROM users WHERE id = $1;`, u.ID)
-
+	_, err := s.db.Exec(`UPDATE users 
+						 SET (is_active) = false
+						 WHERE id = $1;`, u.ID)
 	return handlePqErr(err)
 }
 

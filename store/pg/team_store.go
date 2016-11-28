@@ -160,8 +160,7 @@ func (ts *TeamStore) AddMembers(t models.Team, users ...models.User) error {
 // New adds a new team to the database.
 func (t *TeamStore) New(team *models.Team) error {
 	err := t.db.QueryRow(`INSERT INTO teams 
-						  (name, lead_id) 
-						  VALUES ($1, $2, $3, $4)
+						  (name, lead_id) VALUES ($1, $2, $3, $4)
 						  RETURNING id;`,
 		team.Name, team.Lead.ID).
 		Scan(&team.ID)
@@ -170,10 +169,16 @@ func (t *TeamStore) New(team *models.Team) error {
 
 // Save updates a team to the database.
 func (t *TeamStore) Save(team models.Team) error {
-	_, err := t.db.Exec(`UPDATE teams SET
-						 (name, lead_id) 
-						 = ($1, $2, $3, $4)
+	_, err := t.db.Exec(`UPDATE teams SET 
+					     (name, lead_id) = ($1, $2, $3, $4)
 						 WHERE id = $5;`,
 		team.Name, team.Lead.ID, team.ID)
+	return handlePqErr(err)
+}
+
+// Remove updates a team to the database.
+func (t *TeamStore) Remove(team models.Team) error {
+	_, err := t.db.Exec(`DELETE FROM teams_users WHERE team_id = $1;
+						 DELETE FROM teams WHERE id = $1;`, team.ID)
 	return handlePqErr(err)
 }

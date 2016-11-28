@@ -2,6 +2,7 @@ package pg
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/praelatus/backend/models"
 )
@@ -57,5 +58,23 @@ func (ss *StatusStore) New(status *models.Status) error {
 // Save updates a Status in the postgres DB
 func (ss *StatusStore) Save(status models.Status) error {
 	_, err := ss.db.Exec(`UPDATE statuses SET (name) = ($1);`, status.Name)
+	return handlePqErr(err)
+}
+
+// Remove removes a status from the database.
+func (ss *StatusStore) Remove(status models.Status) error {
+	var c int
+
+	err := ss.db.QueryRow(`SELECT COUNT(id) FROM tickets
+						   WHERE status_id = $1`, status.ID).Scan(&c)
+	if err != nil {
+		return handlePqErr(err)
+	}
+
+	if c > 0 {
+		return errors.New("that type is currently in use, refusing to delete")
+	}
+
+	_, err = ss.db.Exec("DELETE FROM statuses WHERE id = $1", status.ID)
 	return handlePqErr(err)
 }

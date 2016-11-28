@@ -49,10 +49,8 @@ func (ls *LabelStore) GetAll() ([]models.Label, error) {
 // New creates a new label in the database
 func (ls *LabelStore) New(label *models.Label) error {
 	err := ls.db.QueryRow(`INSERT INTO labels (name) VALUES ($1)
-						   RETURNING id;`,
-		label.Name).
+						   RETURNING id;`, label.Name).
 		Scan(&label.ID)
-
 	return handlePqErr(err)
 }
 
@@ -60,6 +58,12 @@ func (ls *LabelStore) New(label *models.Label) error {
 func (ls *LabelStore) Save(label models.Label) error {
 	_, err := ls.db.Exec(`UPDATE labels SET (name) = ($1) 
 						  WHERE id = $2;`, label.Name, label.ID)
+	return handlePqErr(err)
+}
 
+// Remove updates a label in the database
+func (ls *LabelStore) Remove(label models.Label) error {
+	_, err := ls.db.Exec(`DELETE FROM tickets_labels WHERE label_id = $1;
+						  DELETE FROM labels WHERE id = $1;`, label.ID)
 	return handlePqErr(err)
 }
