@@ -86,7 +86,7 @@ type TypeStore interface {
 
 // TicketStore contains methods for storing and retrieving Tickets
 type TicketStore interface {
-	Get(models.Project, *models.Ticket) error
+	Get(*models.Ticket) error
 	GetAll() ([]models.Ticket, error)
 	GetAllByProject(models.Project) ([]models.Ticket, error)
 
@@ -109,7 +109,6 @@ type TeamStore interface {
 	GetForUser(models.User) ([]models.Team, error)
 
 	AddMembers(models.Team, ...models.User) error
-	GetMembers(*models.Team) error
 
 	New(*models.Team) error
 	Save(models.Team) error
