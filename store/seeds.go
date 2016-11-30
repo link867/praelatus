@@ -75,9 +75,12 @@ func SeedTickets(s Store) error {
 					Value: rand.Int(),
 				},
 				models.FieldValue{
-					Name:    "Priority",
-					Options: []string{"HIGH", "MEDIUM", "LOW"},
-					Value:   []string{"HIGH", "MEDIUM", "LOW"}[rand.Intn(3)],
+					Name: "Priority",
+					Value: models.FieldOption{
+						Default:  "LOW",
+						Selected: []string{"HIGH", "MEDIUM", "LOW"}[rand.Intn(3)],
+						Options:  []string{"HIGH", "MEDIUM", "LOW"},
+					},
 				},
 			},
 			Type: models.TicketType{ID: 1},
@@ -173,7 +176,11 @@ func SeedFields(s Store) error {
 		models.Field{
 			Name:     "Priority",
 			DataType: "OPT",
-			Options:  []string{"HIGH", "MEDIUM", "LOW"},
+			Options: models.FieldOption{
+				Default:  "LOW",
+				Selected: "LOW",
+				Options:  []string{"HIGH", "MEDIUM", "LOW"},
+			},
 		},
 	}
 
@@ -239,11 +246,19 @@ func SeedTeams(s Store) error {
 			Lead: models.User{
 				ID: 1,
 			},
+			Members: []models.User{
+				models.User{ID: 1},
+				models.User{ID: 2},
+			},
 		},
 		models.Team{
 			Name: "The B Team",
 			Lead: models.User{
 				ID: 2,
+			},
+			Members: []models.User{
+				models.User{ID: 1},
+				models.User{ID: 2},
 			},
 		},
 	}
