@@ -1,27 +1,26 @@
 package pg_test
 
 import (
-	"fmt"
 	"testing"
+
+	"github.com/praelatus/backend/models"
 )
 
 func TestProjectGet(t *testing.T) {
-	p, e := s.Projects().Get(1)
+	p := &models.Project{ID: 1}
+	e := s.Projects().Get(p)
 	failIfErr("Project Get", t, e)
 
-	if p == nil {
-		t.Error("Expected a project and got nil instead.")
+	if p.Key == "" {
+		t.Errorf("Expected: TEST Got: %s\n", p.Key)
 	}
 
-	fmt.Println(p)
-}
+	p1 := &models.Project{Key: "TEST"}
+	e := s.Projects().Get(p1)
+	failIfErr("Project Get", t, e)
 
-func TestProjectGetByKey(t *testing.T) {
-	p, e := s.Projects().GetByKey("the-a-team", "TEST")
-	failIfErr("Project Get By Key", t, e)
-
-	if p == nil {
-		t.Error("Expected a project and got nil instead.")
+	if p1.ID == 0 {
+		t.Errorf("Expected: 1 Got: %d\n", p1.ID)
 	}
 }
 
@@ -29,13 +28,14 @@ func TestProjectGetAll(t *testing.T) {
 	p, e := s.Projects().GetAll()
 	failIfErr("Project Get All", t, e)
 
-	if p == nil {
-		t.Error("Expected to get some projects and got nip instead.")
+	if p == nil || len(p) == 0 {
+		t.Error("Expected to get some projects and got nil instead.")
 	}
 }
 
 func TestProjectSave(t *testing.T) {
-	p, e := s.Projects().Get(1)
+	p := &models.Project{ID: 1}
+	e := s.Projects().Get(p)
 	failIfErr("Project Save", t, e)
 
 	p.IconURL = "TEST"
@@ -43,10 +43,24 @@ func TestProjectSave(t *testing.T) {
 	e = s.Projects().Save(p)
 	failIfErr("Project Save", t, e)
 
-	p, e = s.Projects().Get(1)
+	p1 := &models.Project{ID: 1}
+	e = s.Projects().Get(p1)
 	failIfErr("Project Save", t, e)
 
-	if p.IconURL != "TEST" {
+	if p1.IconURL != "TEST" {
 		t.Errorf("Expected project to have iconURL TEST got %s\n", p.IconURL)
+	}
+}
+
+func TestProjectRemove(t *testing.T) {
+	p := &models.Project{ID: 2}
+	e := s.Projects().Remove(p)
+	failIfErr("Project Remove", t, e)
+
+	e = s.Projects().Get(p)
+	failIfErr("Project Remove", t, e)
+
+	if p.Key != "" {
+		t.Errorf("Expected: \"\" Got :%s\n", p.Key)
 	}
 }
