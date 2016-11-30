@@ -2,9 +2,9 @@ package models
 
 // Workflow is the container for issues and keeps track of available transitions
 type Workflow struct {
-	ID          int64  `json:"id"`
-	Name        string `json:"name"`
-	Transitions map[string][]Transition
+	ID          int64                   `json:"id"`
+	Name        string                  `json:"name"`
+	Transitions map[string][]Transition `json:"transitions"`
 }
 
 func (w *Workflow) String() string {
