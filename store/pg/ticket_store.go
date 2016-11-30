@@ -89,8 +89,7 @@ func intoTicket(row rowScanner, db *sql.DB, t *models.Ticket) error {
 }
 
 // Get gets a Ticket from a postgres DB by it's ID
-func (ts *TicketStore) Get(p models.Project, t *models.Ticket) error {
-
+func (ts *TicketStore) Get(t *models.Ticket) error {
 	if p.Key == "" {
 		return store.ErrNotFound
 	}
@@ -107,9 +106,8 @@ func (ts *TicketStore) Get(p models.Project, t *models.Ticket) error {
 						   JOIN statuses AS s ON s.id = t.status_id
 						   JOIN ticket_types AS tt ON tt.id = t.ticket_type_id
 						   JOIN projects AS p ON p.id = t.project_id
-						   WHERE t.id = $1 OR
-						   (t.key = $2 AND
-						   p.key = $3)`, t.ID, t.Key, p.Key)
+						   WHERE t.id = $1 
+						   OR t.key = $2`, t.ID, t.Key)
 
 	err := intoTicket(row, ts.db, t)
 	return handlePqErr(err)
