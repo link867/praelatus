@@ -34,11 +34,12 @@ func failIfErr(testName string, t *testing.T, e error) {
 }
 
 func TestFieldGet(t *testing.T) {
-	f, e := s.Fields().Get(1)
+	f := &models.Field{ID: 1}
+	e := s.Fields().Get(f)
 	failIfErr("Field Get", t, e)
 
-	if f == nil {
-		t.Error("Expected a field and got nil instead.")
+	if f.Name == "" {
+		t.Error("Expected a name got %s\n", f.Name)
 	}
 }
 
@@ -46,35 +47,20 @@ func TestFieldGetAll(t *testing.T) {
 	f, e := s.Fields().GetAll()
 	failIfErr("Field Get All", t, e)
 
-	if f == nil {
+	if f == nil || len(f) == 0 {
 		t.Error("Expected multiple fields and got nil instead.")
-	}
-
-	if len(f) < 4 {
-		t.Errorf("Expected 4 fields got %v instead\n", len(f))
 	}
 }
 
 func TestFieldGetByProject(t *testing.T) {
-	p := &models.Project{
-		ID: 1,
-	}
+	p := &models.Project{ID: 1}
 
 	f, e := s.Fields().GetByProject(p)
 	failIfErr("Field Get By Project", t, e)
 
-	if f == nil {
+	if f == nil || len(f) == 0 {
 		t.Error("Expected multiple fields and got nil instead.")
 	}
-
-	if len(f) < 4 {
-		t.Errorf("Expected 4 fields got %v instead\n", len(f))
-	}
-}
-
-// TODO
-func TestFieldGetValue(t *testing.T) {
-	t.Fail()
 }
 
 func TestFieldSave(t *testing.T) {
@@ -97,5 +83,14 @@ func TestFieldSave(t *testing.T) {
 	if f.DataType != "INT" {
 		t.Errorf("Expected INT got: %s\n", f.DataType)
 	}
+}
 
+func TestFieldRemove(t *testing.T) {
+	field := &models.Field{
+		ID:   2,
+		Name: "TestField2",
+	}
+
+	e := s.Fields().Remove(field)
+	failIfErr("Field Remove", t, e)
 }
