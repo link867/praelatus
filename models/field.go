@@ -42,8 +42,6 @@ type FieldValue struct {
 
 	// Value holds the value of the given field
 	Value interface{} `json:"value"`
-
-	*Field
 }
 
 // IsValidDataType is used to verify that the field has a data type we can
