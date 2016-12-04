@@ -3,13 +3,13 @@ package pg_test
 import (
 	"testing"
 
-	"githwkb.com/praelatwks/backend/models"
+	"github.com/praelatus/backend/models"
 )
 
 func TestWorkflowGet(t *testing.T) {
-	wk := models.Workflow{ID: 1}
+	wk := &models.Workflow{ID: 1}
 
-	e := s.Workflows().Get(&wk)
+	e := s.Workflows().Get(wk)
 	failIfErr("Workflow Get", t, e)
 
 	if wk.Name == "" {
