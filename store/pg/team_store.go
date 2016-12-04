@@ -13,7 +13,7 @@ type TeamStore struct {
 	db *sql.DB
 }
 
-func intoTeam(row rowScanner, t *models.Team) error {
+func intoTeam(db *sql.DB, row rowScanner, t *models.Team) error {
 	var u models.User
 	var ujson json.RawMessage
 
@@ -25,7 +25,32 @@ func intoTeam(row rowScanner, t *models.Team) error {
 	err = json.Unmarshal(ujson, &u)
 	t.Lead = u
 
-	return err
+	rows, err := db.Query(`SELECT u.id, u.username, u.email, 
+								 u.full_name, u.gravatar, u.profile_picture
+								 u.is_admin
+						  FROM teams_user AS tu
+						  JOIN users AS u ON tu.user_id = u.id
+						  JOIN teams AS t ON tu.team_id = t.id
+						  WHERE tu.team_id = $1`, t.ID)
+	if err != nil {
+		return err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var u models.User
+
+		err = row.Scan(&u.ID, &u.Username, &u.Email, &u.FullName,
+			&u.Gravatar, &u.ProfilePic, &u.IsAdmin)
+		if err != nil {
+			return err
+		}
+
+		t.Members = append(t.Members, u)
+	}
+
+	return nil
 }
 
 // Get retrieves a team from the database based on ID
@@ -36,16 +61,16 @@ func (ts *TeamStore) Get(t *models.Team) error {
 	case "":
 		row = ts.db.QueryRow(`SELECT t.id, t.name, row_to_json(lead.*) as lead
 							  FROM teams AS t
-							  JOIN users AS lead ON lead.id = team.lead_id
+							  JOIN users AS lead ON lead.id = teams.lead_id
 							  WHERE id = $1;`, t.ID)
 	default:
 		row = ts.db.QueryRow(`SELECT t.id, t.name, row_to_json(lead.*) as lead
 							  FROM teams AS t
-							  JOIN users AS lead ON lead.id = team.lead_id
+							  JOIN users AS lead ON lead.id = teams.lead_id
 							  WHERE name = $1;`, t.Name)
 	}
 
-	err := intoTeam(row, t)
+	err := intoTeam(ts.db, row, t)
 	if err != nil {
 		return handlePqErr(err)
 	}
@@ -53,6 +78,7 @@ func (ts *TeamStore) Get(t *models.Team) error {
 	return ts.GetMembers(t)
 }
 
+// GetMembers will get the members for the given team.
 func (ts *TeamStore) GetMembers(t *models.Team) error {
 	rows, err := ts.db.Query(`SELECT u.id, username, password, email, full_name, 
 									 gravatar, profile_picture, is_admin
@@ -62,6 +88,8 @@ func (ts *TeamStore) GetMembers(t *models.Team) error {
 	if err != nil {
 		return handlePqErr(err)
 	}
+
+	defer rows.Close()
 
 	for rows.Next() {
 		var u *models.User
@@ -88,9 +116,12 @@ func (ts *TeamStore) GetAll() ([]models.Team, error) {
 		return teams, handlePqErr(err)
 	}
 
+	defer rows.Close()
+
 	for rows.Next() {
 		var t *models.Team
-		err := intoTeam(rows, t)
+
+		err := intoTeam(ts.db, rows, t)
 		if err != nil {
 			return teams, handlePqErr(err)
 		}
@@ -126,10 +157,12 @@ func (ts *TeamStore) GetForUser(u models.User) ([]models.Team, error) {
 		return teams, err
 	}
 
+	defer rows.Close()
+
 	for rows.Next() {
 		var t *models.Team
 
-		err = intoTeam(rows, t)
+		err = intoTeam(ts.db, rows, t)
 		if err != nil {
 			return teams, err
 		}
@@ -158,27 +191,36 @@ func (ts *TeamStore) AddMembers(t models.Team, users ...models.User) error {
 }
 
 // New adds a new team to the database.
-func (t *TeamStore) New(team *models.Team) error {
-	err := t.db.QueryRow(`INSERT INTO teams 
-						  (name, lead_id) VALUES ($1, $2, $3, $4)
+func (ts *TeamStore) New(t *models.Team) error {
+	err := ts.db.QueryRow(`INSERT INTO teams 
+						  (name, lead_id) VALUES ($1, $2)
 						  RETURNING id;`,
-		team.Name, team.Lead.ID).
-		Scan(&team.ID)
+		t.Name, t.Lead.ID).
+		Scan(&t.ID)
+	if err != nil {
+		return handlePqErr(err)
+	}
+
+	for _, mem := range t.Members {
+		_, err = ts.db.Exec(`INSERT INTO teams_users
+					         (team_id, user_id) VALUES ($1, $2)`, t.ID, mem.ID)
+	}
+
 	return handlePqErr(err)
 }
 
-// Save updates a team to the database.
-func (t *TeamStore) Save(team models.Team) error {
-	_, err := t.db.Exec(`UPDATE teams SET 
+// Save updates a t to the database.
+func (ts *TeamStore) Save(t models.Team) error {
+	_, err := ts.db.Exec(`UPDATE teams SET 
 					     (name, lead_id) = ($1, $2, $3, $4)
 						 WHERE id = $5;`,
-		team.Name, team.Lead.ID, team.ID)
+		t.Name, t.Lead.ID, t.ID)
 	return handlePqErr(err)
 }
 
-// Remove updates a team to the database.
-func (t *TeamStore) Remove(team models.Team) error {
-	_, err := t.db.Exec(`DELETE FROM teams_users WHERE team_id = $1;
-						 DELETE FROM teams WHERE id = $1;`, team.ID)
+// Remove updates a t to the database.
+func (ts *TeamStore) Remove(t models.Team) error {
+	_, err := ts.db.Exec(`DELETE FROM teams_users WHERE t_id = $1;
+						 DELETE FROM teams WHERE id = $1;`, t.ID)
 	return handlePqErr(err)
 }
