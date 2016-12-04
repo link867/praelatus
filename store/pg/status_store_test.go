@@ -7,7 +7,7 @@ import (
 )
 
 func TestStatusGet(t *testing.T) {
-	l := &models.Label{ID: 1}
+	l := &models.Status{ID: 1}
 	e := s.Statuses().Get(l)
 	failIfErr("Status Get", t, e)
 
@@ -34,26 +34,26 @@ func TestStatusGetAll(t *testing.T) {
 }
 
 func TestStatusSave(t *testing.T) {
-	l := &models.Label{ID: 1}
+	l := &models.Status{ID: 1}
 	e := s.Statuses().Get(l)
 	failIfErr("Status Save", t, e)
 
-	l.Name = "SAVE_TEST_LABEL"
+	l.Name = "SAVE_TEST_STATUS"
 
-	e = s.Statuses().Save(l)
+	e = s.Statuses().Save(*l)
 	failIfErr("Status Save", t, e)
 
-	l1 := &models.Label{ID: 1}
-	e = s.Statuses().Get(l1)
+	l = &models.Status{ID: 1}
+	e = s.Statuses().Get(l)
 	failIfErr("Status Save", t, e)
 
-	if l1.Name != "SAVE_TEST_LABEL" {
-		t.Errorf("Expected: SAVE_TEST_LABEL Got: %s\n", l.Name)
+	if l.Name != "SAVE_TEST_STATUS" {
+		t.Errorf("Expected: SAVE_TEST_STATUS Got: %s\n", l.Name)
 	}
 }
 
 func TestStatusRemove(t *testing.T) {
-	l := &models.Label{ID: 2}
+	l := models.Status{ID: 2}
 	e := s.Statuses().Remove(l)
 	failIfErr("Status Remove", t, e)
 }
