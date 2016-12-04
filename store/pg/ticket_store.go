@@ -3,11 +3,11 @@ package pg
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"strconv"
 	"time"
 
 	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/store"
 )
 
 // TicketStore contains methods for storing and retrieving Tickets from
@@ -16,9 +16,33 @@ type TicketStore struct {
 	db *sql.DB
 }
 
+func getOpts(db *sql.DB, fid int64, fo *models.FieldOption) error {
+	rows, err := db.Query(`SELECT option FROM field_options 
+						   WHERE field_id = $1`, fid)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var opt string
+
+		err = rows.Scan(&opt)
+		if err != nil {
+			return err
+		}
+
+		fo.Options = append(fo.Options, opt)
+	}
+
+	return nil
+}
+
 func populateFields(db *sql.DB, t *models.Ticket) error {
 	rows, err := db.Query(`
-		SELECT fv.id, f.name, f.data_type, f.value
+		SELECT fv.id, f.name, f.data_type, 
+			   fv.int_value, fv.flt_value, fv.str_value, 
+			   fv.opt_value, fv.dte_value, f.id
 		FROM field_values AS fv
 		JOIN fields AS f ON f.id = fv.field_id
 		WHERE fv.ticket_id = $1`, t.ID)
@@ -26,12 +50,46 @@ func populateFields(db *sql.DB, t *models.Ticket) error {
 		return err
 	}
 
-	for rows.Next() {
-		var fv *models.FieldValue
+	defer rows.Close()
 
-		err = rows.Scan(fv.ID, fv.Name, fv.DataType, fv.Value)
+	for rows.Next() {
+		// We need to be able to scan in all the values then determine which
+		// actually goes into the model.
+		var fv *models.FieldValue
+		var i int
+		var f float64
+		var s, o string
+		var d time.Time
+		var fID int64
+
+		err = rows.Scan(fv.ID, fv.Name, fv.DataType, &i, &f, &s, &o, &d, &fID)
 		if err != nil {
 			return err
+		}
+
+		// By Odin's Beard I can't think of a better way to wrangle this mess.
+		switch fv.DataType {
+		case "FLOAT":
+			fv.Value = f
+		case "INT":
+			fv.Value = i
+		case "STRING":
+			fv.Value = s
+		case "DATE":
+			fv.Value = d
+		case "OPT":
+			fo := models.FieldOption{}
+			fo.Selected = o
+
+			// Fill out the options and defaults.
+			e := getOpts(db, fID, &fo)
+			if e != nil {
+				return e
+			}
+
+			fv.Value = fo
+		default:
+			fv.Value = nil
 		}
 
 		t.Fields = append(t.Fields, *fv)
@@ -90,10 +148,6 @@ func intoTicket(row rowScanner, db *sql.DB, t *models.Ticket) error {
 
 // Get gets a Ticket from a postgres DB by it's ID
 func (ts *TicketStore) Get(t *models.Ticket) error {
-	if p.Key == "" {
-		return store.ErrNotFound
-	}
-
 	row := ts.db.QueryRow(`SELECT t.id, t.key, t.created_date, 
 									 t.updated_date, t.summary, t.description, 
 									 row_to_json(a.*) AS assignee, 
@@ -113,10 +167,11 @@ func (ts *TicketStore) Get(t *models.Ticket) error {
 	return handlePqErr(err)
 }
 
-// GetAll gets all the Tickets from the database.
+// GetAll gets all the Tickets from the database
 func (ts *TicketStore) GetAll() ([]models.Ticket, error) {
 	var tickets []models.Ticket
 
+	log.Println("Getting all tickets.")
 	rows, err := ts.db.Query(`SELECT t.id, t.key, t.created_date, 
 									  t.updated_date, t.summary, t.description, 
 									  row_to_json(a.*) AS assignee, 
@@ -127,8 +182,7 @@ func (ts *TicketStore) GetAll() ([]models.Ticket, error) {
 							  JOIN users AS a ON a.id = t.assignee_id
 							  JOIN users AS r ON r.id = t.reporter_id
 							  JOIN statuses AS s ON s.id = t.status_id
-							  JOIN ticket_types AS tt ON tt.id = t.ticket_type_id
-							  FROM tickets`)
+							  JOIN ticket_types AS tt ON tt.id = t.ticket_type_id`)
 	if err != nil {
 		return tickets, handlePqErr(err)
 	}
@@ -136,6 +190,7 @@ func (ts *TicketStore) GetAll() ([]models.Ticket, error) {
 	for rows.Next() {
 		var t models.Ticket
 
+		log.Println("Starting row to ticket")
 		err = intoTicket(rows, ts.db, &t)
 		if err != nil {
 			return tickets, handlePqErr(err)
@@ -147,7 +202,8 @@ func (ts *TicketStore) GetAll() ([]models.Ticket, error) {
 	return tickets, nil
 }
 
-// GetAll gets all the Tickets from the database.
+// GetAllByProject gets all the Tickets from the database based on the given
+// project
 func (ts *TicketStore) GetAllByProject(p models.Project) ([]models.Ticket, error) {
 	var tickets []models.Ticket
 
@@ -282,12 +338,15 @@ func (ts *TicketStore) GetComments(t models.Ticket) ([]models.Comment, error) {
 
 // NewComment will add a new Comment to the postgres DB
 func (ts *TicketStore) NewComment(t models.Ticket, c *models.Comment) error {
-	err := ts.db.QueryRow(`INSERT INTO comments 
-						   (body, ticket_id, author_id) VALUES ($1, $2, $3)
-						   RETURNING id;
-						   UPDATE tickets 
-						   SET (updated_date) = ($4) WHERE id = $2;`,
-		c.Body, t.ID, c.Author.ID, time.Now()).
+	_, err := ts.db.Exec(`UPDATE tickets SET (updated_date) = ($1) 
+					      WHERE id = $2;`, time.Now(), t.ID)
+	if err != nil {
+		return handlePqErr(err)
+	}
+
+	err = ts.db.QueryRow(`INSERT INTO comments 
+						  (body, ticket_id, author_id) VALUES ($1, $2, $3)
+						  RETURNING id;`, c.Body, t.ID, c.Author.ID).
 		Scan(&c.ID)
 
 	return handlePqErr(err)
