@@ -42,7 +42,7 @@ func TestTeamSave(t *testing.T) {
 
 	team.Name = "Test Team Save"
 
-	e = s.Teams().Save(team)
+	e = s.Teams().Save(*team)
 	failIfErr("Team Save", t, e)
 
 	team = &models.Team{ID: 1}
