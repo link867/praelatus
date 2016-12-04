@@ -7,7 +7,7 @@ import (
 )
 
 func TestUserGet(t *testing.T) {
-	u := models.User{ID: 1}
+	u := &models.User{ID: 1}
 	e := s.Users().Get(u)
 	failIfErr("User Get", t, e)
 
@@ -39,8 +39,8 @@ func TestUserSave(t *testing.T) {
 	e = s.Users().Get(&u)
 	failIfErr("User Save", t, e)
 
-	if u.Name != "SaveUser" {
-		t.Errorf("Expected: Test Save User Got: %s\n", u.Name)
+	if u.Username != "SaveUser" {
+		t.Errorf("Expected: Test Save User Got: %s\n", u.Username)
 	}
 }
 
