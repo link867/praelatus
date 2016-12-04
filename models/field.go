@@ -25,7 +25,6 @@ type Field struct {
 
 // FieldOption is used as the value for FieldValues which are selects.
 type FieldOption struct {
-	Default  string   `json:"default"`
 	Selected string   `json:"selected"`
 	Options  []string `json:"options"`
 }
