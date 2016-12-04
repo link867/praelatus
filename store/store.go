@@ -127,7 +127,7 @@ type StatusStore interface {
 
 // WorkflowStore contains methods for storing and retrieving Workflows
 type WorkflowStore interface {
-	Get(models.Project, *models.Workflow) error
+	Get(*models.Workflow) error
 	GetAll() ([]models.Workflow, error)
 	GetByProject(models.Project) ([]models.Workflow, error)
 
