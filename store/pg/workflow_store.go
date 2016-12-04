@@ -14,12 +14,11 @@ type WorkflowStore struct {
 }
 
 // Get gets a workflow from the database
-func (ws *WorkflowStore) Get(p models.Project, w *models.Workflow) error {
+func (ws *WorkflowStore) Get(w *models.Workflow) error {
 	row := ws.db.QueryRow(`SELECT id, name 
 						   FROM workflows 
 						   JOIN projects AS p ON workflows.project_id = p.id
-						   WHERE id = $1 OR 
-						   (name = $2 AND p.key)`, w.ID, w.Name, p.Key)
+						   WHERE id = $1`, w.ID)
 
 	err := row.Scan(&w.ID, &w.Name)
 	if err != nil {
