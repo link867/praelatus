@@ -68,11 +68,11 @@ func TestTicketSave(t *testing.T) {
 
 	tk.Summary = "Test ticket save"
 
-	e := s.Tickets().Save(tk)
+	e = s.Tickets().Save(tk)
 	failIfErr("Ticket save", t, e)
 
 	tk = models.Ticket{ID: 2}
-	e := s.Tickets().Get(&tk)
+	e = s.Tickets().Get(&tk)
 	failIfErr("Ticket save", t, e)
 
 	if tk.Summary != "Test ticket save" {
@@ -82,10 +82,10 @@ func TestTicketSave(t *testing.T) {
 
 func TestTicketRemove(t *testing.T) {
 	tk := models.Ticket{ID: 3}
-	e := s.Tickets().Remove(&tk)
+	e := s.Tickets().Remove(tk)
 	failIfErr("Ticket save", t, e)
 
-	e = s.Tickets().Get(tk)
+	e = s.Tickets().Get(&tk)
 
 	if e == nil {
 		t.Errorf("Expected an error, got: %s\n", e.Error())
