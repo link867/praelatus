@@ -53,7 +53,7 @@ func TestFieldGetAll(t *testing.T) {
 }
 
 func TestFieldGetByProject(t *testing.T) {
-	p := &models.Project{ID: 1}
+	p := models.Project{ID: 1}
 
 	f, e := s.Fields().GetByProject(p)
 	failIfErr("Field Get By Project", t, e)
@@ -64,16 +64,17 @@ func TestFieldGetByProject(t *testing.T) {
 }
 
 func TestFieldSave(t *testing.T) {
-	field := &models.Field{
-		ID:       1,
+	f1 := models.Field{
+		ID:       2,
 		Name:     "Story Points",
 		DataType: "INT",
 	}
 
-	e := s.Fields().Save(field)
+	e := s.Fields().Save(f1)
 	failIfErr("Field Save", t, e)
 
-	f, e := s.Fields().Get(1)
+	f := &models.Field{ID: 2}
+	e = s.Fields().Get(f)
 	failIfErr("Field Save", t, e)
 
 	if f.Name != "Story Points" {
@@ -86,11 +87,11 @@ func TestFieldSave(t *testing.T) {
 }
 
 func TestFieldRemove(t *testing.T) {
-	field := &models.Field{
+	f := models.Field{
 		ID:   2,
 		Name: "TestField2",
 	}
 
-	e := s.Fields().Remove(field)
+	e := s.Fields().Remove(f)
 	failIfErr("Field Remove", t, e)
 }
