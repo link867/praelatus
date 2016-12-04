@@ -66,6 +66,7 @@ func SeedTickets(s Store) error {
 			Description: "No really, this is just a test",
 			Reporter:    models.User{ID: 1},
 			Assignee:    models.User{ID: 1},
+			Status:      models.Status{ID: 1},
 			Labels: []models.Label{
 				models.Label{1, "test"},
 			},
@@ -77,7 +78,6 @@ func SeedTickets(s Store) error {
 				models.FieldValue{
 					Name: "Priority",
 					Value: models.FieldOption{
-						Default:  "LOW",
 						Selected: []string{"HIGH", "MEDIUM", "LOW"}[rand.Intn(3)],
 						Options:  []string{"HIGH", "MEDIUM", "LOW"},
 					},
@@ -177,7 +177,6 @@ func SeedFields(s Store) error {
 			Name:     "Priority",
 			DataType: "OPT",
 			Options: models.FieldOption{
-				Default:  "LOW",
 				Selected: "LOW",
 				Options:  []string{"HIGH", "MEDIUM", "LOW"},
 			},
