@@ -1,10 +1,6 @@
 package models
 
-import (
-	"time"
-
-	"github.com/praelatus/backend/models"
-)
+import "time"
 
 // TicketType represents the type of ticket.
 type TicketType struct {
@@ -27,7 +23,7 @@ type Ticket struct {
 	Assignee    User         `json:"assignee"`
 	Status      Status       `json:"status"`
 
-	Comments []models.Comment `json:"comments,omitempty"`
+	Comments []Comment `json:"comments,omitempty"`
 }
 
 func (t *Ticket) String() string {
