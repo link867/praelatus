@@ -62,6 +62,7 @@ func SeedTickets(s Store) error {
 	fmt.Println("Seeding tickets")
 	for i := 0; i < 50; i++ {
 		t := &models.Ticket{
+			Key:         s.Tickets().NextTicketKey(models.Project{ID: 1}),
 			Summary:     "This is a test ticket. #" + strconv.Itoa(i),
 			Description: "No really, this is just a test",
 			Reporter:    models.User{ID: 1},
