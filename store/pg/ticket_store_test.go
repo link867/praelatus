@@ -84,10 +84,4 @@ func TestTicketRemove(t *testing.T) {
 	tk := models.Ticket{ID: 3}
 	e := s.Tickets().Remove(tk)
 	failIfErr("Ticket save", t, e)
-
-	e = s.Tickets().Get(&tk)
-
-	if e == nil {
-		t.Errorf("Expected an error, got: %s\n", e.Error())
-	}
 }
