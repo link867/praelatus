@@ -52,9 +52,13 @@ func (fs *FieldStore) GetByProject(p models.Project) ([]models.Field, error) {
 	var fields []models.Field
 
 	rows, err := fs.db.Query(`
-		SELECT fields.id, fields.name, fields.data_type FROM fields
-		JOIN field_tickettype_project as ftp ON fields.id = ftp.field_id
-		WHERE ftp.key = $1;`, p.Key)
+		SELECT fields.id, fields.name, fields.data_type 
+		FROM fields
+		JOIN field_tickettype_project AS ftp 
+		ON fields.id = ftp.field_id
+		JOIN projects AS p 
+		ON p.id = ftp.project_id
+		WHERE p.key = $1;`, p.Key)
 	if err != nil {
 		return fields, handlePqErr(err)
 	}
@@ -127,18 +131,22 @@ func (fs *FieldStore) Remove(field models.Field) error {
 	if err != nil {
 		return handlePqErr(err)
 	}
-	defer handlePqErr(tx.Commit())
 
 	err = tx.QueryRow(`SELECT COUNT(id) FROM field_values 
 					   WHERE field_id = $1`, field.ID).Scan(&c)
 	if err != nil {
-		return handlePqErr(err)
+		return handlePqErr(tx.Rollback())
 	}
 
 	if c > 0 {
+		tx.Rollback()
 		return errors.New("that field is currently in use, refusing to delete")
 	}
 
 	_, err = tx.Exec("DELETE FROM fields WHERE id = $1", field.ID)
-	return handlePqErr(err)
+	if err != nil {
+		return handlePqErr(tx.Rollback())
+	}
+
+	return handlePqErr(tx.Commit())
 }
