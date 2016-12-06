@@ -110,8 +110,8 @@ CREATE TABLE IF NOT EXISTS tickets (
     id           SERIAL PRIMARY KEY,
 	updated_date timestamp DEFAULT current_timestamp,
 	created_date timestamp DEFAULT current_timestamp,
-    key          varchar(250) NOT NULL,
-    summary      varchar(250) NOT NULL,
+    key          varchar(250) NOT NULL CHECK (key <> ''),
+    summary      varchar(250) NOT NULL CHECK (summary <> ''),
     description  text NOT NULL,
 
     project_id     integer REFERENCES projects (id) NOT NULL,
