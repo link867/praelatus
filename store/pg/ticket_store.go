@@ -103,6 +103,9 @@ func intoTicket(row rowScanner, db *sql.DB, t *models.Ticket) error {
 
 	err := row.Scan(&t.ID, &t.Key, &t.CreatedDate, &t.UpdatedDate, &t.Summary,
 		&t.Description, &ajson, &rjson, &sjson, &tjson)
+	if err != nil {
+		return handlePqErr(err)
+	}
 
 	dberr := make(chan error)
 	done := make(chan struct{})
@@ -143,6 +146,9 @@ func intoTicket(row rowScanner, db *sql.DB, t *models.Ticket) error {
 	}
 
 	err = <-dberr
+	if err != nil {
+		log.Println("Errored while getting fields.")
+	}
 	return handlePqErr(err)
 }
 
@@ -190,9 +196,9 @@ func (ts *TicketStore) GetAll() ([]models.Ticket, error) {
 	for rows.Next() {
 		var t models.Ticket
 
-		log.Println("Starting row to ticket")
 		err = intoTicket(rows, ts.db, &t)
 		if err != nil {
+			log.Println("Error getting tickets")
 			return tickets, handlePqErr(err)
 		}
 
@@ -219,7 +225,6 @@ func (ts *TicketStore) GetAllByProject(p models.Project) ([]models.Ticket, error
 							  JOIN projects AS p ON p.id = t.project_id
 							  JOIN statuses AS s ON s.id = t.status_id
 							  JOIN ticket_types AS tt ON tt.id = t.ticket_type_id
-							  FROM tickets
 							  WHERE p.id = $1
 							  OR p.key = $2`, p.ID, p.Key)
 	if err != nil {
@@ -266,10 +271,27 @@ func (ts *TicketStore) Save(ticket models.Ticket) error {
 
 // Remove will update an existing ticket in the postgres DB
 func (ts *TicketStore) Remove(ticket models.Ticket) error {
-	_, err := ts.db.Exec(`DELETE FROM field_values WHERE ticket_id = $1;
-						  DELETE FROM tickets_labels WHERE ticket_id = $1;
-						  DELETE FROM tickets WHERE id = $1;`, ticket.ID)
-	return handlePqErr(err)
+	tx, err := ts.db.Begin()
+	if err != nil {
+		return handlePqErr(tx.Rollback())
+	}
+
+	_, err = tx.Exec(`DELETE FROM field_values WHERE ticket_id = $1;`, ticket.ID)
+	if err != nil {
+		return handlePqErr(tx.Rollback())
+	}
+
+	_, err = tx.Exec(`DELETE FROM tickets_labels WHERE ticket_id = $1;`, ticket.ID)
+	if err != nil {
+		return handlePqErr(tx.Rollback())
+	}
+
+	_, err = tx.Exec(`DELETE FROM tickets WHERE id = $1;`, ticket.ID)
+	if err != nil {
+		return handlePqErr(tx.Rollback())
+	}
+
+	return handlePqErr(tx.Commit())
 }
 
 // New will add a new Ticket to the postgres DB
@@ -308,7 +330,7 @@ func (ts *TicketStore) GetComments(t models.Ticket) ([]models.Comment, error) {
 									 c.body, row_to_json(users.*) as author 
 							  FROM comments AS c
 							  JOIN tickets AS t ON t.id = c.ticket_id
-							  JOIN users ON users.id = comments.author_id
+							  JOIN users ON users.id = c.author_id
 							  WHERE t.id = $1
 							  OR t.key = $2`, t.ID, t.Key)
 
