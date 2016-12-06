@@ -13,7 +13,7 @@ type ProjectStore struct {
 	db *sql.DB
 }
 
-func IntoProject(row rowScanner, p *models.Project) error {
+func intoProject(row rowScanner, p *models.Project) error {
 	var lead models.User
 	var ljson json.RawMessage
 
@@ -51,7 +51,7 @@ func (ps *ProjectStore) Get(p *models.Project) error {
 
 	}
 
-	err := IntoProject(row, p)
+	err := intoProject(row, p)
 	return handlePqErr(err)
 }
 
@@ -71,7 +71,7 @@ func (ps *ProjectStore) GetAll() ([]models.Project, error) {
 	for rows.Next() {
 		var p models.Project
 
-		err = IntoProject(rows, &p)
+		err = intoProject(rows, &p)
 		if err != nil {
 			return projects, handlePqErr(err)
 		}
@@ -113,18 +113,17 @@ func (ps *ProjectStore) Remove(project models.Project) error {
 	if err != nil {
 		return handlePqErr(err)
 	}
-	defer handlePqErr(tx.Commit())
 
 	_, err = ps.db.Exec(`DELETE FROM field_tickettype_project 
 						 WHERE project_id = $1;`, project.ID)
 	if err != nil {
-		return handlePqErr(err)
+		return handlePqErr(tx.Rollback())
 	}
 
 	_, err = ps.db.Exec(`DELETE FROM permissions 
 						 WHERE project_id = $1;`, project.ID)
 	if err != nil {
-		return handlePqErr(err)
+		return handlePqErr(tx.Rollback())
 	}
 
 	_, err = ps.db.Exec(`DELETE FROM field_values
@@ -132,22 +131,27 @@ func (ps *ProjectStore) Remove(project models.Project) error {
 						 in(SELECT id FROM tickets 
 							WHERE project_id = $1);`, project.ID)
 	if err != nil {
-		return handlePqErr(err)
+		return handlePqErr(tx.Rollback())
 	}
 
-	_, err = ps.db.Exec(`DELETE FROM ticket_labels 
+	_, err = ps.db.Exec(`DELETE FROM tickets_labels 
 						 WHERE ticket_id 
 						 in(SELECT id FROM tickets 
 							WHERE project_id = $1);`, project.ID)
 	if err != nil {
-		return handlePqErr(err)
+		return handlePqErr(tx.Rollback())
 	}
 
 	_, err = tx.Exec(`DELETE FROM tickets WHERE project_id = $1;`, project.ID)
 	if err != nil {
-		return handlePqErr(err)
+		tx.Rollback()
+		return handlePqErr(tx.Rollback())
 	}
 
 	_, err = tx.Exec(`DELETE FROM projects WHERE id = $1;`, project.ID)
-	return handlePqErr(err)
+	if err != nil {
+		return handlePqErr(tx.Rollback())
+	}
+
+	return handlePqErr(tx.Commit())
 }
