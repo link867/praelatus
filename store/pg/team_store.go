@@ -3,6 +3,7 @@ package pg
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 
 	"github.com/praelatus/backend/models"
 )
@@ -23,17 +24,21 @@ func intoTeam(db *sql.DB, row rowScanner, t *models.Team) error {
 	}
 
 	err = json.Unmarshal(ujson, &u)
+	if err != nil {
+		return err
+	}
+
 	t.Lead = u
 
 	rows, err := db.Query(`SELECT u.id, u.username, u.email, 
-								 u.full_name, u.gravatar, u.profile_picture
-								 u.is_admin
-						  FROM teams_user AS tu
-						  JOIN users AS u ON tu.user_id = u.id
-						  JOIN teams AS t ON tu.team_id = t.id
-						  WHERE tu.team_id = $1`, t.ID)
+								  u.full_name, u.gravatar, u.profile_picture,
+								  u.is_admin
+						   FROM teams_users AS tu 
+						   JOIN users AS u ON tu.user_id = u.id
+						   JOIN teams AS t ON tu.team_id = t.id
+						   WHERE tu.team_id = $1;`, t.ID)
 	if err != nil {
-		return err
+		return handlePqErr(err)
 	}
 
 	defer rows.Close()
@@ -41,12 +46,13 @@ func intoTeam(db *sql.DB, row rowScanner, t *models.Team) error {
 	for rows.Next() {
 		var u models.User
 
-		err = row.Scan(&u.ID, &u.Username, &u.Email, &u.FullName,
+		err = rows.Scan(&u.ID, &u.Username, &u.Email, &u.FullName,
 			&u.Gravatar, &u.ProfilePic, &u.IsAdmin)
 		if err != nil {
 			return err
 		}
 
+		fmt.Println("ADDING MEMBER", u)
 		t.Members = append(t.Members, u)
 	}
 
@@ -61,13 +67,13 @@ func (ts *TeamStore) Get(t *models.Team) error {
 	case "":
 		row = ts.db.QueryRow(`SELECT t.id, t.name, row_to_json(lead.*) as lead
 							  FROM teams AS t
-							  JOIN users AS lead ON lead.id = teams.lead_id
-							  WHERE id = $1;`, t.ID)
+							  JOIN users AS lead ON lead.id = t.lead_id
+							  WHERE t.id = $1;`, t.ID)
 	default:
 		row = ts.db.QueryRow(`SELECT t.id, t.name, row_to_json(lead.*) as lead
 							  FROM teams AS t
-							  JOIN users AS lead ON lead.id = teams.lead_id
-							  WHERE name = $1;`, t.Name)
+							  JOIN users AS lead ON lead.id = t.lead_id
+							  WHERE t.name = $1;`, t.Name)
 	}
 
 	err := intoTeam(ts.db, row, t)
