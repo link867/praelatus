@@ -220,7 +220,17 @@ func (ts *TeamStore) Save(t models.Team) error {
 
 // Remove updates a t to the database.
 func (ts *TeamStore) Remove(t models.Team) error {
-	_, err := ts.db.Exec(`DELETE FROM teams_users WHERE t_id = $1;
-						 DELETE FROM teams WHERE id = $1;`, t.ID)
+	tx, err := ts.db.Begin()
+	if err != nil {
+		return handlePqErr(err)
+	}
+	defer handlePqErr(tx.Commit())
+
+	_, err = tx.Exec(`DELETE FROM teams_users WHERE t_id = $1;`, t.ID)
+	if err != nil {
+		return handlePqErr(err)
+	}
+
+	_, err = tx.Exec(`DELETE FROM teams WHERE id = $1;`, t.ID)
 	return handlePqErr(err)
 }
