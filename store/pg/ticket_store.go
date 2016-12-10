@@ -177,7 +177,6 @@ func (ts *TicketStore) Get(t *models.Ticket) error {
 func (ts *TicketStore) GetAll() ([]models.Ticket, error) {
 	var tickets []models.Ticket
 
-	log.Println("Getting all tickets.")
 	rows, err := ts.db.Query(`SELECT t.id, t.key, t.created_date, 
 									  t.updated_date, t.summary, t.description, 
 									  row_to_json(a.*) AS assignee, 
