@@ -35,9 +35,9 @@ func Run(port string) {
 	BaseRoutes.Projects = BaseRoutes.Root.PathPrefix("/projects").Subrouter()
 	BaseRoutes.Tickets = BaseRoutes.Root.PathPrefix("/tickets").Subrouter()
 
-	InitUserRoutes()
-	InitProjectRoutes()
-	InitTicketRoutes()
+	// InitUserRoutes()
+	// InitProjectRoutes()
+	// InitTicketRoutes()
 
 	http.ListenAndServe(port, BaseRoutes.Root)
 }
