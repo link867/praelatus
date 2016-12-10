@@ -22,6 +22,8 @@ type Ticket struct {
 	Reporter    User         `json:"reporter"`
 	Assignee    User         `json:"assignee"`
 	Status      Status       `json:"status"`
+
+	Comments []Comment `json:"comments,omitempty"`
 }
 
 func (t *Ticket) String() string {

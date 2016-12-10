@@ -3,10 +3,10 @@ package middleware
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"log"
 	"github.com/praelatus/backend/models"
 )
 
@@ -50,7 +50,7 @@ func (c *Context) String(key string) string {
 		return v
 	}
 
-	"log.Printf"("Failed to retrieve string value at: %s Actual value: %v\n", key, c.Val[key])
+	log.Printf("Failed to retrieve string value at: %s Actual value: %v\n", key, c.Val[key])
 	return ""
 }
 

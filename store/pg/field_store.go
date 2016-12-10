@@ -2,6 +2,7 @@ package pg
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/praelatus/backend/models"
 )
@@ -16,20 +17,18 @@ type FieldStore struct {
 func (fs *FieldStore) Get(f *models.Field) error {
 	var row *sql.Row
 
-	row = fs.db.QueryRow(`SELECT id, name, data_type 
-						  FROM fields 
-						  WHERE id = $1
-						  OR name = $2`, f.ID, f.Name)
-
+	row = fs.db.QueryRow(`SELECT id, name, data_type FROM fields 
+						  WHERE id = $1 OR name = $2`, f.ID, f.Name)
 	err := row.Scan(&f.ID, &f.Name, &f.DataType)
-	return err
+
+	return handlePqErr(err)
 }
 
 // GetAll will return all fields from the DB
-func (f *FieldStore) GetAll() ([]models.Field, error) {
+func (fs *FieldStore) GetAll() ([]models.Field, error) {
 	var fields []models.Field
 
-	rows, err := f.db.Query("SELECT id, name, data_type FROM fields;")
+	rows, err := fs.db.Query("SELECT id, name, data_type FROM fields;")
 	if err != nil {
 		return fields, handlePqErr(err)
 	}
@@ -49,15 +48,17 @@ func (f *FieldStore) GetAll() ([]models.Field, error) {
 }
 
 // GetByProject retrieves all Fields associated with a project
-func (f *FieldStore) GetByProject(p models.Project) ([]models.Field, error) {
+func (fs *FieldStore) GetByProject(p models.Project) ([]models.Field, error) {
 	var fields []models.Field
 
-	rows, err := f.db.Query(`
+	rows, err := fs.db.Query(`
 		SELECT fields.id, fields.name, fields.data_type 
 		FROM fields
-		JOIN field_tickettype_project as ftp ON fields.id = ftp.field_id
-		WHERE ftp.key = $1;`, p.Key)
-
+		JOIN field_tickettype_project AS ftp 
+		ON fields.id = ftp.field_id
+		JOIN projects AS p 
+		ON p.id = ftp.project_id
+		WHERE p.key = $1;`, p.Key)
 	if err != nil {
 		return fields, handlePqErr(err)
 	}
@@ -77,11 +78,11 @@ func (f *FieldStore) GetByProject(p models.Project) ([]models.Field, error) {
 }
 
 // AddToProject adds a field to a project's tickets
-func (f *FieldStore) AddToProject(project models.Project, field *models.Field,
+func (fs *FieldStore) AddToProject(project models.Project, field *models.Field,
 	ticketTypes ...models.TicketType) error {
 
 	if ticketTypes == nil {
-		_, err := f.db.Exec(`INSERT INTO field_tickettype_project 
+		_, err := fs.db.Exec(`INSERT INTO field_tickettype_project 
 							 (field_id, project_id) VALUES ($1, $2)`,
 			field.ID, project.ID)
 		return handlePqErr(err)
@@ -89,7 +90,7 @@ func (f *FieldStore) AddToProject(project models.Project, field *models.Field,
 
 	for _, typ := range ticketTypes {
 
-		_, err := f.db.Exec(`INSERT INTO field_tickettype_project 
+		_, err := fs.db.Exec(`INSERT INTO field_tickettype_project 
 							 (field_id, project_id, ticket_type_id) 
 							 VALUES ($1, $2, $3)`,
 			field.ID, project.ID, typ.ID)
@@ -103,8 +104,8 @@ func (f *FieldStore) AddToProject(project models.Project, field *models.Field,
 }
 
 // Save updates an existing field in the database.
-func (f *FieldStore) Save(field models.Field) error {
-	_, err := f.db.Exec(`UPDATE fields SET 
+func (fs *FieldStore) Save(field models.Field) error {
+	_, err := fs.db.Exec(`UPDATE fields SET 
 					     (name, data_type) = ($1, $2) WHERE id = $3;`,
 		field.Name, field.DataType, field.ID)
 
@@ -112,12 +113,40 @@ func (f *FieldStore) Save(field models.Field) error {
 }
 
 // New creates a new Field in the database.
-func (f *FieldStore) New(field *models.Field) error {
-	err := f.db.QueryRow(`INSERT INTO fields 
+func (fs *FieldStore) New(field *models.Field) error {
+	err := fs.db.QueryRow(`INSERT INTO fields 
 						  (name, data_type) VALUES ($1, $2)
 						  RETURNING id;`,
 		field.Name, field.DataType).
 		Scan(&field.ID)
 
 	return handlePqErr(err)
+}
+
+// Remove updates an existing field in the database.
+func (fs *FieldStore) Remove(field models.Field) error {
+	var c int
+
+	tx, err := fs.db.Begin()
+	if err != nil {
+		return handlePqErr(err)
+	}
+
+	err = tx.QueryRow(`SELECT COUNT(id) FROM field_values 
+					   WHERE field_id = $1`, field.ID).Scan(&c)
+	if err != nil {
+		return handlePqErr(tx.Rollback())
+	}
+
+	if c > 0 {
+		tx.Rollback()
+		return errors.New("that field is currently in use, refusing to delete")
+	}
+
+	_, err = tx.Exec("DELETE FROM fields WHERE id = $1", field.ID)
+	if err != nil {
+		return handlePqErr(tx.Rollback())
+	}
+
+	return handlePqErr(tx.Commit())
 }
