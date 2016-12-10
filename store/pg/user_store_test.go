@@ -48,11 +48,4 @@ func TestUserRemove(t *testing.T) {
 	u := models.User{ID: 3}
 	e := s.Users().Remove(u)
 	failIfErr("User Remove", t, e)
-
-	u = models.User{ID: 3}
-	e = s.Users().Get(&u)
-
-	if e == nil {
-		t.Errorf("Expected an error got: %s\n", e.Error())
-	}
 }
