@@ -31,25 +31,13 @@ func intoProject(row rowScanner, p *models.Project) error {
 
 // Get gets a project by it's ID in a postgres DB.
 func (ps *ProjectStore) Get(p *models.Project) error {
-	var row *sql.Row
-
-	switch p.Key {
-	case "":
-		row = ps.db.QueryRow(`SELECT p.id, created_date, name, 
+	row := ps.db.QueryRow(`SELECT p.id, created_date, name, 
 								   key, homepage, icon_url, repo,
 								   row_to_json(lead.*)
-							FROM projects  AS p
-							JOIN users AS lead ON lead.id = p.lead_id
-							WHERE p.id = $1;`, p.ID)
-	default:
-		row = ps.db.QueryRow(`SELECT p.id, created_date, name, 
-								   key, homepage, icon_url, repo,
-								   row_to_json(lead.*)
-							FROM projects AS p
-							JOIN users AS lead ON lead.id = p.lead_id
-							WHERE p.key = $1;`, p.Key)
-
-	}
+						   FROM projects  AS p
+						   JOIN users AS lead ON lead.id = p.lead_id
+						   WHERE p.id = $1
+						   OR p.key = $2;`, p.ID, p.Key)
 
 	err := intoProject(row, p)
 	return handlePqErr(err)
