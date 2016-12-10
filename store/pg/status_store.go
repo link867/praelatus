@@ -71,7 +71,20 @@ func (ss *StatusStore) Remove(status models.Status) error {
 	}
 
 	err = tx.QueryRow(`SELECT COUNT(id) FROM tickets
-						  WHERE status_id = $1`, status.ID).Scan(&c)
+					   WHERE status_id = $1`, status.ID).Scan(&c)
+	if err != nil {
+		tx.Rollback()
+		return handlePqErr(err)
+	}
+
+	if c > 0 {
+		tx.Rollback()
+		return errors.New("that type is currently in use, refusing to delete")
+	}
+
+	err = tx.QueryRow(`SELECT COUNT(id) FROM transitions
+					   WHERE from_status = $1
+					   OR to_status = $1`, status.ID).Scan(&c)
 	if err != nil {
 		tx.Rollback()
 		return handlePqErr(err)

@@ -56,13 +56,4 @@ func TestProjectRemove(t *testing.T) {
 	p := &models.Project{ID: 2}
 	e := s.Projects().Remove(*p)
 	failIfErr("Project Remove", t, e)
-
-	e = s.Projects().Get(p)
-	if e == nil {
-		t.Error("Expected an error got nil.")
-	}
-
-	if p.Key != "" {
-		t.Errorf("Expected: \"\" Got :%s\n", p.Key)
-	}
 }
