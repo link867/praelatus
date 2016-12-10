@@ -63,7 +63,21 @@ func (ls *LabelStore) Save(label models.Label) error {
 
 // Remove updates a label in the database
 func (ls *LabelStore) Remove(label models.Label) error {
-	_, err := ls.db.Exec(`DELETE FROM tickets_labels WHERE label_id = $1;
-						  DELETE FROM labels WHERE id = $1;`, label.ID)
-	return handlePqErr(err)
+	tx, err := ls.db.Begin()
+	if err != nil {
+		return handlePqErr(err)
+	}
+	_, err = tx.Exec(`DELETE FROM tickets_labels WHERE label_id = $1;`, label.ID)
+	if err != nil {
+		tx.Rollback()
+		return handlePqErr(err)
+	}
+
+	_, err = tx.Exec(`DELETE FROM labels WHERE id = $1;`, label.ID)
+	if err != nil {
+		tx.Rollback()
+		return handlePqErr(err)
+	}
+
+	return handlePqErr(tx.Commit())
 }
