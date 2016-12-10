@@ -56,9 +56,4 @@ func TestLabelRemove(t *testing.T) {
 	l := models.Label{ID: 3}
 	e := s.Labels().Remove(l)
 	failIfErr("Label Remove", t, e)
-
-	e = s.Labels().Get(&l)
-	if e != nil {
-		t.Error("Expected an error got nil instead.")
-	}
 }
