@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS transitions (
 	name		varchar(250),
 
     workflow_id integer REFERENCES workflows (id),
+	from_status integer REFERENCES statuses (id),
     to_status integer REFERENCES statuses (id)
 );
 
