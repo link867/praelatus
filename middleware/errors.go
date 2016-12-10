@@ -2,10 +2,9 @@ package middleware
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"time"
-
-	"log"
 )
 
 var (
@@ -28,6 +27,6 @@ func middlewareErr(w http.ResponseWriter, r *http.Request, e error, s time.Time)
 
 	w.WriteHeader(status)
 	w.Write([]byte(e.Error()))
-	"log.Printf"("|%s| [%d] %s %s",
+	log.Printf("|%s| [%d] %s %s",
 		r.Method, status, r.URL.Path, time.Since(s).String())
 }

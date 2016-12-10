@@ -45,14 +45,14 @@ func (s *Stack) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(statusCode)
 	_, err := w.Write(response)
 	if err != nil {
-		"log.Println"(err)
+		log.Println(err)
 	}
 
 	if statusCode >= 300 {
-		"log.Printf"("|%s| [%d] %s %s",
+		log.Printf("|%s| [%d] %s %s",
 			r.Method, statusCode, r.URL.Path, time.Since(start).String())
 	} else {
-		"log.Printf"("|%s| [%d] %s %s",
+		log.Printf("|%s| [%d] %s %s",
 			r.Method, statusCode, r.URL.Path, time.Since(start).String())
 	}
 
