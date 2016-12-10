@@ -48,11 +48,4 @@ func TestTypeRemove(t *testing.T) {
 	tp := models.TicketType{ID: 3}
 	e := s.Types().Remove(tp)
 	failIfErr("Type Remove", t, e)
-
-	tp = models.TicketType{ID: 3}
-	e = s.Types().Get(&tp)
-
-	if e == nil {
-		t.Errorf("Expected an error got: %s\n", e.Error())
-	}
 }
