@@ -3,7 +3,6 @@ package pg
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 
 	"github.com/praelatus/backend/models"
 )
@@ -52,7 +51,6 @@ func intoTeam(db *sql.DB, row rowScanner, t *models.Team) error {
 			return err
 		}
 
-		fmt.Println("ADDING MEMBER", u)
 		t.Members = append(t.Members, u)
 	}
 
@@ -61,27 +59,14 @@ func intoTeam(db *sql.DB, row rowScanner, t *models.Team) error {
 
 // Get retrieves a team from the database based on ID
 func (ts *TeamStore) Get(t *models.Team) error {
-	var row *sql.Row
-
-	switch t.Name {
-	case "":
-		row = ts.db.QueryRow(`SELECT t.id, t.name, row_to_json(lead.*) as lead
+	row := ts.db.QueryRow(`SELECT t.id, t.name, row_to_json(lead.*) as lead
 							  FROM teams AS t
 							  JOIN users AS lead ON lead.id = t.lead_id
-							  WHERE t.id = $1;`, t.ID)
-	default:
-		row = ts.db.QueryRow(`SELECT t.id, t.name, row_to_json(lead.*) as lead
-							  FROM teams AS t
-							  JOIN users AS lead ON lead.id = t.lead_id
-							  WHERE t.name = $1;`, t.Name)
-	}
+							  WHERE t.id = $1
+							  OR t.name = $2;`, t.ID, t.Name)
 
 	err := intoTeam(ts.db, row, t)
-	if err != nil {
-		return handlePqErr(err)
-	}
-
-	return ts.GetMembers(t)
+	return handlePqErr(err)
 }
 
 // GetMembers will get the members for the given team.
@@ -125,7 +110,7 @@ func (ts *TeamStore) GetAll() ([]models.Team, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var t *models.Team
+		t := &models.Team{}
 
 		err := intoTeam(ts.db, rows, t)
 		if err != nil {
@@ -140,25 +125,14 @@ func (ts *TeamStore) GetAll() ([]models.Team, error) {
 
 // GetForUser will get the given users associated teams
 func (ts *TeamStore) GetForUser(u models.User) ([]models.Team, error) {
-	var rows *sql.Rows
-	var err error
 	var teams []models.Team
 
-	switch u.Username {
-	case "":
-		rows, err = ts.db.Query(`SELECT t.id, t.name
-							FROM teams_users
-							JOIN teams AS t on t.id = teams_users.team_id
-							JOIN users as u on u.id = teams_users.user_id
-							WHERE u.id = $1`, u.ID)
-	default:
-		rows, err = ts.db.Query(`SELECT t.id, t.name
+	rows, err := ts.db.Query(`SELECT t.id, t.name, row_to_json(lead.*)
 							FROM teams_users
 							JOIN teams AS t ON t.id = teams_users.team_id
-							JOIN users AS u ON u.id = teams_users.user_id
-							WHERE u.username = $1`, u.Username)
-	}
-
+							JOIN users as u ON u.id = teams_users.user_id
+							JOIN users as lead ON lead.id = t.lead_id
+							WHERE u.id = $1`, u.ID)
 	if err != nil {
 		return teams, err
 	}
@@ -166,7 +140,7 @@ func (ts *TeamStore) GetForUser(u models.User) ([]models.Team, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var t *models.Team
+		t := &models.Team{}
 
 		err = intoTeam(ts.db, rows, t)
 		if err != nil {
@@ -218,8 +192,8 @@ func (ts *TeamStore) New(t *models.Team) error {
 // Save updates a t to the database.
 func (ts *TeamStore) Save(t models.Team) error {
 	_, err := ts.db.Exec(`UPDATE teams SET 
-					     (name, lead_id) = ($1, $2, $3, $4)
-						 WHERE id = $5;`,
+					     (name, lead_id) = ($1, $2)
+						 WHERE id = $3;`,
 		t.Name, t.Lead.ID, t.ID)
 	return handlePqErr(err)
 }
@@ -230,13 +204,18 @@ func (ts *TeamStore) Remove(t models.Team) error {
 	if err != nil {
 		return handlePqErr(err)
 	}
-	defer handlePqErr(tx.Commit())
 
-	_, err = tx.Exec(`DELETE FROM teams_users WHERE t_id = $1;`, t.ID)
+	_, err = tx.Exec(`DELETE FROM teams_users WHERE team_id = $1;`, t.ID)
 	if err != nil {
+		tx.Rollback()
 		return handlePqErr(err)
 	}
 
 	_, err = tx.Exec(`DELETE FROM teams WHERE id = $1;`, t.ID)
-	return handlePqErr(err)
+	if err != nil {
+		tx.Rollback()
+		return handlePqErr(err)
+	}
+
+	return handlePqErr(tx.Commit())
 }
