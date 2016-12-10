@@ -110,7 +110,10 @@ func SeedStatuses(s Store) error {
 			Name: "Done",
 		},
 		models.Status{
-			Name: "Open",
+			Name: "For Saving",
+		},
+		models.Status{
+			Name: "For Removing",
 		},
 	}
 

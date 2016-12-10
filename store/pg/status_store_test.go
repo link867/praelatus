@@ -34,7 +34,7 @@ func TestStatusGetAll(t *testing.T) {
 }
 
 func TestStatusSave(t *testing.T) {
-	l := &models.Status{ID: 1}
+	l := &models.Status{ID: 4}
 	e := s.Statuses().Get(l)
 	failIfErr("Status Save", t, e)
 
@@ -53,7 +53,7 @@ func TestStatusSave(t *testing.T) {
 }
 
 func TestStatusRemove(t *testing.T) {
-	l := models.Status{ID: 2}
+	l := models.Status{ID: 5}
 	e := s.Statuses().Remove(l)
 	failIfErr("Status Remove", t, e)
 }
