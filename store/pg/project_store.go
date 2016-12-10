@@ -37,16 +37,16 @@ func (ps *ProjectStore) Get(p *models.Project) error {
 	case "":
 		row = ps.db.QueryRow(`SELECT p.id, created_date, name, 
 								   key, homepage, icon_url, repo,
-								   rows_to_json(lead.*)
+								   row_to_json(lead.*)
 							FROM projects  AS p
-							JOIN users AS lead ON lead.id = projects.lead_id
+							JOIN users AS lead ON lead.id = p.lead_id
 							WHERE p.id = $1;`, p.ID)
 	default:
 		row = ps.db.QueryRow(`SELECT p.id, created_date, name, 
 								   key, homepage, icon_url, repo,
-								   rows_to_json(lead.*)
+								   row_to_json(lead.*)
 							FROM projects AS p
-							JOIN users AS lead ON lead.id = projects.lead_id
+							JOIN users AS lead ON lead.id = p.lead_id
 							WHERE p.key = $1;`, p.Key)
 
 	}
@@ -60,10 +60,10 @@ func (ps *ProjectStore) GetAll() ([]models.Project, error) {
 	var projects []models.Project
 
 	rows, err := ps.db.Query(`SELECT p.id, p.created_date, p.name, 
-								  p.key, p.repo, p.homepage, 
-								  p.icon_url, p.lead_id, p.team_id,
-								  row_to_json(lead.*)
-							  FROM projects;`)
+								  p.key, p.repo, p.homepage,
+								  p.icon_url, row_to_json(lead.*)
+							  FROM projects AS p
+							  JOIN users AS lead ON p.lead_id = lead.id;`)
 	if err != nil {
 		return projects, handlePqErr(err)
 	}
