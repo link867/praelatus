@@ -18,6 +18,7 @@ var seedFuncs = []func(s Store) error{
 	SeedLabels,
 	SeedTickets,
 	SeedComments,
+	SeedWorkflows,
 }
 
 // SeedAll will run all of the seed functions
@@ -100,13 +101,16 @@ func SeedTickets(s Store) error {
 func SeedStatuses(s Store) error {
 	statuses := []models.Status{
 		models.Status{
-			Name: "Open",
+			Name: "Backlog",
 		},
 		models.Status{
 			Name: "In Progress",
 		},
 		models.Status{
 			Name: "Done",
+		},
+		models.Status{
+			Name: "Open",
 		},
 	}
 
@@ -192,7 +196,7 @@ func SeedFields(s Store) error {
 		}
 
 		if e == ErrDuplicateEntry {
-			continue
+			return nil
 		}
 
 		e = s.Fields().AddToProject(models.Project{ID: 1}, &f)
@@ -344,6 +348,67 @@ func SeedUsers(s Store) error {
 		if e == ErrDuplicateEntry {
 			return nil
 		}
+	}
+
+	return nil
+}
+
+// SeedWorkflows will seed the database with some workflows
+func SeedWorkflows(s Store) error {
+	p1 := models.Project{ID: 1}
+	p2 := models.Project{ID: 2}
+
+	wk1 := models.Workflow{
+		Name: "Simple Workflow",
+		Transitions: map[string][]models.Transition{
+			"Backlog": []models.Transition{
+				models.Transition{
+					Name:     "In Progress",
+					ToStatus: models.Status{ID: 2},
+					Hooks:    []models.Hook{},
+				},
+			},
+			"In Progress": []models.Transition{
+				models.Transition{
+					Name:     "Done",
+					ToStatus: models.Status{ID: 3},
+					Hooks:    []models.Hook{},
+				},
+				models.Transition{
+					Name:     "Backlog",
+					ToStatus: models.Status{ID: 1},
+					Hooks:    []models.Hook{},
+				},
+			},
+			"Done": []models.Transition{
+				models.Transition{
+					Name:     "ReOpen",
+					ToStatus: models.Status{ID: 1},
+					Hooks:    []models.Hook{},
+				},
+			},
+		},
+	}
+
+	fmt.Println("Seeding workflows")
+	e := s.Workflows().New(p1, &wk1)
+	if e != nil && e != ErrDuplicateEntry {
+		return e
+	}
+
+	e = s.Workflows().New(p1, &wk1)
+	if e != nil && e != ErrDuplicateEntry {
+		return e
+	}
+
+	e = s.Workflows().New(p2, &wk1)
+	if e != nil && e != ErrDuplicateEntry {
+		return e
+	}
+
+	e = s.Workflows().New(p2, &wk1)
+	if e != nil && e != ErrDuplicateEntry {
+		return e
 	}
 
 	return nil
