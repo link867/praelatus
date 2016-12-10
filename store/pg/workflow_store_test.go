@@ -56,14 +56,7 @@ func TestWorkflowSave(t *testing.T) {
 }
 
 func TestWorkflowRemove(t *testing.T) {
-	wk := models.Workflow{ID: 3}
+	wk := models.Workflow{ID: 4}
 	e := s.Workflows().Remove(wk)
 	failIfErr("Workflow Remove", t, e)
-
-	wk = models.Workflow{ID: 3}
-	e = s.Workflows().Get(&wk)
-
-	if e == nil {
-		t.Errorf("Expected an error got: %s\n", e.Error())
-	}
 }
