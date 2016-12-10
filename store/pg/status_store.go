@@ -65,16 +65,28 @@ func (ss *StatusStore) Save(status models.Status) error {
 func (ss *StatusStore) Remove(status models.Status) error {
 	var c int
 
-	err := ss.db.QueryRow(`SELECT COUNT(id) FROM tickets
-						   WHERE status_id = $1`, status.ID).Scan(&c)
+	tx, err := ss.db.Begin()
 	if err != nil {
 		return handlePqErr(err)
 	}
 
+	err = tx.QueryRow(`SELECT COUNT(id) FROM tickets
+						  WHERE status_id = $1`, status.ID).Scan(&c)
+	if err != nil {
+		tx.Rollback()
+		return handlePqErr(err)
+	}
+
 	if c > 0 {
+		tx.Rollback()
 		return errors.New("that type is currently in use, refusing to delete")
 	}
 
-	_, err = ss.db.Exec("DELETE FROM statuses WHERE id = $1", status.ID)
-	return handlePqErr(err)
+	_, err = tx.Exec("DELETE FROM statuses WHERE id = $1", status.ID)
+	if err != nil {
+		tx.Rollback()
+		return handlePqErr(err)
+	}
+
+	return handlePqErr(tx.Commit())
 }
