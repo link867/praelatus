@@ -1,4 +1,4 @@
-package middleware
+package mw
 
 import (
 	"net/http"
@@ -35,32 +35,18 @@ func ValidateToken(token string) *models.User {
 	return nil
 }
 
-// AuthMw verifies that the token is present on the request and is for a valid
+// Auth verifies that the token is present on the request and is for a valid
 // user.
-func AuthMw(c *Context) *Context {
-	if c.Val["CurrentUser"] != nil {
-		return c
-	}
+func Auth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-	u := ValidateToken(GetToken(c.R))
-	if u == nil {
-		c.Err = ErrUnauthorized
-		return c
-	}
-
-	c.Val["CurrentUser"] = u
-	return c
+	})
 }
 
-// AdminMw verifies that the token is present on the request and is for a valid
+// Admin verifies that the token is present on the request and is for a valid
 // user.
-func AdminMw(c *Context) *Context {
-	c = AuthMw(c)
+func Admin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-	if c.CurrentUser() != nil && c.CurrentUser().IsAdmin {
-		return c
-	}
-
-	c.Err = ErrForbidden
-	return c
+	})
 }
