@@ -1,9 +1,14 @@
 package pg_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/praelatus/backend/models"
+)
 
 func TestLabelGet(t *testing.T) {
-	l, e := s.Labels().Get(1)
+	l := &models.Label{ID: 1}
+	e := s.Labels().Get(l)
 	failIfErr("Label Get", t, e)
 
 	if l == nil {
@@ -29,18 +34,26 @@ func TestLabelGetAll(t *testing.T) {
 }
 
 func TestLabelSave(t *testing.T) {
-	l, e := s.Labels().Get(1)
+	l := &models.Label{ID: 2}
+	e := s.Labels().Get(l)
 	failIfErr("Label Save", t, e)
 
-	l.Name = "SAVE TEST LABEL"
+	l.Name = "SAVE_TEST_LABEL"
 
-	e = s.Labels().Save(l)
+	e = s.Labels().Save(*l)
 	failIfErr("Label Save", t, e)
 
-	l, e = s.Labels().Get(1)
+	l = &models.Label{ID: 2}
+	e = s.Labels().Get(l)
 	failIfErr("Label Save", t, e)
 
-	if l.Name != "SAVE TEST LABEL" {
-		t.Errorf("Expected: SAVE TEST LABEL Got: %s\n", l.Name)
+	if l.Name != "SAVE_TEST_LABEL" {
+		t.Errorf("Expected: SAVE_TEST_LABEL Got: %s\n", l.Name)
 	}
+}
+
+func TestLabelRemove(t *testing.T) {
+	l := models.Label{ID: 3}
+	e := s.Labels().Remove(l)
+	failIfErr("Label Remove", t, e)
 }

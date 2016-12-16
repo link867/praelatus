@@ -14,24 +14,23 @@ type WorkflowStore struct {
 }
 
 // Get gets a workflow from the database
-func (ws *WorkflowStore) Get(p models.Project, w *models.Workflow) error {
-	row := ws.db.QueryRow(`SELECT id, name 
-						   FROM workflows 
-						   JOIN projects AS p ON workflows.project_id = p.id
-						   WHERE id = $1 OR 
-						   (name = $2 AND p.key)`, w.ID, w.Name, p.Key)
+func (ws *WorkflowStore) Get(w *models.Workflow) error {
+	row := ws.db.QueryRow(`SELECT w.id, w.name 
+						   FROM workflows AS w
+						   JOIN projects AS p ON w.project_id = p.id
+						   WHERE w.id = $1 OR w.name = $2`, w.ID, w.Name)
 
 	err := row.Scan(&w.ID, &w.Name)
 	if err != nil {
 		return handlePqErr(err)
 	}
 
-	err = ws.GetTransitions(w)
+	err = ws.getTransitions(w)
 	return handlePqErr(err)
 }
 
-func getHooks(db *sql.DB, t *models.Transition) error {
-	rows, err := db.Query(`SELECT h.id, endpoint, method, body
+func (ws *WorkflowStore) getHooks(t *models.Transition) error {
+	rows, err := ws.db.Query(`SELECT h.id, endpoint, method, body
 						   FROM hooks AS h
 						   JOIN transitions AS t ON t.id = h.transition_id`)
 	if err != nil {
@@ -52,16 +51,20 @@ func getHooks(db *sql.DB, t *models.Transition) error {
 	return nil
 }
 
-func (ws *WorkflowStore) GetTransitions(w *models.Workflow) error {
+func (ws *WorkflowStore) getTransitions(w *models.Workflow) error {
 	rows, err := ws.db.Query(`SELECT t.id, t.name, 
 									 from_s.name,
 									 row_to_json(to_s.*)
 							  FROM transitions AS t
 							  JOIN statuses AS from_s ON from_s.id = t.from_status
-							  JOIN statuses AS to_s ON to_s.id = t.status_id`)
+							  JOIN statuses AS to_s ON to_s.id = t.to_status`)
 
 	if err != nil {
 		return handlePqErr(err)
+	}
+
+	if w.Transitions == nil {
+		w.Transitions = make(map[string][]models.Transition, 0)
 	}
 
 	for rows.Next() {
@@ -79,7 +82,7 @@ func (ws *WorkflowStore) GetTransitions(w *models.Workflow) error {
 			return handlePqErr(err)
 		}
 
-		err = getHooks(ws.db, &t)
+		err = ws.getHooks(&t)
 		if err != nil {
 			return handlePqErr(err)
 		}
@@ -94,14 +97,14 @@ func workflowsFromRows(rows *sql.Rows, ws *WorkflowStore) ([]models.Workflow, er
 	var workflows []models.Workflow
 
 	for rows.Next() {
-		var w models.Workflow
+		w := models.Workflow{}
 
 		err := rows.Scan(&w.ID, &w.Name)
 		if err != nil {
 			return workflows, handlePqErr(err)
 		}
 
-		err = ws.GetTransitions(&w)
+		err = ws.getTransitions(&w)
 		if err != nil {
 			return workflows, handlePqErr(err)
 		}
@@ -136,23 +139,145 @@ func (ws *WorkflowStore) GetByProject(p models.Project) ([]models.Workflow, erro
 	return workflowsFromRows(rows, ws)
 }
 
-// TODO handle transitions and hooks here
-
 // New creates a new workflow in the database
 func (ws *WorkflowStore) New(p models.Project, workflow *models.Workflow) error {
-	err := ws.db.QueryRow(`INSERT INTO workflows 
-						   (name, project_id) 
-						   VALUES ($1, $2)
-						   RETURNING id;`,
+	tx, err := ws.db.Begin()
+	if err != nil {
+		return handlePqErr(err)
+	}
+
+	err = tx.QueryRow(`INSERT INTO workflows 
+					   (name, project_id) VALUES ($1, $2)
+					   RETURNING id;`,
 		workflow.Name, p.ID).
 		Scan(&workflow.ID)
+	if err != nil {
+		tx.Rollback()
+		return handlePqErr(err)
+	}
 
-	return handlePqErr(err)
+	for fromStatus, transitions := range workflow.Transitions {
+		var fromID int64
+
+		err = tx.QueryRow(`SELECT id FROM statuses WHERE name = $1`, fromStatus).
+			Scan(&fromID)
+		if err != nil {
+			tx.Rollback()
+			return handlePqErr(err)
+		}
+
+		for _, t := range transitions {
+			err = tx.QueryRow(`INSERT INTO transitions
+							  (name, workflow_id, from_status, to_status)
+							  VALUES ($1, $2, $3, $4)
+							  RETURNING id`, t.Name, workflow.ID, t.ToStatus.ID, fromID).
+				Scan(&t.ID)
+			if err != nil {
+				tx.Rollback()
+				return handlePqErr(err)
+			}
+
+			if t.Hooks == nil || len(t.Hooks) == 0 {
+				continue
+			}
+
+			for _, h := range t.Hooks {
+				err = tx.QueryRow(`INSERT INTO hooks
+								   (endpoint, method, body, transition_id)
+								   VALUES ($1, $2, $3, $4, $5)
+								   RETURNING id`, h.Endpoint, h.Method, h.Body, t.ID).
+					Scan(&h.ID)
+				if err != nil {
+					tx.Rollback()
+					return handlePqErr(err)
+				}
+
+			}
+		}
+	}
+
+	return handlePqErr(tx.Commit())
 }
 
 // Save updates a workflow in the database
 func (ws *WorkflowStore) Save(w models.Workflow) error {
-	_, err := ws.db.Exec(`UPDATE workflows SET (name) = ($1)`, w.Name)
+	tx, err := ws.db.Begin()
+	if err != nil {
+		return handlePqErr(err)
+	}
 
-	return handlePqErr(err)
+	_, err = tx.Exec(`UPDATE workflows SET (name) = ($1) WHERE id = $2`, w.Name, w.ID)
+	if err != nil {
+		tx.Rollback()
+		return handlePqErr(err)
+	}
+
+	for fromStatus, transitions := range w.Transitions {
+		var fromID int64
+
+		err = tx.QueryRow(`SELECT id FROM statuses WHERE name = $1`, fromStatus).
+			Scan(&fromID)
+		if err != nil {
+			tx.Rollback()
+			return handlePqErr(err)
+		}
+
+		for _, t := range transitions {
+			_, err = tx.Exec(`UPDATE transitions SET
+							  (name, workflow_id, from_status, to_status)
+							  = ($1, $2, $3, $4)
+							  WHERE id = $5`, t.Name, w.ID, t.ToStatus.ID, fromID, t.ID)
+			if err != nil {
+				tx.Rollback()
+				return handlePqErr(err)
+			}
+
+			if t.Hooks == nil || len(t.Hooks) == 0 {
+				continue
+			}
+
+			for _, h := range t.Hooks {
+				_, err = tx.Exec(`UPDATE hooks SET
+								   (endpoint, method, body, transition_id)
+								   = ($1, $2, $3, $4, $5)
+								   WHERE id = $6`, h.Endpoint, h.Method, h.Body, t.ID, h.ID)
+				if err != nil {
+					tx.Rollback()
+					return handlePqErr(err)
+				}
+
+			}
+		}
+	}
+
+	return handlePqErr(tx.Commit())
+}
+
+// Remove removes a workflow from the database
+func (ws *WorkflowStore) Remove(w models.Workflow) error {
+	tx, err := ws.db.Begin()
+	if err != nil {
+		return handlePqErr(err)
+	}
+
+	_, err = tx.Exec(`DELETE FROM hooks 
+					  WHERE transition_id 
+					  in(SELECT id FROM transitions WHERE workflow_id = $1);`, w.ID)
+	if err != nil {
+		tx.Rollback()
+		return handlePqErr(err)
+	}
+
+	_, err = tx.Exec(`DELETE FROM transitions WHERE workflow_id = $1;`, w.ID)
+	if err != nil {
+		tx.Rollback()
+		return handlePqErr(err)
+	}
+	_, err = tx.Exec(`DELETE FROM workflows WHERE id = $1;`, w.ID)
+	if err != nil {
+		tx.Rollback()
+		return handlePqErr(err)
+	}
+
+	return handlePqErr(tx.Commit())
 }

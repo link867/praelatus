@@ -9,10 +9,10 @@ import (
 
 var (
 	// ErrDuplicateEntry is returned when a unique constraint is violated.
-	ErrDuplicateEntry = errors.New("Duplicate entry attempted.")
+	ErrDuplicateEntry = errors.New("duplicate entry attempted")
 	// ErrNotFound is returned when an invalid resource is given or searched
 	// for
-	ErrNotFound = errors.New("No such resource")
+	ErrNotFound = errors.New("no such resource")
 )
 
 // Store is an interface for storing and retrieving models.
@@ -51,6 +51,7 @@ type FieldStore interface {
 
 	New(*models.Field) error
 	Save(models.Field) error
+	Remove(models.Field) error
 }
 
 // UserStore contains methods for storing and retrieving Users
@@ -60,6 +61,7 @@ type UserStore interface {
 
 	New(*models.User) error
 	Save(models.User) error
+	Remove(models.User) error
 }
 
 // ProjectStore contains methods for storing and retrieving Projects
@@ -69,6 +71,7 @@ type ProjectStore interface {
 
 	New(*models.Project) error
 	Save(models.Project) error
+	Remove(models.Project) error
 }
 
 // TypeStore is used to save and retrieve Ticket Types
@@ -78,22 +81,25 @@ type TypeStore interface {
 
 	New(*models.TicketType) error
 	Save(models.TicketType) error
+	Remove(models.TicketType) error
 }
 
 // TicketStore contains methods for storing and retrieving Tickets
 type TicketStore interface {
-	Get(models.Project, *models.Ticket) error
+	Get(*models.Ticket) error
 	GetAll() ([]models.Ticket, error)
 	GetAllByProject(models.Project) ([]models.Ticket, error)
 
 	GetComments(models.Ticket) ([]models.Comment, error)
 	NewComment(models.Ticket, *models.Comment) error
 	SaveComment(models.Comment) error
+	RemoveComment(models.Comment) error
 
 	NextTicketKey(models.Project) string
 
 	New(models.Project, *models.Ticket) error
 	Save(models.Ticket) error
+	Remove(models.Ticket) error
 }
 
 // TeamStore contains methods for storing and retrieving Teams
@@ -103,10 +109,10 @@ type TeamStore interface {
 	GetForUser(models.User) ([]models.Team, error)
 
 	AddMembers(models.Team, ...models.User) error
-	GetMembers(*models.Team) error
 
 	New(*models.Team) error
 	Save(models.Team) error
+	Remove(models.Team) error
 }
 
 // StatusStore contains methods for storing and retrieving Statuses
@@ -116,18 +122,18 @@ type StatusStore interface {
 
 	New(*models.Status) error
 	Save(models.Status) error
+	Remove(models.Status) error
 }
 
 // WorkflowStore contains methods for storing and retrieving Workflows
 type WorkflowStore interface {
-	Get(models.Project, *models.Workflow) error
+	Get(*models.Workflow) error
 	GetAll() ([]models.Workflow, error)
 	GetByProject(models.Project) ([]models.Workflow, error)
 
-	GetTransitions(*models.Workflow) error
-
 	New(models.Project, *models.Workflow) error
 	Save(models.Workflow) error
+	Remove(models.Workflow) error
 }
 
 // LabelStore contains methods for storing and retrieving Labels
@@ -137,4 +143,5 @@ type LabelStore interface {
 
 	New(*models.Label) error
 	Save(models.Label) error
+	Remove(models.Label) error
 }

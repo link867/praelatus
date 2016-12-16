@@ -2,14 +2,17 @@ package pg
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/praelatus/backend/models"
 )
 
+// TypeStore is used to store ticket types in a postgres database
 type TypeStore struct {
 	db *sql.DB
 }
 
+// Get will get a ticket type by either name or id whichver is provided in tt
 func (ts *TypeStore) Get(tt *models.TicketType) error {
 	row := ts.db.QueryRow(`SELECT tt.id, tt.name 
 								FROM ticket_types AS tt
@@ -18,6 +21,7 @@ func (ts *TypeStore) Get(tt *models.TicketType) error {
 	return handlePqErr(row.Scan(&tt.ID, &tt.Name))
 }
 
+// GetAll will return all ticket types from the database
 func (ts *TypeStore) GetAll() ([]models.TicketType, error) {
 	var typs []models.TicketType
 
@@ -52,6 +56,37 @@ func (ts *TypeStore) New(tt *models.TicketType) error {
 // Save will add a new TicketType to the postgres DB
 func (ts *TypeStore) Save(tt models.TicketType) error {
 	_, err := ts.db.Exec(`UPDATE ticket_types 
-						  SET VALUES (name) = ($1)`, tt.Name, tt.ID)
+						  SET (name) = ($1)
+						  WHERE id = $2`, tt.Name, tt.ID)
 	return handlePqErr(err)
+}
+
+// Remove remoevs a ticket type from the database.
+func (ts *TypeStore) Remove(tt models.TicketType) error {
+	var c int
+
+	tx, err := ts.db.Begin()
+	if err != nil {
+		return handlePqErr(err)
+	}
+
+	err = tx.QueryRow(`SELECT COUNT(id) FROM tickets
+					   WHERE ticket_type_id = $1`, tt.ID).Scan(&c)
+	if err != nil {
+		tx.Rollback()
+		return handlePqErr(err)
+	}
+
+	if c > 0 {
+		tx.Rollback()
+		return errors.New("that type is currently in use, refusing to delete")
+	}
+
+	_, err = tx.Exec("DELETE FROM ticket_types WHERE id = $1", tt.ID)
+	if err != nil {
+		tx.Rollback()
+		return handlePqErr(err)
+	}
+
+	return handlePqErr(tx.Commit())
 }

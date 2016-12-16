@@ -17,10 +17,16 @@ var DataTypes = []string{
 
 // Field is a ticket field
 type Field struct {
-	ID       int64    `json:"id"`
-	Name     string   `json:"name"`
-	DataType string   `json:"data_type"`
-	Options  []string `json:"options,omitempty"`
+	ID       int64       `json:"id"`
+	Name     string      `json:"name"`
+	DataType string      `json:"data_type"`
+	Options  FieldOption `json:"options,omitempty"`
+}
+
+// FieldOption is used as the value for FieldValues which are selects.
+type FieldOption struct {
+	Selected string   `json:"selected"`
+	Options  []string `json:"options"`
 }
 
 func (f *Field) String() string {
@@ -29,15 +35,12 @@ func (f *Field) String() string {
 
 // FieldValue holds the value for a field on a given ticket.
 type FieldValue struct {
-	ID       int64    `json:"id"`
-	Name     string   `json:"name"`
-	DataType string   `json:"data_type"`
-	Options  []string `json:"options,omitempty"`
+	ID       int64  `json:"id"`
+	Name     string `json:"name"`
+	DataType string `json:"data_type"`
 
 	// Value holds the value of the given field
 	Value interface{} `json:"value"`
-
-	*Field
 }
 
 // IsValidDataType is used to verify that the field has a data type we can

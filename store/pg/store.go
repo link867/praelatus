@@ -105,7 +105,7 @@ func (pg *Store) Labels() store.LabelStore {
 	return pg.labels
 }
 
-// Connection implementes store.SQLStore for postgres db
+// Conn implementes store.SQLStore for postgres db
 func (pg *Store) Conn() *sql.DB {
 	return pg.db
 }
@@ -126,7 +126,7 @@ func handlePqErr(e error) error {
 		return e
 	}
 
-	log.Printf("postgres error [%d] %s\n", pqe.Code, pqe.Message)
+	log.Printf("pq error [%v] %s\n", pqe.Code, pqe.Message)
 
 	// fmt.Println("PQ ERROR CODE:", pqe.Code)
 	if pqe.Code == "23505" {
