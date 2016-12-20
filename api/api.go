@@ -15,10 +15,10 @@ type Routes struct {
 	Users    *mux.Router
 	Projects *mux.Router
 	Tickets  *mux.Router
-	Labels *mux.Router
+	Labels   *mux.Router
 }
 
-// Used in starting the router.
+// BaseRoutes is used to store all the various resource routes.
 var BaseRoutes *Routes
 
 // Store is the global store used in our HTTP handlers.
@@ -27,6 +27,7 @@ var Store store.Store
 // Cache is the global cache object used in our HTTP handlers.
 var Cache *store.Cache
 
+// Run will start running the api on the given port
 func Run(port string) {
 	Store = pg.New(os.Getenv("PRAELATUS_DB"))
 
@@ -37,9 +38,9 @@ func Run(port string) {
 	BaseRoutes.Tickets = BaseRoutes.Root.PathPrefix("/tickets").Subrouter()
 	BaseRoutes.Labels = BaseRoutes.Root.PathPrefix("/labels").Subrouter()
 
-	// InitUserRoutes()
-	// InitProjectRoutes()
-	// InitTicketRoutes()
+	// initUserRoutes()
+	// initProjectRoutes()
+	// initTicketRoutes()
 
 	http.ListenAndServe(port, BaseRoutes.Root)
 }
