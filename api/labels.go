@@ -10,7 +10,7 @@ import (
 	"github.com/praelatus/backend/mw"
 )
 
-func InitLabelRoutes() {
+func initLabelRoutes() {
 	BaseRoutes.Labels.Handle("/", mw.Default(GetAllLabels)).Methods("GET")
 	BaseRoutes.Labels.Handle("/", mw.Default(CreateLabel)).Methods("POST")
 	BaseRoutes.Labels.Handle("/{idOrName}", mw.Default(GetLabel)).Methods("GET")
