@@ -11,12 +11,12 @@ import (
 )
 
 func initLabelRoutes() {
-	BaseRoutes.Labels.Handle("/", mw.Default(GetAllLabels)).Methods("GET")
-	BaseRoutes.Labels.Handle("/", mw.Default(CreateLabel)).Methods("POST")
-	BaseRoutes.Labels.Handle("/{idOrName}", mw.Default(GetLabel)).Methods("GET")
-	BaseRoutes.Labels.Handle("/{idOrName}", mw.Default(DeleteLabel)).Methods("DELETE")
-	BaseRoutes.Labels.Handle("/{idOrName}", mw.Default(UpdateLabel)).Methods("PUT")
-	BaseRoutes.Labels.Handle("/search", mw.Default(SearchLabels)).Methods("GET")
+	Router.Handle("/labels", mw.Default(GetAllLabels)).Methods("GET")
+	Router.Handle("/labels", mw.Default(CreateLabel)).Methods("POST")
+	Router.Handle("/labels/{idOrName}", mw.Default(GetLabel)).Methods("GET")
+	Router.Handle("/labels/{idOrName}", mw.Default(DeleteLabel)).Methods("DELETE")
+	Router.Handle("/labels/{idOrName}", mw.Default(UpdateLabel)).Methods("PUT")
+	Router.Handle("/labels/search", mw.Default(SearchLabels)).Methods("GET")
 }
 
 // GetAllLabels will return a JSON array of all labels from the store.
