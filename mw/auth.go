@@ -144,10 +144,8 @@ func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var u *models.User
 		tkn := getToken(r)
-		fmt.Println("token", tkn)
 		if tkn != "" {
 			u = validateToken(tkn)
-			fmt.Println(u)
 		}
 
 		rq := r.WithContext(context.WithValue(r.Context(), currentUser, u))
