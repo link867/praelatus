@@ -1,0 +1,171 @@
+package api
+
+import (
+	"bytes"
+	"encoding/json"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/praelatus/backend/models"
+)
+
+func TestGetTicket(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/tickets/TEST/TEST-1", nil)
+
+	Router.ServeHTTP(w, r)
+
+	var tk models.Ticket
+
+	e := json.Unmarshal(w.Body.Bytes(), &tk)
+	if e != nil {
+		t.Errorf("Failed with error %s", e.Error())
+	}
+
+	if tk.Key != "TEST-1" {
+		t.Errorf("Expected TEST-1 Got %s", tk.Key)
+	}
+
+	t.Log(w.Body)
+}
+
+func TestGetTicketPreloadComments(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/tickets/TEST/TEST-1?preload=comments", nil)
+
+	Router.ServeHTTP(w, r)
+
+	var tk models.Ticket
+
+	e := json.Unmarshal(w.Body.Bytes(), &tk)
+	if e != nil {
+		t.Errorf("Failed with error %s", e.Error())
+	}
+
+	if tk.Key != "TEST-1" {
+		t.Errorf("Expected TEST-1 Got %s", tk.Key)
+	}
+
+	if len(tk.Comments) == 0 {
+		t.Errorf("Expected comments got 0 instead.")
+	}
+
+	t.Log(w.Body)
+}
+
+func TestGetAllTickets(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/tickets", nil)
+
+	Router.ServeHTTP(w, r)
+
+	var tk []models.Ticket
+
+	e := json.Unmarshal(w.Body.Bytes(), &tk)
+	if e != nil {
+		t.Errorf("Failed with error %s", e.Error())
+		t.Log(w.Body)
+	}
+
+	if len(tk) != 2 {
+		t.Errorf("Expected 2 tickets got %d", len(tk))
+	}
+
+	if tk[0].Key != "TEST-1" {
+		t.Errorf("Expected TEST-1 Got %s", tk[0].Key)
+	}
+
+	t.Log(w.Body)
+}
+
+func TestGetAllTicketsByProject(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/tickets/TEST", nil)
+
+	Router.ServeHTTP(w, r)
+
+	var tk []models.Ticket
+
+	e := json.Unmarshal(w.Body.Bytes(), &tk)
+	if e != nil {
+		t.Errorf("Failed with error %s", e.Error())
+	}
+
+	if len(tk) != 2 {
+		t.Errorf("Expected 2 tickets got %d", len(tk))
+	}
+
+	if tk[0].Key != "TEST-1" {
+		t.Errorf("Expected TEST-1 Got %s", tk[0].Key)
+	}
+
+	t.Log(w.Body)
+}
+
+func TestCreateTicket(t *testing.T) {
+	tk := models.Ticket{Summary: "Nope"}
+	byt, _ := json.Marshal(tk)
+	rd := bytes.NewReader(byt)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("POST", "/tickets/TEST", rd)
+	testLogin(r)
+
+	Router.ServeHTTP(w, r)
+
+	e := json.Unmarshal(w.Body.Bytes(), &tk)
+	if e != nil {
+		t.Errorf("Failed with error %s", e.Error())
+	}
+
+	if tk.ID != 1 {
+		t.Errorf("Expected 1 Got %d", tk.ID)
+	}
+
+	t.Log(w.Body)
+}
+
+func TestGetComments(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/tickets/TEST/TEST-1/comments", nil)
+
+	Router.ServeHTTP(w, r)
+
+	var cm []models.Comment
+
+	e := json.Unmarshal(w.Body.Bytes(), &cm)
+	if e != nil {
+		t.Errorf("Failed with error %s", e.Error())
+		t.Log(w.Body)
+	}
+
+	if len(cm) != 1 {
+		t.Errorf("Expected 1 comment got %d", len(cm))
+	}
+
+	t.Log(w.Body)
+}
+
+func TestCreateComment(t *testing.T) {
+	cm := models.Comment{}
+	byt, _ := json.Marshal(cm)
+	rd := bytes.NewReader(byt)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("POST", "/tickets/TEST/TEST-1/comments", rd)
+	testLogin(r)
+
+	Router.ServeHTTP(w, r)
+
+	e := json.Unmarshal(w.Body.Bytes(), &cm)
+	if e != nil {
+		t.Errorf("Failed with error %s\n", e.Error())
+		t.Log(w.Body)
+	}
+
+	if cm.ID == 0 {
+		t.Errorf("Expected 1 Got %d\n", cm.ID)
+	}
+
+	t.Log(w.Body)
+}
