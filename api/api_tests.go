@@ -1,13 +1,27 @@
 package api
 
 import (
+	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/mw"
 	"github.com/praelatus/backend/store"
 )
 
 var loc, _ = time.LoadLocation("")
+
+func init() {
+	Store = mockStore{}
+
+	Router = mux.NewRouter()
+
+	// initUserRoutes()
+	// initProjectRoutes()
+	initTicketRoutes()
+
+}
 
 type mockStore struct{}
 
@@ -33,6 +47,10 @@ func (ms mockStore) Tickets() store.TicketStore {
 
 func (ms mockStore) Projects() store.ProjectStore {
 	return mockProjectStore{}
+}
+
+func (ms mockStore) Types() store.TypeStore {
+	return mockTypeStore{}
 }
 
 func (ms mockStore) Statuses() store.StatusStore {
@@ -831,7 +849,7 @@ func (ms mockTicketStore) Remove(t models.Ticket) error {
 // A mock TypeStore struct
 type mockTypeStore struct{}
 
-func (ms mockTypeStore) Get(t models.TicketType) error {
+func (ms mockTypeStore) Get(t *models.TicketType) error {
 	t.ID = 1
 	t.Name = "mock Type"
 	return nil
@@ -1165,4 +1183,48 @@ func (ms mockWorkflowStore) Save(p models.Workflow) error {
 
 func (ms mockWorkflowStore) Remove(p models.Workflow) error {
 	return nil
+}
+
+func testLogin(r *http.Request) {
+	u := models.User{
+		1,
+		"foouser",
+		"foopass",
+		"foo@foo.com",
+		"Foo McFooserson",
+		"",
+		"",
+		false,
+		true,
+		models.Settings{},
+	}
+
+	token, err := mw.JWTSignUser(u)
+	if err != nil {
+		panic(err)
+	}
+
+	r.Header.Add("Authorization", "Bearer "+token)
+}
+
+func testAdminLogin(r *http.Request) {
+	u := models.User{
+		1,
+		"foouser",
+		"foopass",
+		"foo@foo.com",
+		"Foo McFooserson",
+		"",
+		"",
+		true,
+		true,
+		models.Settings{},
+	}
+
+	token, err := mw.JWTSignUser(u)
+	if err != nil {
+		panic(err)
+	}
+
+	r.Header.Add("Authorization", "Bearer "+token)
 }
