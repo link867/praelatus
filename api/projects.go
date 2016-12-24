@@ -1,49 +1,38 @@
 package api
 
-// import (
-// 	"encoding/json"
-// 	"net/http"
+import (
+	"log"
+	"net/http"
 
-// 	mw "github.com/praelatus/backend/middleware"
-// )
+	"github.com/gorilla/mux"
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/mw"
+)
 
-// func InitProjectRoutes() {
-// 	BaseRoutes.Projects.Handle("/", mw.Auth(ListProjects)).Methods("GET")
-// 	BaseRoutes.Projects.Handle("/{team_slug}/{pkey}", mw.Auth(GetProject)).Methods("GET")
-// }
+func initProjectRoutes() {
+	Router.Handle("/", mw.Default(GetAllProjects)).Methods("GET")
+	Router.Handle("/{pkey}", mw.Default(GetProject)).Methods("GET")
+}
 
-// // TODO
-// func ListProjects(c *mw.Context) (int, []byte) {
-// 	projects, err := Store.Projects().GetAll()
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+// GetProject will get the project indicated by the key from the data store
+func GetProject(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
 
-// 	jsn, err := json.Marshal(projects)
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+	p := models.Project{
+		Key: vars["key"],
+	}
 
-// 	return http.StatusOK, jsn
-// }
+	err := Store.Projects().Get(&p)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+}
 
-// // TODO
-// func GetProject(c *mw.Context) (int, []byte) {
-// 	p, err := Store.Projects().GetByKey(c.Var("team_slug"), c.Var("key"))
+// GetAllProjects will get all the projects on this instance that the user has
+// permissions to
+func GetAllProjects(w http.ResponseWriter, r *http.Request) {
 
-// 	// TODO: better error handling
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
-
-// 	if p.Key == "" {
-// 		return http.StatusNotFound, []byte("Project does not exist.")
-// 	}
-
-// 	jsn, err := json.Marshal(&p)
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
-
-// 	return http.StatusOK, jsn
-// }
+}
