@@ -10,8 +10,8 @@ var defaultMW = []Middleware{Logger, Auth}
 
 // Default will add the default middleware stack to the given http.Handler and
 // return a handler with the full stack
-func Default(next http.Handler) http.Handler {
-	var h = next
+func Default(next http.HandlerFunc) http.Handler {
+	var h http.Handler = http.HandlerFunc(next)
 	for _, m := range defaultMW {
 		h = m(h)
 	}

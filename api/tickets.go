@@ -1,85 +1,303 @@
 package api
 
-// import (
-// 	"encoding/json"
-// 	"net/http"
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+	"strconv"
 
-// 	mw "github.com/praelatus/backend/middleware"
-// 	"github.com/praelatus/backend/models"
-// )
+	"github.com/gorilla/mux"
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/mw"
+	"github.com/praelatus/backend/store"
+)
 
-// func InitTicketRoutes() {
-// 	BaseRoutes.Tickets.Handle("/{team_slug}/{pkey}/{key}", mw.Default(GetTicket)).Methods("GET")
-// 	BaseRoutes.Tickets.Handle("/{team_slug}/{pkey}/{key}", mw.Default(CreateTicket)).Methods("POST")
-// 	BaseRoutes.Tickets.Handle("/{team_slug}/{pkey}/{key}", mw.Default(UpdateTicket)).Methods("PUT")
-// }
+func initTicketRoutes() {
+	Router.Handle("/tickets", mw.Default(GetAllTickets)).Methods("GET")
+	Router.Handle("/tickets/{pkey}", mw.Default(CreateTicket)).Methods("POST")
+	Router.Handle("/tickets/{pkey}", mw.Default(GetAllTicketsByProject)).Methods("GET")
+	Router.Handle("/tickets/{pkey}/{key}", mw.Default(GetTicket)).Methods("GET")
+	Router.Handle("/tickets/{pkey}/{key}", mw.Default(RemoveTicket)).Methods("DELETE")
+	Router.Handle("/tickets/{pkey}/{key}", mw.Default(UpdateTicket)).Methods("PUT")
+	Router.Handle("/tickets/{pkey}/{key}/comments", mw.Default(GetComments)).Methods("GET")
+	Router.Handle("/tickets/{pkey}/{key}/comments", mw.Default(CreateComment)).Methods("POST")
 
-// // TODO: Fix error handling
+	Router.Handle("/comments/{id}", mw.Default(UpdateComment)).Methods("PUT")
+	Router.Handle("/comments/{id}", mw.Default(RemoveComment)).Methods("DELETE")
+}
 
-// // ListTickets will list all tickets in the database
-// func ListTickets(c *mw.Context) (int, []byte) {
-// 	tickets, err := Store.Tickets().GetAll()
-// 	if err != nil {
-// 		return 500, []byte(err.Error())
-// 	}
+// GetTicket will get a ticket by the ticket key
+func GetTicket(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
 
-// 	tjson, err := json.Marshal(tickets)
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+	var preload bool
 
-// 	return http.StatusOK, tjson
-// }
+	if r.FormValue("preload") != "" {
+		preload = true
+	}
 
-// // CreateTicket creates a ticket
-// // TODO
-// func CreateTicket(c *mw.Context) (int, []byte) {
-// 	var t models.TicketJSON
-// 	err := c.JSON(&t)
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+	tk := &models.Ticket{
+		Key: vars["key"],
+	}
 
-// 	err = Store.Tickets().Save(models.TicketFromJSON(t))
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+	err := Store.Tickets().Get(tk)
+	if err != nil {
+		if err == store.ErrNotFound {
+			w.WriteHeader(404)
+			w.Write(apiError("ticket not found"))
+			return
+		}
 
-// 	return http.StatusOK, []byte("Ticket successfully created.")
-// }
+		w.WriteHeader(500)
+		w.Write(apiError("failed to retrieve comments"))
+		log.Println(err)
+		return
+	}
 
-// // UpdateTicket will update the ticket at :key
-// // TODO
-// func UpdateTicket(c *mw.Context) (int, []byte) {
-// 	return http.StatusNotImplemented, []byte("Not implemented")
-// }
+	if preload {
+		cm, err := Store.Tickets().GetComments(*tk)
+		if err != nil {
+			w.WriteHeader(500)
+			w.Write(apiError("failed to retrieve comments"))
+			log.Println(err)
+			return
+		}
 
-// // GetTicket will get a specific ticket
-// func GetTicket(c *mw.Context) (int, []byte) {
-// 	key := c.Var("key")
-// 	pkey := c.Var("pkey")
-// 	teamSlug := c.Var("team_slug")
+		tk.Comments = cm
+	}
 
-// 	t, err := Store.Tickets().GetByKey(teamSlug, pkey, key)
-// 	if err != nil {
-// 		return http.StatusNotFound, []byte(err.Error())
-// 	}
+	sendJson(w, tk)
+}
 
-// 	jsn, err := json.Marshal(&t)
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+// GetAllTickets will get all the tickets for this instance
+func GetAllTickets(w http.ResponseWriter, r *http.Request) {
+	tks, err := Store.Tickets().GetAll()
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError("failed to retrieve tickets from the database"))
+		log.Println(err)
+		return
+	}
 
-// 	return http.StatusOK, jsn
-// }
+	sendJson(w, tks)
+}
 
-// // TODO: Implement workflows
-// // AdvanceTicket advances a ticket through it's workflow.
-// func AdvanceTicket(c *mw.Context) (int, []byte) {
-// 	return http.StatusNotImplemented, []byte("Not implemented")
-// }
+// GetAllTicketsByProject will get all the tickets for a given project
+func GetAllTicketsByProject(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
 
-// // RetractTicket will move a ticket backwards in it's workflow
-// func RetractTicket(c *mw.Context) (int, []byte) {
-// 	return http.StatusNotImplemented, []byte("Not implemented")
-// }
+	tks, err := Store.Tickets().GetAllByProject(models.Project{Key: vars["pkey"]})
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError("failed to retrieve tickets from the database"))
+		log.Println(err)
+		return
+	}
+
+	sendJson(w, tks)
+}
+
+// CreateTicket will create a ticket in the database and send the json
+// representation of the ticket back
+func CreateTicket(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	u := mw.GetUser(r.Context())
+	if u == nil {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in to create a ticket"))
+		return
+	}
+
+	var tk models.Ticket
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&tk)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write(apiError("invalid body"))
+		log.Println(err)
+		return
+	}
+
+	err = Store.Tickets().New(models.Project{Key: vars["pkey"]}, &tk)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	sendJson(w, tk)
+}
+
+// RemoveTicket will remove the ticket with the given key from the database
+func RemoveTicket(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	u := mw.GetUser(r.Context())
+	if u == nil {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in to remove a ticket"))
+		return
+	}
+
+	err := Store.Tickets().Remove(models.Ticket{Key: vars["key"]})
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	w.Write([]byte{})
+}
+
+// UpdateTicket will update the ticket indicated by given key using the json
+// from the body of the request
+func UpdateTicket(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	u := mw.GetUser(r.Context())
+	if u == nil {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in to update a ticket"))
+		return
+	}
+
+	var tk models.Ticket
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&tk)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	if tk.Key == "" {
+		tk.Key = vars["key"]
+	}
+
+	err = Store.Tickets().Save(tk)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	w.Write([]byte{})
+}
+
+// GetComments will get the comments for the ticket indicated by the ticket key
+// in the url
+func GetComments(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	comments, err := Store.Tickets().GetComments(models.Ticket{Key: vars["key"]})
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	sendJson(w, comments)
+}
+
+// UpdateComment will update the comment with the given ID
+func UpdateComment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	u := mw.GetUser(r.Context())
+	if u == nil {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in to update a ticket"))
+		return
+	}
+
+	var cm models.Comment
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&cm)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	if cm.ID == 0 {
+		id, _ := strconv.Atoi(vars["id"])
+		cm.ID = int64(id)
+	}
+
+	err = Store.Tickets().SaveComment(cm)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	w.Write([]byte{})
+}
+
+// RemoveComment will remove the ticket with the given key from the database
+func RemoveComment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	u := mw.GetUser(r.Context())
+	if u == nil {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in to update a ticket"))
+		return
+	}
+
+	id, _ := strconv.Atoi(vars["id"])
+
+	err := Store.Tickets().RemoveComment(models.Comment{ID: int64(id)})
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	w.Write([]byte{})
+}
+
+// CreateComment will add a comment to the ticket indicated in the url
+func CreateComment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	u := mw.GetUser(r.Context())
+	if u == nil {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in to update a ticket"))
+		return
+	}
+
+	var cm models.Comment
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&cm)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	err = Store.Tickets().NewComment(models.Ticket{Key: vars["key"]}, &cm)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	sendJson(w, cm)
+}
