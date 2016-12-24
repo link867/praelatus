@@ -28,7 +28,7 @@ func Run(port string) {
 	Router = mux.NewRouter()
 
 	// initUserRoutes()
-	// initProjectRoutes()
+	initProjectRoutes()
 	initTicketRoutes()
 
 	http.ListenAndServe(port, Router)
