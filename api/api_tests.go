@@ -1,55 +1,51 @@
 package api
 
 import (
-	"testing"
 	"time"
 
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/store"
 )
 
-func TestMain(m *testing.M) {
+var loc, _ = time.LoadLocation("")
 
+type mockStore struct{}
+
+func (ms mockStore) Users() store.UserStore {
+	return mockUsersStore{}
 }
 
-type MockStore struct{}
-
-func (ms MockStore) Users() store.UserStore {
-	return MockUsersStore{}
+func (ms mockStore) Teams() store.TeamStore {
+	return mockTeamStore{}
 }
 
-func (ms MockStore) Teams() store.TeamStore {
-	return MockTeamStore{}
+func (ms mockStore) Labels() store.LabelStore {
+	return mockLabelStore{}
 }
 
-func (ms MockStore) Labels() store.LabelStore {
-	return MockLabelStore{}
+func (ms mockStore) Fields() store.FieldStore {
+	return mockFieldStore{}
 }
 
-func (ms MockStore) Fields() store.FieldStore {
-	return MockFieldStore{}
+func (ms mockStore) Tickets() store.TicketStore {
+	return mockTicketStore{}
 }
 
-func (ms MockStore) Tickets() store.TicketStore {
-	return MockTicketStore{}
+func (ms mockStore) Projects() store.ProjectStore {
+	return mockProjectStore{}
 }
 
-func (ms MockStore) Projects() store.ProjectStore {
-	return MockProjectStore{}
+func (ms mockStore) Statuses() store.StatusStore {
+	return mockStatusStore{}
 }
 
-func (ms MockStore) Statuses() store.StatusStore {
-	return MockStatusStore{}
+func (ms mockStore) Workflows() store.WorkflowStore {
+	return mockWorkflowStore{}
 }
 
-func (ms MockStore) Workflows() store.WorkflowStore {
-	return MockWorkflowStore{}
-}
+type mockUsersStore struct{}
 
-//A Mock UsersStore struct
-type MockUsersStore struct{}
-
-func (ms MockUsersStore) Get(u *models.User) error {
+func (ms mockUsersStore) Get(u *models.User) error {
 	u.ID = 1
 	u.Username = "foouser"
 	u.Password = "foopass"
@@ -59,7 +55,7 @@ func (ms MockUsersStore) Get(u *models.User) error {
 	return nil
 }
 
-func (ms MockUsersStore) GetAll() ([]models.User, error) {
+func (ms mockUsersStore) GetAll() ([]models.User, error) {
 	return []models.User{
 		models.User{
 			1,
@@ -88,23 +84,23 @@ func (ms MockUsersStore) GetAll() ([]models.User, error) {
 	}, nil
 }
 
-func (ms MockUsersStore) New(u *models.User) error {
+func (ms mockUsersStore) New(u *models.User) error {
 	u.ID = 1
 	return nil
 }
 
-func (ms MockUsersStore) Save(u models.User) error {
+func (ms mockUsersStore) Save(u models.User) error {
 	return nil
 }
 
-func (ms MockUsersStore) Remove(u models.User) error {
+func (ms mockUsersStore) Remove(u models.User) error {
 	return nil
 }
 
-//A Mock TeamStore struct
-type MockTeamStore struct{}
+//A mock TeamStore struct
+type mockTeamStore struct{}
 
-func (ms MockTeamStore) Get(t *models.Team) error {
+func (ms mockTeamStore) Get(t *models.Team) error {
 	t.ID = 1
 	t.Name = "A"
 	t.Lead = models.User{
@@ -148,7 +144,7 @@ func (ms MockTeamStore) Get(t *models.Team) error {
 	return nil
 }
 
-func (ms MockTeamStore) GetAll() ([]models.Team, error) {
+func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 	return []models.Team{
 			models.Team{
 				ID:   1,
@@ -238,7 +234,7 @@ func (ms MockTeamStore) GetAll() ([]models.Team, error) {
 		nil
 }
 
-func (ms MockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
+func (ms mockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 	return []models.Team{
 		models.Team{
 			ID:   1,
@@ -327,33 +323,33 @@ func (ms MockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 	}, nil
 }
 
-func (ms MockTeamStore) AddMembers(m models.Team, u ...models.User) error {
+func (ms mockTeamStore) AddMembers(m models.Team, u ...models.User) error {
 	return nil
 }
 
-func (ms MockTeamStore) New(t *models.Team) error {
+func (ms mockTeamStore) New(t *models.Team) error {
 	t.ID = 1
 	return nil
 }
 
-func (ms MockTeamStore) Save(t models.Team) error {
+func (ms mockTeamStore) Save(t models.Team) error {
 	return nil
 }
 
-func (ms MockTeamStore) Remove(t models.Team) error {
+func (ms mockTeamStore) Remove(t models.Team) error {
 	return nil
 }
 
-//A Mock LabelStore struct
-type MockLabelStore struct{}
+//A mock LabelStore struct
+type mockLabelStore struct{}
 
-func (ms MockLabelStore) Get(l *models.Label) error {
+func (ms mockLabelStore) Get(l *models.Label) error {
 	l.ID = 1
 	l.Name = "mock"
 	return nil
 }
 
-func (ms MockLabelStore) GetAll() ([]models.Label, error) {
+func (ms mockLabelStore) GetAll() ([]models.Label, error) {
 	return []models.Label{
 		models.Label{
 			ID:   1,
@@ -366,30 +362,30 @@ func (ms MockLabelStore) GetAll() ([]models.Label, error) {
 	}, nil
 }
 
-func (ms MockLabelStore) New(l *models.Label) error {
+func (ms mockLabelStore) New(l *models.Label) error {
 	l.ID = 1
 	return nil
 }
 
-func (ms MockLabelStore) Save(l models.Label) error {
+func (ms mockLabelStore) Save(l models.Label) error {
 	return nil
 }
 
-func (ms MockLabelStore) Remove(l models.Label) error {
+func (ms mockLabelStore) Remove(l models.Label) error {
 	return nil
 }
 
-//A Mock FieldStore struct
-type MockFieldStore struct{}
+//A mock FieldStore struct
+type mockFieldStore struct{}
 
-func (MockFieldStore) Get(f *models.Field) error {
+func (mockFieldStore) Get(f *models.Field) error {
 	f.ID = 1
 	f.Name = "String Field"
 	f.DataType = "STRING"
 	return nil
 }
 
-func (MockFieldStore) GetAll() ([]models.Field, error) {
+func (mockFieldStore) GetAll() ([]models.Field, error) {
 	return []models.Field{
 		models.Field{
 			ID:       1,
@@ -404,7 +400,7 @@ func (MockFieldStore) GetAll() ([]models.Field, error) {
 	}, nil
 }
 
-func (MockFieldStore) GetByProject(p models.Project) ([]models.Field, error) {
+func (mockFieldStore) GetByProject(p models.Project) ([]models.Field, error) {
 	return []models.Field{
 		models.Field{
 			ID:       1,
@@ -419,31 +415,31 @@ func (MockFieldStore) GetByProject(p models.Project) ([]models.Field, error) {
 	}, nil
 }
 
-func (MockFieldStore) AddToProject(p models.Project, f *models.Field, t ...models.TicketType) error {
+func (mockFieldStore) AddToProject(p models.Project, f *models.Field, t ...models.TicketType) error {
 	return nil
 }
 
-func (MockFieldStore) New(f *models.Field) error {
+func (mockFieldStore) New(f *models.Field) error {
 	f.ID = 1
 	return nil
 }
 
-func (MockFieldStore) Save(f models.Field) error {
+func (mockFieldStore) Save(f models.Field) error {
 	return nil
 }
 
-func (MockFieldStore) Remove(f models.Field) error {
+func (mockFieldStore) Remove(f models.Field) error {
 	return nil
 }
 
-// //A Mock TicketStore struct
-type MockTicketStore struct{}
+// //A mock TicketStore struct
+type mockTicketStore struct{}
 
-func (MockTicketStore) Get(t *models.Ticket) error {
+func (mockTicketStore) Get(t *models.Ticket) error {
 	t.ID = 1
 
-	t.CreatedDate = time.Now()
-	t.UpdatedDate = time.Now()
+	t.CreatedDate = time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc)
+	t.UpdatedDate = time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc)
 
 	t.Key = "TEST-1"
 
@@ -508,12 +504,12 @@ func (MockTicketStore) Get(t *models.Ticket) error {
 	return nil
 }
 
-func (ms MockTicketStore) GetAll() ([]models.Ticket, error) {
+func (ms mockTicketStore) GetAll() ([]models.Ticket, error) {
 	return []models.Ticket{
 		models.Ticket{
 			ID:          1,
-			CreatedDate: time.Now(),
-			UpdatedDate: time.Now(),
+			CreatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
+			UpdatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
 
 			Key: "TEST-1",
 
@@ -578,8 +574,8 @@ func (ms MockTicketStore) GetAll() ([]models.Ticket, error) {
 
 		models.Ticket{
 			ID:          2,
-			CreatedDate: time.Now(),
-			UpdatedDate: time.Now(),
+			CreatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
+			UpdatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
 
 			Key: "TEST-2",
 
@@ -643,12 +639,12 @@ func (ms MockTicketStore) GetAll() ([]models.Ticket, error) {
 		},
 	}, nil
 }
-func (ms MockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, error) {
+func (ms mockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, error) {
 	return []models.Ticket{
 		models.Ticket{
 			ID:          1,
-			CreatedDate: time.Now(),
-			UpdatedDate: time.Now(),
+			CreatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
+			UpdatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
 
 			Key: "TEST-1",
 
@@ -713,8 +709,8 @@ func (ms MockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, er
 
 		models.Ticket{
 			ID:          2,
-			CreatedDate: time.Now(),
-			UpdatedDate: time.Now(),
+			CreatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
+			UpdatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
 
 			Key: "TEST-2",
 
@@ -779,12 +775,12 @@ func (ms MockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, er
 	}, nil
 }
 
-func (ms MockTicketStore) GetComments(t models.Ticket) ([]models.Comment, error) {
+func (ms mockTicketStore) GetComments(t models.Ticket) ([]models.Comment, error) {
 	return []models.Comment{
 		models.Comment{
 			1,
-			time.Now(),
-			time.Now(),
+			time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
+			time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
 			"This is a fake comment",
 			models.User{
 				2,
@@ -802,50 +798,50 @@ func (ms MockTicketStore) GetComments(t models.Ticket) ([]models.Comment, error)
 	}, nil
 }
 
-func (ms MockTicketStore) NewComment(t models.Ticket, c *models.Comment) error {
+func (ms mockTicketStore) NewComment(t models.Ticket, c *models.Comment) error {
 	c.ID = 1
 	return nil
 }
 
-func (ms MockTicketStore) SaveComment(c models.Comment) error {
+func (ms mockTicketStore) SaveComment(c models.Comment) error {
 	return nil
 }
 
-func (ms MockTicketStore) RemoveComment(c models.Comment) error {
+func (ms mockTicketStore) RemoveComment(c models.Comment) error {
 	return nil
 }
 
-func (ms MockTicketStore) NextTicketKey(p models.Project) string {
+func (ms mockTicketStore) NextTicketKey(p models.Project) string {
 	return "TEST-2"
 }
 
-func (ms MockTicketStore) New(p models.Project, t *models.Ticket) error {
+func (ms mockTicketStore) New(p models.Project, t *models.Ticket) error {
 	t.ID = 1
 	return nil
 }
 
-func (ms MockTicketStore) Save(t models.Ticket) error {
+func (ms mockTicketStore) Save(t models.Ticket) error {
 	return nil
 }
 
-func (ms MockTicketStore) Remove(t models.Ticket) error {
+func (ms mockTicketStore) Remove(t models.Ticket) error {
 	return nil
 }
 
-// A Mock TypeStore struct
-type MockTypeStore struct{}
+// A mock TypeStore struct
+type mockTypeStore struct{}
 
-func (ms MockTypeStore) Get(t models.TicketType) error {
+func (ms mockTypeStore) Get(t models.TicketType) error {
 	t.ID = 1
-	t.Name = "Mock Type"
+	t.Name = "mock Type"
 	return nil
 }
 
-func (ms MockTypeStore) GetAll() ([]models.TicketType, error) {
+func (ms mockTypeStore) GetAll() ([]models.TicketType, error) {
 	return []models.TicketType{
 		models.TicketType{
 			ID:   1,
-			Name: "Mock Type",
+			Name: "mock Type",
 		},
 		models.TicketType{
 			ID:   2,
@@ -854,27 +850,27 @@ func (ms MockTypeStore) GetAll() ([]models.TicketType, error) {
 	}, nil
 }
 
-func (ms MockTypeStore) New(t *models.TicketType) error {
+func (ms mockTypeStore) New(t *models.TicketType) error {
 	t.ID = 1
 	return nil
 }
 
-func (ms MockTypeStore) Save(t models.TicketType) error {
+func (ms mockTypeStore) Save(t models.TicketType) error {
 	return nil
 }
 
-func (ms MockTypeStore) Remove(t models.TicketType) error {
+func (ms mockTypeStore) Remove(t models.TicketType) error {
 	return nil
 }
 
-// A Mock ProjectStore struct
-type MockProjectStore struct{}
+// A mock ProjectStore struct
+type mockProjectStore struct{}
 
-func (ms MockProjectStore) Get(p *models.Project) error {
+func (ms mockProjectStore) Get(p *models.Project) error {
 	p.ID = 1
 	p.Name = "Test Project"
 	p.Key = "TEST"
-	p.CreatedDate = time.Now()
+	p.CreatedDate = time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc)
 	p.Lead = models.User{
 		2,
 		"baruser",
@@ -890,11 +886,11 @@ func (ms MockProjectStore) Get(p *models.Project) error {
 	return nil
 }
 
-func (ms MockProjectStore) GetAll() ([]models.Project, error) {
+func (ms mockProjectStore) GetAll() ([]models.Project, error) {
 	return []models.Project{
 		models.Project{
 			ID:          1,
-			CreatedDate: time.Now(),
+			CreatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
 			Name:        "Test Project",
 			Key:         "TEST",
 			Lead: models.User{
@@ -912,9 +908,9 @@ func (ms MockProjectStore) GetAll() ([]models.Project, error) {
 		},
 		models.Project{
 			ID:          2,
-			Name:        "Mock Project",
+			Name:        "mock Project",
 			Key:         "MOCK",
-			CreatedDate: time.Now(),
+			CreatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
 			Lead: models.User{
 				1,
 				"foouser",
@@ -931,33 +927,33 @@ func (ms MockProjectStore) GetAll() ([]models.Project, error) {
 	}, nil
 }
 
-func (ms MockProjectStore) New(p *models.Project) error {
+func (ms mockProjectStore) New(p *models.Project) error {
 	p.ID = 1
 	return nil
 }
 
-func (ms MockProjectStore) Save(p models.Project) error {
+func (ms mockProjectStore) Save(p models.Project) error {
 	return nil
 }
 
-func (ms MockProjectStore) Remove(p models.Project) error {
+func (ms mockProjectStore) Remove(p models.Project) error {
 	return nil
 }
 
-// A Mock StatusStore struct
-type MockStatusStore struct{}
+// A mock StatusStore struct
+type mockStatusStore struct{}
 
-func (ms MockStatusStore) Get(s *models.Status) error {
+func (ms mockStatusStore) Get(s *models.Status) error {
 	s.ID = 1
-	s.Name = "Mock Status"
+	s.Name = "mock Status"
 	return nil
 }
 
-func (ms MockStatusStore) GetAll() ([]models.Status, error) {
+func (ms mockStatusStore) GetAll() ([]models.Status, error) {
 	return []models.Status{
 		models.Status{
 			1,
-			"Mock Status",
+			"mock Status",
 		},
 		models.Status{
 			2,
@@ -966,23 +962,23 @@ func (ms MockStatusStore) GetAll() ([]models.Status, error) {
 	}, nil
 }
 
-func (ms MockStatusStore) New(s *models.Status) error {
+func (ms mockStatusStore) New(s *models.Status) error {
 	s.ID = 1
 	return nil
 }
 
-func (ms MockStatusStore) Save(p models.Status) error {
+func (ms mockStatusStore) Save(p models.Status) error {
 	return nil
 }
 
-func (ms MockStatusStore) Remove(p models.Status) error {
+func (ms mockStatusStore) Remove(p models.Status) error {
 	return nil
 }
 
-// A Mock Workflow Store
-type MockWorkflowStore struct{}
+// A mock Workflow Store
+type mockWorkflowStore struct{}
 
-func (ms MockWorkflowStore) Get(w *models.Workflow) error {
+func (ms mockWorkflowStore) Get(w *models.Workflow) error {
 	w = &models.Workflow{
 		Name: "Simple Workflow",
 		Transitions: map[string][]models.Transition{
@@ -1018,7 +1014,7 @@ func (ms MockWorkflowStore) Get(w *models.Workflow) error {
 	return nil
 }
 
-func (ms MockWorkflowStore) GetByProject(p models.Project) ([]models.Workflow, error) {
+func (ms mockWorkflowStore) GetByProject(p models.Project) ([]models.Workflow, error) {
 	return []models.Workflow{
 		models.Workflow{
 			ID:   1,
@@ -1088,7 +1084,7 @@ func (ms MockWorkflowStore) GetByProject(p models.Project) ([]models.Workflow, e
 	}, nil
 }
 
-func (ms MockWorkflowStore) GetAll() ([]models.Workflow, error) {
+func (ms mockWorkflowStore) GetAll() ([]models.Workflow, error) {
 	return []models.Workflow{
 		models.Workflow{
 			ID:   1,
@@ -1158,15 +1154,15 @@ func (ms MockWorkflowStore) GetAll() ([]models.Workflow, error) {
 	}, nil
 }
 
-func (ms MockWorkflowStore) New(p models.Project, w *models.Workflow) error {
+func (ms mockWorkflowStore) New(p models.Project, w *models.Workflow) error {
 	w.ID = 1
 	return nil
 }
 
-func (ms MockWorkflowStore) Save(p models.Workflow) error {
+func (ms mockWorkflowStore) Save(p models.Workflow) error {
 	return nil
 }
 
-func (ms MockWorkflowStore) Remove(p models.Workflow) error {
+func (ms mockWorkflowStore) Remove(p models.Workflow) error {
 	return nil
 }
