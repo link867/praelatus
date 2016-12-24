@@ -30,3 +30,5 @@ gin-bin
 client/dist/*
 
 .vagrant/*
+
+*jwt_secret_key*
