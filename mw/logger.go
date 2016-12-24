@@ -25,6 +25,14 @@ func (w *LoggedResponseWriter) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
 }
 
+func (w *LoggedResponseWriter) Write(b []byte) (int, error) {
+	if w.status == 0 {
+		w.WriteHeader(200)
+	}
+
+	return w.ResponseWriter.Write(b)
+}
+
 // Logger will log a request and any information about the request, it should
 // be the first middleware in any chain.
 func Logger(next http.Handler) http.Handler {
