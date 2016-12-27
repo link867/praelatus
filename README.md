@@ -1,22 +1,18 @@
-# Praelatus [![License](https://img.shields.io/badge/license-AGPLv3-blue.svg)](https://github.com/chasinglogic/praelatus/blob/master/LICENSE)
+# Praelatus [![License](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/chasinglogic/praelatus/blob/master/LICENSE)
+An Open Source bug tracker and ticketing system.
 
-An Open Source ticketing / bug tracking system API.
-
-If you're looking for the "official" web frontend it's 
-[here](https://github.com/praelatus/frontend)
+If you're looking for the official web frontend it's
+[in its own repo](https://github.com/praelatus/frontend)
 
 | Stable | Nightly |
 |:------:|:-------:|
 | [![Build Status](https://travis-ci.org/praelatus/backend.svg?branch=master)](https://travis-ci.org/praelatus/backend) | [![Build Status](https://travis-ci.org/praelatus/backend.svg?branch=develop)](https://travis-ci.org/praelatus/backend) |
 
-## Why
+## What is Praelatus?
 
-Because bugzilla is ugly and we want to make a platform that integrates with 
-all of the existing solutions like github issues and gitlab, ideally I'd also 
-like to have features such that we could replace proprietary systems like JIRA 
-and Rally in the enterprise while bringing issue / bug tracking into the
-21st century with things like Social Networking logins and centralizing this
-very important piece of running an Open Source project.
+Praelatus is a modern bug tracker and ticketing system inspired by JIRA, BugZilla, and the many support ticketing systems members of the Core Team have used throughout their careers.
+
+Grown from frustration with today’s disparate and difficult methods of bug reporting, Praelatus aims to simplify the way other [Open Source](https://opensource.org/) projects operate. Through intuitive workflows and support for “Internet Driver’s License” accounts such as Github, Google, and Twitter, we want any user to be able to submit a ticket in three clicks or less – including account creation – without the need of a user manual.
 
 ## Contributing
 
@@ -31,39 +27,33 @@ The basics:
 
 All pull requests should go to the develop branch not master. Thanks!
 
-We follow the Contributor Covenant code of conduct, you can find it 
-[here](https://github.com/chasinglogic/praelatus/blob/master/code_of_conduct.md)
+We follow the Contributor Covenant code of conduct, you can find it
+[here](https://github.com/chasinglogic/praelatus/blob/master/CODE_OF_CONDUCT.md)
 
 Need help getting started hacking on Praelatus? No problem we have a
-[CONTRIBUTING.md](https://github.com/chasinglogic/praelatus/blob/develop/CONTRIBUTING.md) 
-just for that!
+[doc for that!](https://github.com/chasinglogic/praelatus/blob/develop/CONTRIBUTING.md)
 
 ## License
 
-Praelatus is distributed under the AGPLv3
+Praelatus is distributed under the Apache License.
 
 ```
-  Praelatus, an Open Source Bug Tracking / Ticketing system.
-  Mathew Robinson & Mark Chandler (c) 2016
-  
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+   Copyright 2016 Mark Chandler & Mathew Robinson
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Affero General Public License for more details.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 ```
 
 ## Installation
 
-Praelatus really doesn't do anything yet!`
-
-## Configuration
-
-I will write configuration documentation when Praelatus has stabilized a bit.
+**TODO** For now Praelatus is in a *VERY* alpha state and so this documentation
+will be updated and written when there is something to write about.
