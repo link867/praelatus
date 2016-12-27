@@ -34,14 +34,14 @@ func Run(port string) {
 	http.ListenAndServe(port, Router)
 }
 
-// Error is a json error response.
-type Error struct {
+// Message is a general purpose json struct used primarily for error responses.
+type Message struct {
 	Field   string `json:"field,omitempty"`
 	Message string `json:"message"`
 }
 
 func apiError(msg string, fields ...string) []byte {
-	e := Error{
+	e := Message{
 		Message: msg,
 	}
 
@@ -53,7 +53,7 @@ func apiError(msg string, fields ...string) []byte {
 	return byt
 }
 
-func sendJson(w http.ResponseWriter, v interface{}) {
+func sendJSON(w http.ResponseWriter, v interface{}) {
 	resp, err := json.Marshal(v)
 	if err != nil {
 		w.WriteHeader(500)
