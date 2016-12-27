@@ -18,9 +18,8 @@ func init() {
 	Router = mux.NewRouter()
 
 	// initUserRoutes()
-	// initProjectRoutes()
+	initProjectRoutes()
 	initTicketRoutes()
-
 }
 
 type mockStore struct{}

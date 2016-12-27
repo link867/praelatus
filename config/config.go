@@ -12,3 +12,14 @@ func GetDbURL() string {
 
 	return url
 }
+
+// IsDevEnv will return a boolean indicating whether the app is runnning in dev
+// mode or not
+func IsDevEnv() bool {
+	dev := os.Getenv("PRAELATUS_DEV_MODE")
+	if dev == "" {
+		return false
+	}
+
+	return true
+}

@@ -66,7 +66,7 @@ func GetTicket(w http.ResponseWriter, r *http.Request) {
 		tk.Comments = cm
 	}
 
-	sendJson(w, tk)
+	sendJSON(w, tk)
 }
 
 // GetAllTickets will get all the tickets for this instance
@@ -79,7 +79,7 @@ func GetAllTickets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sendJson(w, tks)
+	sendJSON(w, tks)
 }
 
 // GetAllTicketsByProject will get all the tickets for a given project
@@ -94,7 +94,7 @@ func GetAllTicketsByProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sendJson(w, tks)
+	sendJSON(w, tks)
 }
 
 // CreateTicket will create a ticket in the database and send the json
@@ -128,7 +128,7 @@ func CreateTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sendJson(w, tk)
+	sendJSON(w, tk)
 }
 
 // RemoveTicket will remove the ticket with the given key from the database
@@ -204,7 +204,7 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sendJson(w, comments)
+	sendJSON(w, comments)
 }
 
 // UpdateComment will update the comment with the given ID
@@ -299,5 +299,5 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sendJson(w, cm)
+	sendJSON(w, cm)
 }
