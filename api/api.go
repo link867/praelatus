@@ -27,7 +27,7 @@ func Run(port string) {
 
 	Router = mux.NewRouter()
 
-	// initUserRoutes()
+	initUserRoutes()
 	initProjectRoutes()
 	initTicketRoutes()
 
