@@ -32,6 +32,7 @@ func TestGetProject(t *testing.T) {
 func TestGetAllProjects(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/projects", nil)
+	testLogin(r)
 
 	Router.ServeHTTP(w, r)
 

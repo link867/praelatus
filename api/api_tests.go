@@ -17,7 +17,7 @@ func init() {
 
 	Router = mux.NewRouter()
 
-	// initUserRoutes()
+	initUserRoutes()
 	initProjectRoutes()
 	initTicketRoutes()
 }

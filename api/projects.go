@@ -39,8 +39,15 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 
 // GetAllProjects will get all the projects on this instance that the user has
 // permissions to
-// TODO handler permissions
+// TODO handle permissions
 func GetAllProjects(w http.ResponseWriter, r *http.Request) {
+	u := mw.GetUser(r.Context())
+	if u == nil {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in to view all projects"))
+		return
+	}
+
 	projects, err := Store.Projects().GetAll()
 	if err != nil {
 		w.WriteHeader(500)
