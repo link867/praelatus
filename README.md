@@ -12,7 +12,7 @@ If you're looking for the official web frontend it's
 
 Praelatus is a modern bug tracker and ticketing system inspired by JIRA, BugZilla, and the many support ticketing systems members of the Core Team have used throughout their careers.
 
-Grown from frustration with today’s disparate and difficult methods of bug reporting, Praelatus aims to simplify the way other [Open Source](https://opensource.org/) projects operate. Through intuitive workflows and support for “Internet Driver’s License” accounts such as Github, Google, and Twitter, we want any user to be able to submit a ticket in three clicks or less – including account creation – without the need of a user manual.
+Grown from frustration with today’s disparate and difficult methods of bug reporting, Praelatus aims to simplify the way other [Open Source](https://opensource.org/) projects operate. Through intuitive workflows and support for “Internet Driver’s License” accounts such as Github, Google, and Twitter, any user can submit a ticket in three clicks or less – including account creation – without the need of a user manual.
 
 ## Contributing
 
@@ -31,7 +31,7 @@ We follow the Contributor Covenant code of conduct, you can find it
 [here](https://github.com/chasinglogic/praelatus/blob/master/CODE_OF_CONDUCT.md)
 
 Need help getting started hacking on Praelatus? No problem we have a
-[doc for that!](https://github.com/chasinglogic/praelatus/blob/develop/CONTRIBUTING.md)
+[doc for that!](https://github.com/praelatus/backend/blob/develop/CONTRIBUTING.md)
 
 ## License
 
