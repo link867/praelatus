@@ -1,3 +1,6 @@
 [submodule "docs"]
 	path = docs
-	url = https://github.com/chasinglogic/tessera.wiki.git
+	url = https://github.com/praelatus/backend.wiki.git
+[submodule "client"]
+	path = client
+	url = https://github.com/praelatus/frontend
