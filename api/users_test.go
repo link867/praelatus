@@ -56,7 +56,13 @@ func TestGetAllUsers(t *testing.T) {
 		t.Errorf("Expected foouser Got %s", u[0].Username)
 	}
 
-	t.Log(w.Body)
+	if u[0].Password != "" {
+		t.Errorf("Expected no passsword but got %s\n", u[0].Password)
+	}
+
+	for _, usr := range u {
+		t.Log(usr.String())
+	}
 }
 
 func TestCreateUser(t *testing.T) {
@@ -78,6 +84,10 @@ func TestCreateUser(t *testing.T) {
 
 	if l.User.ID != 1 {
 		t.Errorf("Expected 1 Got %d", u.ID)
+	}
+
+	if l.User.Gravatar == "" {
+		t.Error("Expected a gravatar but got nothing.")
 	}
 
 	if l.Token == "" {
