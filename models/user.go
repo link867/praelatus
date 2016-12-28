@@ -21,7 +21,7 @@ type User struct {
 	ProfilePic string   `json:"profile_picture"`
 	IsAdmin    bool     `json:"is_admin,omitempty"`
 	IsActive   bool     `json:"is_active,omitempty"`
-	Settings   Settings `json:"settings"`
+	Settings   Settings `json:"settings,omitempty"`
 }
 
 // CheckPw will verify if the given password matches for this user. Logs any
@@ -63,6 +63,6 @@ func NewUser(username, password, fullName, email string, admin bool) (*User, err
 
 // Settings represents an individual users preferences
 type Settings struct {
-	DefaultProject string
-	DefaultView    string
+	DefaultProject string `json:"default_project"`
+	DefaultView    string `json:"default_view"`
 }
