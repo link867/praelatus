@@ -52,6 +52,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u.Password = ""
+	u.Settings = models.Settings{}
 
 	sendJSON(w, u)
 }
@@ -72,6 +73,11 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		w.Write(apiError(err.Error()))
 		log.Println(err)
 		return
+	}
+
+	for i := range users {
+		users[i].Password = ""
+		users[i].Settings = models.Settings{}
 	}
 
 	sendJSON(w, users)
