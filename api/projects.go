@@ -13,9 +13,10 @@ import (
 func initProjectRoutes() {
 	Router.Handle("/projects", mw.Default(GetAllProjects)).Methods("GET")
 	Router.Handle("/projects", mw.Default(CreateProject)).Methods("POST")
-	Router.Handle("/projects/{pkey}", mw.Default(GetProject)).Methods("GET")
-	Router.Handle("/projects/{pkey}", mw.Default(RemoveProject)).Methods("DELETE")
-	Router.Handle("/projects/{pkey}", mw.Default(UpdateProject)).Methods("PUT")
+
+	Router.Handle("/projects/{key}", mw.Default(GetProject)).Methods("GET")
+	Router.Handle("/projects/{key}", mw.Default(RemoveProject)).Methods("DELETE")
+	Router.Handle("/projects/{key}", mw.Default(UpdateProject)).Methods("PUT")
 }
 
 // GetProject will get a project by it's project key
