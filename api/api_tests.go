@@ -20,6 +20,11 @@ func init() {
 	initUserRoutes()
 	initProjectRoutes()
 	initTicketRoutes()
+	initFieldRoutes()
+	initTeamRoutes()
+	initTypeRoutes()
+	initWorkflowRoutes()
+	initLabelRoutes()
 }
 
 type mockStore struct{}
@@ -850,7 +855,7 @@ type mockTypeStore struct{}
 
 func (ms mockTypeStore) Get(t *models.TicketType) error {
 	t.ID = 1
-	t.Name = "mock Type"
+	t.Name = "mock type"
 	return nil
 }
 
@@ -858,11 +863,11 @@ func (ms mockTypeStore) GetAll() ([]models.TicketType, error) {
 	return []models.TicketType{
 		models.TicketType{
 			ID:   1,
-			Name: "mock Type",
+			Name: "mock type",
 		},
 		models.TicketType{
 			ID:   2,
-			Name: "Fake Type",
+			Name: "fake type",
 		},
 	}, nil
 }
