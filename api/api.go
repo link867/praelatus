@@ -30,6 +30,11 @@ func Run(port string) {
 	initUserRoutes()
 	initProjectRoutes()
 	initTicketRoutes()
+	initFieldRoutes()
+	initTypeRoutes()
+	initTeamRoutes()
+	initWorkflowRoutes()
+	initLabelRoutes()
 
 	http.ListenAndServe(port, Router)
 }
