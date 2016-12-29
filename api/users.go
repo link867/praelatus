@@ -96,7 +96,15 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = Store.Users().New(&u)
+	usr, err := models.NewUser(u.Username, u.Password, u.FullName, u.Email, false)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	err = Store.Users().New(usr)
 	if err != nil {
 		if err == store.ErrDuplicateEntry {
 			w.WriteHeader(400)
@@ -110,7 +118,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := mw.JWTSignUser(u)
+	token, err := mw.JWTSignUser(*usr)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(apiError(err.Error()))
@@ -118,9 +126,10 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	usr.Password = ""
 	sendJSON(w, TokenResponse{
 		token,
-		u,
+		*usr,
 	})
 }
 
