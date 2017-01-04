@@ -1,25 +1,42 @@
 package main
 
 import (
-	"os"
+	"net/http"
 
 	"log"
 
 	"github.com/praelatus/backend/api"
+	"github.com/praelatus/backend/config"
+	"github.com/praelatus/backend/store"
 )
 
 func main() {
+	log.SetOutput(config.LogWriter())
+
 	log.Println("Starting Praelatus!")
 	log.Println("Initializing database...")
 
-	// Will be used for logging
-	// mw := io.MultiWriter(os.Stdout)
+	s := config.Store()
 
-	log.Println("Ready to serve requests!")
-	port := os.Getenv("PRAELATUS_PORT")
-	if port == "" {
-		port = ":8080"
+	var err error
+
+	if config.Dev() {
+		log.Println("Dev environment detected, seeding database with test info...")
+		err = store.SeedAll(s)
+	} else {
+		err = store.SeedDefaults(s)
 	}
 
-	api.Run(port)
+	if err != nil {
+		panic(err)
+	}
+
+	log.Println("Prepping API")
+	r := api.New(s)
+
+	log.Println("Ready to serve requests!")
+	err = http.ListenAndServe(config.Port(), r)
+	if err != nil {
+		log.Println(err)
+	}
 }
