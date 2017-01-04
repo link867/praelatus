@@ -13,7 +13,7 @@ func TestGetType(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/types/1", nil)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var p models.TicketType
 
@@ -34,7 +34,7 @@ func TestGetAllTypes(t *testing.T) {
 	r := httptest.NewRequest("GET", "/types", nil)
 	testLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var p []models.TicketType
 
@@ -63,7 +63,7 @@ func TestCreateType(t *testing.T) {
 	r := httptest.NewRequest("POST", "/types", rd)
 	testAdminLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	e := json.Unmarshal(w.Body.Bytes(), &p)
 	if e != nil {

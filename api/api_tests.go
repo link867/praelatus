@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/mw"
 	"github.com/praelatus/backend/store"
@@ -12,19 +11,10 @@ import (
 
 var loc, _ = time.LoadLocation("")
 
+var router http.Handler
+
 func init() {
-	Store = mockStore{}
-
-	Router = mux.NewRouter()
-
-	initUserRoutes()
-	initProjectRoutes()
-	initTicketRoutes()
-	initFieldRoutes()
-	initTeamRoutes()
-	initTypeRoutes()
-	initWorkflowRoutes()
-	initLabelRoutes()
+	router = New(mockStore{})
 }
 
 type mockStore struct{}

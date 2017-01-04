@@ -6,18 +6,22 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/mw"
+	"github.com/pressly/chi"
 )
 
-func initLabelRoutes() {
-	Router.Handle("/labels", mw.Default(GetAllLabels)).Methods("GET")
-	Router.Handle("/labels", mw.Default(CreateLabel)).Methods("POST")
+func labelRouter() chi.Router {
+	router := chi.NewRouter()
 
-	Router.Handle("/labels/{id}", mw.Default(GetLabel)).Methods("GET")
-	Router.Handle("/labels/{id}", mw.Default(DeleteLabel)).Methods("DELETE")
-	Router.Handle("/labels/{id}", mw.Default(UpdateLabel)).Methods("PUT")
+	router.Get("/labels", GetAllLabels)
+	router.Post("/labels", CreateLabel)
+
+	router.Get("/labels/:id", GetLabel)
+	router.Delete("/labels/:id", DeleteLabel)
+	router.Put("/labels/:id", UpdateLabel)
+
+	return router
 }
 
 // GetAllLabels will return a JSON array of all labels from the store.
@@ -125,9 +129,9 @@ func UpdateLabel(w http.ResponseWriter, r *http.Request) {
 // DeleteLabel deletes labels from the db and returns a repsonse indicating
 // success of failure.
 func DeleteLabel(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	id := r.Context().Value("id").(string)
 
-	i, err := strconv.Atoi(vars["id"])
+	i, err := strconv.Atoi(id)
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write(apiError("invalid id"))

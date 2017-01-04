@@ -6,18 +6,22 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/mw"
+	"github.com/pressly/chi"
 )
 
-func initFieldRoutes() {
-	Router.Handle("/fields", mw.Default(GetAllFields)).Methods("GET")
-	Router.Handle("/fields", mw.Default(CreateField)).Methods("POST")
+func fieldRouter() chi.Router {
+	router := chi.NewRouter()
 
-	Router.Handle("/fields/{id}", mw.Default(GetField)).Methods("GET")
-	Router.Handle("/fields/{id}", mw.Default(UpdateField)).Methods("PUT")
-	Router.Handle("/fields/{id}", mw.Default(DeleteField)).Methods("DELETE")
+	router.Get("/fields", GetAllFields)
+	router.Post("/fields", CreateField)
+
+	router.Get("/fields/:id", GetField)
+	router.Put("/fields/:id", UpdateField)
+	router.Delete("/fields/:id", DeleteField)
+
+	return router
 }
 
 // GetAllFields will retrieve all fields from the DB and send a JSON response
@@ -132,7 +136,7 @@ func UpdateField(w http.ResponseWriter, r *http.Request) {
 // DeleteField will remove the project indicated by the id passed in as a
 // url parameter
 func DeleteField(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	id := r.Context().Value("id").(string)
 
 	u := mw.GetUser(r.Context())
 	if u == nil || !u.IsAdmin {
@@ -141,7 +145,7 @@ func DeleteField(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err := strconv.Atoi(vars["id"])
+	i, err := strconv.Atoi(id)
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write(apiError("invalid id"))

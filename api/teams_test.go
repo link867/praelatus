@@ -13,7 +13,7 @@ func TestGetTeam(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/teams/1", nil)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var p models.Team
 
@@ -34,7 +34,7 @@ func TestGetAllTeams(t *testing.T) {
 	r := httptest.NewRequest("GET", "/teams", nil)
 	testLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var p []models.Team
 
@@ -63,7 +63,7 @@ func TestCreateTeam(t *testing.T) {
 	r := httptest.NewRequest("POST", "/teams", rd)
 	testAdminLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	e := json.Unmarshal(w.Body.Bytes(), &p)
 	if e != nil {

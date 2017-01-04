@@ -6,18 +6,22 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/mw"
+	"github.com/pressly/chi"
 )
 
-func initWorkflowRoutes() {
-	Router.Handle("/workflows", mw.Default(GetAllWorkflows)).Methods("GET")
-	Router.Handle("/workflows/{pkey}", mw.Default(CreateWorkflow)).Methods("POST")
+func workflowRouter() chi.Router {
+	router := chi.NewRouter()
 
-	Router.Handle("/workflows/{id}", mw.Default(GetWorkflow)).Methods("GET")
-	Router.Handle("/workflows/{id}", mw.Default(UpdateWorkflow)).Methods("PUT")
-	Router.Handle("/workflows/{id}", mw.Default(RemoveWorkflow)).Methods("DELETE")
+	router.Get("/workflows", GetAllWorkflows)
+	router.Post("/workflows/:pkey", CreateWorkflow)
+
+	router.Get("/workflows/:id", GetWorkflow)
+	router.Put("/workflows/:id", UpdateWorkflow)
+	router.Delete("/workflows/:id", RemoveWorkflow)
+
+	return router
 }
 
 // GetAllWorkflows will retrieve all workflows from the DB and send a JSON response
@@ -45,8 +49,6 @@ func GetAllWorkflows(w http.ResponseWriter, r *http.Request) {
 func CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 	var t models.Workflow
 
-	vars := mux.Vars(r)
-
 	u := mw.GetUser(r.Context())
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
@@ -63,7 +65,7 @@ func CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := models.Project{Key: vars["pkey"]}
+	p := models.Project{Key: r.Context().Value("pkey").(string)}
 
 	err = Store.Projects().Get(&p)
 	if err != nil {
@@ -114,8 +116,6 @@ func GetWorkflow(w http.ResponseWriter, r *http.Request) {
 func UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 	var t models.Workflow
 
-	vars := mux.Vars(r)
-
 	u := mw.GetUser(r.Context())
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
@@ -132,7 +132,7 @@ func UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := models.Project{Key: vars["pkey"]}
+	p := models.Project{Key: r.Context().Value("pkey").(string)}
 
 	err = Store.Projects().Get(&p)
 	if err != nil {
@@ -156,8 +156,6 @@ func UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 // RemoveWorkflow will remove the project indicated by the id passed in as a
 // url parameter
 func RemoveWorkflow(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
 	u := mw.GetUser(r.Context())
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
@@ -165,7 +163,7 @@ func RemoveWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err := strconv.Atoi(vars["id"])
+	i, err := strconv.Atoi(r.Context().Value("id").(string))
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write(apiError("invalid id"))

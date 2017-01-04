@@ -13,7 +13,7 @@ func TestGetUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/users/foouser", nil)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var u models.User
 
@@ -38,7 +38,7 @@ func TestGetAllUsers(t *testing.T) {
 	r := httptest.NewRequest("GET", "/users", nil)
 	testAdminLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var u []models.User
 
@@ -73,7 +73,7 @@ func TestCreateUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("POST", "/users", rd)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var l TokenResponse
 
@@ -102,7 +102,7 @@ func TestRefreshSession(t *testing.T) {
 	r := httptest.NewRequest("GET", "/sessions", nil)
 	testLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	if w.Body.String() == "" {
 		t.Errorf("Expected a token response got %s\n", w.Body.String())

@@ -4,16 +4,13 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
-	"github.com/gorilla/mux"
+	"github.com/praelatus/backend/mw"
 	"github.com/praelatus/backend/store"
-	"github.com/praelatus/backend/store/pg"
+	"github.com/pressly/chi"
+	"github.com/pressly/chi/middleware"
 )
-
-// Router is used to store all the various resource routes.
-var Router *mux.Router
 
 // Store is the global store used in our HTTP handlers.
 var Store store.Store
@@ -21,22 +18,30 @@ var Store store.Store
 // Cache is the global cache object used in our HTTP handlers.
 var Cache *store.Cache
 
-// Run will start running the api on the given port
-func Run(port string) {
-	Store = pg.New(os.Getenv("PRAELATUS_DB"))
+// New will start running the api on the given port
+func New(store store.Store) http.Handler {
+	Store = store
 
-	Router = mux.NewRouter()
+	router := chi.NewRouter()
 
-	initUserRoutes()
-	initProjectRoutes()
-	initTicketRoutes()
-	initFieldRoutes()
-	initTypeRoutes()
-	initTeamRoutes()
-	initWorkflowRoutes()
-	initLabelRoutes()
+	router.Use(mw.Default...)
+	router.Use(middleware.Recoverer)
 
-	http.ListenAndServe(port, Router)
+	api := chi.NewRouter()
+
+	api.Mount("/fields", fieldRouter())
+	api.Mount("/labels", labelRouter())
+	api.Mount("/projects", projectRouter())
+	api.Mount("/teams", teamRouter())
+	api.Mount("/tickets", ticketRouter())
+	api.Mount("/types", typeRouter())
+	api.Mount("/users", userRouter())
+	api.Mount("/workflows", workflowRouter())
+
+	router.Mount("/api", api)
+	router.Mount("/api/v1", api)
+
+	return router
 }
 
 // Message is a general purpose json struct used primarily for error responses.

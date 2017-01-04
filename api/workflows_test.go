@@ -13,7 +13,7 @@ func TestGetWorkflow(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/workflows/1", nil)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var p models.Workflow
 
@@ -34,7 +34,7 @@ func TestGetAllWorkflows(t *testing.T) {
 	r := httptest.NewRequest("GET", "/workflows", nil)
 	testLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var p []models.Workflow
 
@@ -63,7 +63,7 @@ func TestCreateWorkflow(t *testing.T) {
 	r := httptest.NewRequest("POST", "/workflows/TEST", rd)
 	testAdminLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	e := json.Unmarshal(w.Body.Bytes(), &p)
 	if e != nil {

@@ -6,18 +6,22 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/mw"
+	"github.com/pressly/chi"
 )
 
-func initTypeRoutes() {
-	Router.Handle("/types", mw.Default(GetAllTicketTypes)).Methods("GET")
-	Router.Handle("/types", mw.Default(CreateTicketType)).Methods("POST")
+func typeRouter() chi.Router {
+	router := chi.NewRouter()
 
-	Router.Handle("/types/{id}", mw.Default(GetTicketType)).Methods("GET")
-	Router.Handle("/types/{id}", mw.Default(UpdateTicketType)).Methods("PUT")
-	Router.Handle("/types/{id}", mw.Default(RemoveTicketType)).Methods("DELETE")
+	router.Get("/types", GetAllTicketTypes)
+	router.Post("/types", CreateTicketType)
+
+	router.Get("/types/:id", GetTicketType)
+	router.Put("/types/:id", UpdateTicketType)
+	router.Delete("/types/:id", RemoveTicketType)
+
+	return router
 }
 
 // GetAllTicketTypes will retrieve all types from the DB and send a JSON response
@@ -132,8 +136,6 @@ func UpdateTicketType(w http.ResponseWriter, r *http.Request) {
 // RemoveTicketType will remove the project indicated by the id passed in as a
 // url parameter
 func RemoveTicketType(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
 	u := mw.GetUser(r.Context())
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
@@ -141,7 +143,7 @@ func RemoveTicketType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err := strconv.Atoi(vars["id"])
+	i, err := strconv.Atoi(r.Context().Value("id").(string))
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write(apiError("invalid id"))

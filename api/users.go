@@ -5,21 +5,25 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/mw"
 	"github.com/praelatus/backend/store"
+	"github.com/pressly/chi"
 )
 
-func initUserRoutes() {
-	Router.Handle("/users/{username}", mw.Default(UpdateUser)).Methods("PUT")
-	Router.Handle("/users/{username}", mw.Default(DeleteUser)).Methods("DELETE")
-	Router.Handle("/users/{username}", mw.Default(GetUser)).Methods("GET")
-	Router.Handle("/users", mw.Default(GetAllUsers)).Methods("GET")
-	Router.Handle("/users", mw.Default(CreateUser)).Methods("POST")
+func userRouter() chi.Router {
+	router := chi.NewRouter()
 
-	Router.Handle("/sessions", mw.Default(CreateSession)).Methods("POST")
-	Router.Handle("/sessions", mw.Default(RefreshSession)).Methods("GET")
+	router.Put("/users/:username", UpdateUser)
+	router.Delete("/users/:username", DeleteUser)
+	router.Get("/users/:username", GetUser)
+	router.Get("/users", GetAllUsers)
+	router.Post("/users", CreateUser)
+
+	router.Post("/sessions", CreateSession)
+	router.Get("/sessions", RefreshSession)
+
+	return router
 }
 
 // TokenResponse is used when logging in or signing up, it will return a
@@ -31,10 +35,8 @@ type TokenResponse struct {
 
 // GetUser will get a user from the database by the given username
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
 	u := models.User{
-		Username: vars["username"],
+		Username: r.Context().Value("username").(string),
 	}
 
 	err := Store.Users().Get(&u)

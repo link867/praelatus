@@ -13,7 +13,7 @@ func TestGetLabel(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/labels/1", nil)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var p models.Label
 
@@ -34,7 +34,7 @@ func TestGetAllLabels(t *testing.T) {
 	r := httptest.NewRequest("GET", "/labels", nil)
 	testLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var p []models.Label
 
@@ -63,7 +63,7 @@ func TestCreateLabel(t *testing.T) {
 	r := httptest.NewRequest("POST", "/labels", rd)
 	testAdminLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	e := json.Unmarshal(w.Body.Bytes(), &p)
 	if e != nil {

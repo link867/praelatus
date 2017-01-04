@@ -6,18 +6,22 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/mw"
+	"github.com/pressly/chi"
 )
 
-func initTeamRoutes() {
-	Router.Handle("/teams", mw.Default(GetAllTeams)).Methods("GET")
-	Router.Handle("/teams", mw.Default(CreateTeam)).Methods("POST")
+func teamRouter() chi.Router {
+	router := chi.NewRouter()
 
-	Router.Handle("/teams/{id}", mw.Default(GetTeam)).Methods("GET")
-	Router.Handle("/teams/{id}", mw.Default(UpdateTeam)).Methods("PUT")
-	Router.Handle("/teams/{id}", mw.Default(RemoveTeam)).Methods("DELETE")
+	router.Get("/teams", GetAllTeams)
+	router.Post("/teams", CreateTeam)
+
+	router.Get("/teams/:id", GetTeam)
+	router.Put("/teams/:id", UpdateTeam)
+	router.Delete("/teams/:id", RemoveTeam)
+
+	return router
 }
 
 // GetAllTeams will retrieve all teams from the DB and send a JSON response
@@ -132,7 +136,7 @@ func UpdateTeam(w http.ResponseWriter, r *http.Request) {
 // RemoveTeam will remove the project indicated by the id passed in as a
 // url parameter
 func RemoveTeam(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	id := r.Context().Value("id").(string)
 
 	u := mw.GetUser(r.Context())
 	if u == nil || !u.IsAdmin {
@@ -141,7 +145,7 @@ func RemoveTeam(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err := strconv.Atoi(vars["id"])
+	i, err := strconv.Atoi(id)
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write(apiError("invalid id"))
