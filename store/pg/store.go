@@ -31,7 +31,6 @@ type Store struct {
 // New connects to the postgres database provided and returns a store
 // that's connected.
 func New(conn string, replicas ...string) store.Store {
-	// TODO: replica support
 
 	d, err := sql.Open("postgres", conn)
 	if err != nil {
