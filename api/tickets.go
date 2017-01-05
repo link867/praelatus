@@ -15,14 +15,17 @@ import (
 func ticketRouter() chi.Router {
 	router := chi.NewRouter()
 
-	router.Get("/tickets", GetAllTickets)
-	router.Post("/tickets/:pkey", CreateTicket)
-	router.Get("/tickets/:pkey", GetAllTicketsByProject)
-	router.Get("/tickets/:pkey/:key", GetTicket)
-	router.Delete("/tickets/:pkey/:key", RemoveTicket)
-	router.Put("/tickets/:pkey/:key", UpdateTicket)
-	router.Get("/tickets/:pkey/:key/comments", GetComments)
-	router.Post("/tickets/:pkey/:key/comments", CreateComment)
+	router.Get("/", GetAllTickets)
+
+	router.Get("/:pkey/:key", GetTicket)
+	router.Delete("/:pkey/:key", RemoveTicket)
+	router.Put("/:pkey/:key", UpdateTicket)
+
+	router.Post("/:pkey", CreateTicket)
+	router.Get("/:pkey/tickets", GetAllTicketsByProject)
+
+	router.Get("/:pkey/:key/comments", GetComments)
+	router.Post("/:pkey/:key/comments", CreateComment)
 
 	router.Put("/comments/:id", UpdateComment)
 	router.Delete("/comments/:id", RemoveComment)
@@ -32,9 +35,8 @@ func ticketRouter() chi.Router {
 
 // GetTicket will get a ticket by the ticket key
 func GetTicket(w http.ResponseWriter, r *http.Request) {
-	key := r.Context().Value("id").(string)
-
-	var preload bool
+	key := chi.URLParam(r, "key")
+	preload := false
 
 	if r.FormValue("preload") != "" {
 		preload = true
@@ -46,6 +48,8 @@ func GetTicket(w http.ResponseWriter, r *http.Request) {
 
 	err := Store.Tickets().Get(tk)
 	if err != nil {
+		log.Println(err.Error())
+
 		if err == store.ErrNotFound {
 			w.WriteHeader(404)
 			w.Write(apiError("ticket not found"))
@@ -53,14 +57,13 @@ func GetTicket(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(500)
-		w.Write(apiError("failed to retrieve comments"))
-		log.Println(err)
+		w.Write(apiError(err.Error()))
 		return
 	}
 
 	if preload {
 		cm, err := Store.Tickets().GetComments(*tk)
-		if err != nil {
+		if err != nil && err != store.ErrNotFound {
 			w.WriteHeader(500)
 			w.Write(apiError("failed to retrieve comments"))
 			log.Println(err)
@@ -88,7 +91,7 @@ func GetAllTickets(w http.ResponseWriter, r *http.Request) {
 
 // GetAllTicketsByProject will get all the tickets for a given project
 func GetAllTicketsByProject(w http.ResponseWriter, r *http.Request) {
-	pkey := r.Context().Value("pkey").(string)
+	pkey := chi.URLParam(r, "pkey")
 
 	tks, err := Store.Tickets().GetAllByProject(models.Project{Key: pkey})
 	if err != nil {
@@ -104,7 +107,7 @@ func GetAllTicketsByProject(w http.ResponseWriter, r *http.Request) {
 // CreateTicket will create a ticket in the database and send the json
 // representation of the ticket back
 func CreateTicket(w http.ResponseWriter, r *http.Request) {
-	pkey := r.Context().Value("pkey").(string)
+	pkey := chi.URLParam(r, "pkey")
 
 	u := mw.GetUser(r.Context())
 	if u == nil {
