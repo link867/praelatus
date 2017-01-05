@@ -3,6 +3,7 @@ package pg
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"log"
 	"strconv"
 	"time"
@@ -55,14 +56,14 @@ func populateFields(db *sql.DB, t *models.Ticket) error {
 	for rows.Next() {
 		// We need to be able to scan in all the values then determine which
 		// actually goes into the model.
-		var fv *models.FieldValue
+		fv := models.FieldValue{}
 		var i int
 		var f float64
 		var s, o string
 		var d time.Time
 		var fID int64
 
-		err = rows.Scan(fv.ID, fv.Name, fv.DataType, &i, &f, &s, &o, &d, &fID)
+		err = rows.Scan(&fv.ID, &fv.Name, &fv.DataType, &i, &f, &s, &o, &d, &fID)
 		if err != nil {
 			return err
 		}
@@ -71,12 +72,16 @@ func populateFields(db *sql.DB, t *models.Ticket) error {
 		switch fv.DataType {
 		case "FLOAT":
 			fv.Value = f
+			break
 		case "INT":
 			fv.Value = i
+			break
 		case "STRING":
 			fv.Value = s
+			break
 		case "DATE":
 			fv.Value = d
+			break
 		case "OPT":
 			fo := models.FieldOption{}
 			fo.Selected = o
@@ -88,11 +93,35 @@ func populateFields(db *sql.DB, t *models.Ticket) error {
 			}
 
 			fv.Value = fo
+			break
 		default:
 			fv.Value = nil
 		}
 
-		t.Fields = append(t.Fields, *fv)
+		t.Fields = append(t.Fields, fv)
+	}
+
+	return nil
+}
+
+func populateLabels(db *sql.DB, t *models.Ticket) error {
+	rows, err := db.Query(`SELECT l.id, l.name 
+						   FROM tickets_labels AS tl
+						   JOIN labels AS l ON tl.label_id = l.id
+						   WHERE tl.ticket_id = $1`, t.ID)
+	if err != nil {
+		return err
+	}
+
+	for rows.Next() {
+		l := models.Label{}
+
+		err = rows.Scan(&l.ID, &l.Name)
+		if err != nil {
+			return err
+		}
+
+		t.Labels = append(t.Labels, l)
 	}
 
 	return nil
@@ -107,59 +136,47 @@ func intoTicket(row rowScanner, db *sql.DB, t *models.Ticket) error {
 		return handlePqErr(err)
 	}
 
-	dberr := make(chan error)
-	done := make(chan struct{})
-	defer close(done)
+	err = populateFields(db, t)
+	if err != nil {
+		return handlePqErr(err)
+	}
 
-	go func() {
-		defer close(dberr)
-		select {
-		case dberr <- populateFields(db, t):
-			return
-		case <-done:
-			return
-		}
-	}()
+	err = populateLabels(db, t)
+	if err != nil {
+		return handlePqErr(err)
+	}
 
 	err = json.Unmarshal(ajson, &t.Assignee)
 	if err != nil {
-		done <- struct{}{}
 		return err
 	}
 
 	err = json.Unmarshal(rjson, &t.Reporter)
 	if err != nil {
-		done <- struct{}{}
 		return err
 	}
 
 	err = json.Unmarshal(sjson, &t.Status)
 	if err != nil {
-		done <- struct{}{}
 		return err
 	}
 
 	err = json.Unmarshal(tjson, &t.Type)
 	if err != nil {
-		done <- struct{}{}
 		return err
 	}
 
-	err = <-dberr
-	if err != nil {
-		log.Println("Errored while getting fields.")
-	}
 	return handlePqErr(err)
 }
 
 // Get gets a Ticket from a postgres DB by it's ID
 func (ts *TicketStore) Get(t *models.Ticket) error {
 	row := ts.db.QueryRow(`SELECT t.id, t.key, t.created_date, 
-									 t.updated_date, t.summary, t.description, 
-									 row_to_json(a.*) AS assignee, 
-									 row_to_json(r.*) AS reporter, 
-									 row_to_json(s.*) AS status, 
-									 row_to_json(tt.*) AS ticket_type 
+								  t.updated_date, t.summary, t.description, 
+								  json_build_object('id', a.id, 'username', a.username, 'email', a.email, 'full_name', a.full_name, 'profile_picture', a.profile_picture) AS assignee, 
+								  json_build_object('id', r.id, 'username', r.username, 'email', r.email, 'full_name', r.full_name, 'profile_picture', r.profile_picture) AS reporter, 
+								  row_to_json(s.*) AS status, 
+								  row_to_json(tt.*) AS ticket_type 
 						   FROM tickets AS t 
 						   JOIN users AS a ON a.id = t.assignee_id
 						   JOIN users AS r ON r.id = t.reporter_id
@@ -178,11 +195,11 @@ func (ts *TicketStore) GetAll() ([]models.Ticket, error) {
 	var tickets []models.Ticket
 
 	rows, err := ts.db.Query(`SELECT t.id, t.key, t.created_date, 
-									  t.updated_date, t.summary, t.description, 
-									  row_to_json(a.*) AS assignee, 
-									  row_to_json(r.*) AS reporter, 
-									  row_to_json(s.*) AS status, 
-									  row_to_json(tt.*) AS ticket_type 
+									 t.updated_date, t.summary, t.description, 
+									 json_build_object('id', a.id, 'username', a.username, 'email', a.email, 'full_name', a.full_name, 'profile_picture', a.profile_picture) AS assignee, 
+									 json_build_object('id', r.id, 'username', r.username, 'email', r.email, 'full_name', r.full_name, 'profile_picture', r.profile_picture) AS reporter, 
+									 row_to_json(s.*) AS status, 
+									 row_to_json(tt.*) AS ticket_type 
 							  FROM tickets AS t 
 							  JOIN users AS a ON a.id = t.assignee_id
 							  JOIN users AS r ON r.id = t.reporter_id
@@ -295,7 +312,12 @@ func (ts *TicketStore) Remove(ticket models.Ticket) error {
 
 // New will add a new Ticket to the postgres DB
 func (ts *TicketStore) New(project models.Project, ticket *models.Ticket) error {
-	// TODO update fields?
+	if project.Key == "" {
+		return errors.New("project key required for ticket creation")
+	}
+
+	ticket.Key = ts.NextTicketKey(project)
+
 	err := ts.db.QueryRow(`INSERT INTO tickets 
 						   (summary, description, project_id, assignee_id, 
 						   reporter_id, ticket_type_id, status_id, key) 
@@ -307,15 +329,49 @@ func (ts *TicketStore) New(project models.Project, ticket *models.Ticket) error 
 		Scan(&ticket.ID)
 
 	for _, fv := range ticket.Fields {
-		jsn, err := json.Marshal(fv)
+		var fieldID int64
+
+		err = ts.db.QueryRow(`SELECT id FROM fields WHERE name = $1`, fv.Name).
+			Scan(&fieldID)
 		if err != nil {
-			return err
+			return handlePqErr(err)
 		}
 
+		// Yay interface{} hacks!
+		fvint, _ := fv.Value.(int)
+		fvflt, _ := fv.Value.(float64)
+		fvstr, _ := fv.Value.(string)
+		fvdte, _ := fv.Value.(time.Time)
+		fvopt, _ := fv.Value.(models.FieldOption)
+
 		err = ts.db.QueryRow(`INSERT INTO field_values 
-							  VALUES (name, data_type, value) = ($1, $2, $3)
-							  RETURNING id`, fv.Name, fv.DataType, jsn).
+							  (name, data_type, int_value, flt_value, str_value,
+							   dte_value, opt_value, ticket_id, field_id) 
+							  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+							  RETURNING id`,
+			fv.Name,
+			fv.DataType,
+			fvint,
+			fvflt,
+			fvstr,
+			fvdte,
+			fvopt.Selected,
+			ticket.ID,
+			fieldID).
 			Scan(&fv.ID)
+
+		if err != nil {
+			return handlePqErr(err)
+		}
+	}
+
+	for _, lb := range ticket.Labels {
+		_, err = ts.db.Exec(`INSERT INTO tickets_labels
+						     (label_id, ticket_id) 
+					         VALUES ($1, $2)`, lb.ID, ticket.ID)
+		if err != nil {
+			return handlePqErr(err)
+		}
 	}
 
 	return handlePqErr(err)
@@ -395,12 +451,12 @@ func (ts *TicketStore) NextTicketKey(p models.Project) string {
 
 	err := ts.db.QueryRow(`SELECT COUNT(t.id) FROM tickets AS t
 						   JOIN projects AS p ON p.id = t.project_id
-						   WHERE p.id = $1 OR p.key = $2`, p.ID, p.Key).
+						   WHERE p.key = $1`, p.Key).
 		Scan(&count)
 	if err != nil {
 		handlePqErr(err)
-		return p.Key + strconv.Itoa(1)
+		return ""
 	}
 
-	return p.Key + strconv.Itoa(count+1)
+	return p.Key + "-" + strconv.Itoa(count+1)
 }

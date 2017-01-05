@@ -120,6 +120,10 @@ func toPqErr(e error) *pq.Error {
 }
 
 func handlePqErr(e error) error {
+	if e == sql.ErrNoRows {
+		return store.ErrNotFound
+	}
+
 	pqe := toPqErr(e)
 	if pqe == nil {
 		return e
