@@ -14,12 +14,12 @@ import (
 func labelRouter() chi.Router {
 	router := chi.NewRouter()
 
-	router.Get("/labels", GetAllLabels)
-	router.Post("/labels", CreateLabel)
+	router.Get("/", GetAllLabels)
+	router.Post("/", CreateLabel)
 
-	router.Get("/labels/:id", GetLabel)
-	router.Delete("/labels/:id", DeleteLabel)
-	router.Put("/labels/:id", UpdateLabel)
+	router.Get("/:id", GetLabel)
+	router.Delete("/:id", DeleteLabel)
+	router.Put("/:id", UpdateLabel)
 
 	return router
 }
@@ -39,7 +39,7 @@ func GetAllLabels(w http.ResponseWriter, r *http.Request) {
 
 // GetLabel will return a JSON representation of a label
 func GetLabel(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[len("/labels/"):]
+	id := chi.URLParam(r, "id")
 
 	lbl := &models.Label{}
 
@@ -115,6 +115,18 @@ func UpdateLabel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if lbl.ID == 0 {
+		id := chi.URLParam(r, "id")
+		i, err := strconv.Atoi(id)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write(apiError(http.StatusText(http.StatusBadRequest)))
+			return
+		}
+
+		lbl.ID = int64(i)
+	}
+
 	err = Store.Labels().Save(lbl)
 	if err != nil {
 		w.WriteHeader(500)
@@ -129,7 +141,7 @@ func UpdateLabel(w http.ResponseWriter, r *http.Request) {
 // DeleteLabel deletes labels from the db and returns a repsonse indicating
 // success of failure.
 func DeleteLabel(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value("id").(string)
+	id := chi.URLParam(r, "id")
 
 	i, err := strconv.Atoi(id)
 	if err != nil {
