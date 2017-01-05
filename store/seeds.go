@@ -116,8 +116,8 @@ func SeedLabels(s Store) error {
 func SeedTickets(s Store) error {
 	fmt.Println("Seeding tickets")
 	for i := 0; i < 50; i++ {
-		t := &models.Ticket{
-			Key:         s.Tickets().NextTicketKey(models.Project{ID: 1}),
+		t := models.Ticket{
+			Key:         s.Tickets().NextTicketKey(models.Project{ID: 1, Key: "TEST"}),
 			Summary:     "This is a test ticket. #" + strconv.Itoa(i),
 			Description: "No really, this is just a test",
 			Reporter:    models.User{ID: 1},
@@ -129,7 +129,7 @@ func SeedTickets(s Store) error {
 			Fields: []models.FieldValue{
 				models.FieldValue{
 					Name:  "Story Points",
-					Value: rand.Int(),
+					Value: rand.Intn(100),
 				},
 				models.FieldValue{
 					Name: "Priority",
@@ -142,7 +142,7 @@ func SeedTickets(s Store) error {
 			Type: models.TicketType{ID: 1},
 		}
 
-		e := s.Tickets().New(models.Project{ID: 1}, t)
+		e := s.Tickets().New(models.Project{ID: 1, Key: "TEST"}, &t)
 		if e != nil && e != ErrDuplicateEntry {
 			return e
 		}
