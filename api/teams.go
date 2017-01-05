@@ -14,12 +14,12 @@ import (
 func teamRouter() chi.Router {
 	router := chi.NewRouter()
 
-	router.Get("/teams", GetAllTeams)
-	router.Post("/teams", CreateTeam)
+	router.Get("/", GetAllTeams)
+	router.Post("/", CreateTeam)
 
-	router.Get("/teams/:id", GetTeam)
-	router.Put("/teams/:id", UpdateTeam)
-	router.Delete("/teams/:id", RemoveTeam)
+	router.Get("/:id", GetTeam)
+	router.Put("/:id", UpdateTeam)
+	router.Delete("/:id", RemoveTeam)
 
 	return router
 }
