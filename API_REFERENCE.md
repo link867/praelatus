@@ -26,12 +26,12 @@ This is the REST API reference documentation for the Praelatus REST API, Praelat
 - **/api**
 	- **/fields**
 		- **/:id**
+			- _GET_
+				- [GetField](/api/fields.go#L80)
 			- _PUT_
 				- [UpdateField](/api/fields.go#L106)
 			- _DELETE_
 				- [DeleteField](/api/fields.go#L138)
-			- _GET_
-				- [GetField](/api/fields.go#L80)
 
 </details>
 <details>
@@ -42,10 +42,10 @@ This is the REST API reference documentation for the Praelatus REST API, Praelat
 - **/api**
 	- **/labels**
 		- **/**
-			- _POST_
-				- [CreateLabel](/api/labels.go#L67)
 			- _GET_
 				- [GetAllLabels](/api/labels.go#L28)
+			- _POST_
+				- [CreateLabel](/api/labels.go#L67)
 
 </details>
 <details>
@@ -127,12 +127,12 @@ This is the REST API reference documentation for the Praelatus REST API, Praelat
 - **/api**
 	- **/teams**
 		- **/:id**
+			- _DELETE_
+				- [RemoveTeam](/api/teams.go#L138)
 			- _GET_
 				- [GetTeam](/api/teams.go#L80)
 			- _PUT_
 				- [UpdateTeam](/api/teams.go#L106)
-			- _DELETE_
-				- [RemoveTeam](/api/teams.go#L138)
 
 </details>
 <details>
@@ -167,12 +167,12 @@ This is the REST API reference documentation for the Praelatus REST API, Praelat
 - **/api**
 	- **/tickets**
 		- **/:pkey/:key**
-			- _GET_
-				- [GetTicket](/api/tickets.go#L37)
 			- _DELETE_
 				- [RemoveTicket](/api/tickets.go#L142)
 			- _PUT_
 				- [UpdateTicket](/api/tickets.go#L165)
+			- _GET_
+				- [GetTicket](/api/tickets.go#L37)
 
 </details>
 <details>
@@ -267,12 +267,12 @@ This is the REST API reference documentation for the Praelatus REST API, Praelat
 - **/api**
 	- **/users**
 		- **/:username**
+			- _GET_
+				- [GetUser](/api/users.go#L37)
 			- _PUT_
 				- [UpdateUser](/api/users.go#L140)
 			- _DELETE_
 				- [DeleteUser](/api/users.go#L165)
-			- _GET_
-				- [GetUser](/api/users.go#L37)
 
 </details>
 <details>
@@ -297,10 +297,10 @@ This is the REST API reference documentation for the Praelatus REST API, Praelat
 - **/api/v1**
 	- **/fields**
 		- **/**
-			- _POST_
-				- [CreateField](/api/fields.go#L49)
 			- _GET_
 				- [GetAllFields](/api/fields.go#L28)
+			- _POST_
+				- [CreateField](/api/fields.go#L49)
 
 </details>
 <details>
@@ -371,12 +371,12 @@ This is the REST API reference documentation for the Praelatus REST API, Praelat
 - **/api/v1**
 	- **/projects**
 		- **/:pkey**
-			- _DELETE_
-				- [RemoveProject](/api/projects.go#L101)
 			- _PUT_
 				- [UpdateProject](/api/projects.go#L125)
 			- _GET_
 				- [GetProject](/api/projects.go#L27)
+			- _DELETE_
+				- [RemoveProject](/api/projects.go#L101)
 
 </details>
 <details>
@@ -452,12 +452,12 @@ This is the REST API reference documentation for the Praelatus REST API, Praelat
 - **/api/v1**
 	- **/tickets**
 		- **/:pkey/:key**
-			- _GET_
-				- [GetTicket](/api/tickets.go#L37)
 			- _DELETE_
 				- [RemoveTicket](/api/tickets.go#L142)
 			- _PUT_
 				- [UpdateTicket](/api/tickets.go#L165)
+			- _GET_
+				- [GetTicket](/api/tickets.go#L37)
 
 </details>
 <details>
@@ -468,10 +468,10 @@ This is the REST API reference documentation for the Praelatus REST API, Praelat
 - **/api/v1**
 	- **/tickets**
 		- **/:pkey/:key/comments**
-			- _POST_
-				- [CreateComment](/api/tickets.go#L276)
 			- _GET_
 				- [GetComments](/api/tickets.go#L203)
+			- _POST_
+				- [CreateComment](/api/tickets.go#L276)
 
 </details>
 <details>
@@ -508,10 +508,10 @@ This is the REST API reference documentation for the Praelatus REST API, Praelat
 - **/api/v1**
 	- **/types**
 		- **/**
-			- _POST_
-				- [CreateTicketType](/api/types.go#L49)
 			- _GET_
 				- [GetAllTicketTypes](/api/types.go#L28)
+			- _POST_
+				- [CreateTicketType](/api/types.go#L49)
 
 </details>
 <details>
@@ -538,10 +538,10 @@ This is the REST API reference documentation for the Praelatus REST API, Praelat
 - **/api/v1**
 	- **/users**
 		- **/**
-			- _POST_
-				- [CreateUser](/api/users.go#L88)
 			- _GET_
 				- [GetAllUsers](/api/users.go#L63)
+			- _POST_
+				- [CreateUser](/api/users.go#L88)
 
 </details>
 <details>
@@ -568,10 +568,10 @@ This is the REST API reference documentation for the Praelatus REST API, Praelat
 - **/api/v1**
 	- **/users**
 		- **/sessions**
-			- _POST_
-				- [CreateSession](/api/users.go#L190)
 			- _GET_
 				- [RefreshSession](/api/users.go#L247)
+			- _POST_
+				- [CreateSession](/api/users.go#L190)
 
 </details>
 <details>
@@ -594,14 +594,14 @@ This is the REST API reference documentation for the Praelatus REST API, Praelat
 - **/api/v1**
 	- **/workflows**
 		- **/:id**
-			- _GET_
-				- [GetWorkflow](/api/workflows.go#L90)
 			- _PUT_
 				- [UpdateWorkflow](/api/workflows.go#L114)
 			- _DELETE_
 				- [RemoveWorkflow](/api/workflows.go#L168)
 			- _POST_
 				- [CreateWorkflow](/api/workflows.go#L49)
+			- _GET_
+				- [GetWorkflow](/api/workflows.go#L90)
 
 </details>
 <details>
