@@ -13,22 +13,22 @@ import (
 func projectRouter() chi.Router {
 	router := chi.NewRouter()
 
-	router.Get("/projects", GetAllProjects)
-	router.Post("/projects", CreateProject)
+	router.Get("/", GetAllProjects)
+	router.Post("/", CreateProject)
 
-	router.Get("/projects/:key", GetProject)
-	router.Delete("/projects/:key", RemoveProject)
-	router.Put("/projects/:key", UpdateProject)
+	router.Get("/:pkey", GetProject)
+	router.Delete("/:pkey", RemoveProject)
+	router.Put("/:pkey", UpdateProject)
 
 	return router
 }
 
-// GetProject will get a project by it's project key
+// GetProject will get a project by it's project pkey
 func GetProject(w http.ResponseWriter, r *http.Request) {
-	key := r.Context().Value("key").(string)
+	pkey := chi.URLParam(r, "pkey")
 
 	p := models.Project{
-		Key: key,
+		Key: pkey,
 	}
 
 	err := Store.Projects().Get(&p)
@@ -96,10 +96,10 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 	sendJSON(w, p)
 }
 
-// RemoveProject will remove the project indicated by the key passed in as a
+// RemoveProject will remove the project indicated by the pkey passed in as a
 // url parameter
 func RemoveProject(w http.ResponseWriter, r *http.Request) {
-	key := r.Context().Value("id").(string)
+	pkey := chi.URLParam(r, "pkey")
 
 	u := mw.GetUser(r.Context())
 	if u == nil || !u.IsAdmin {
@@ -108,7 +108,7 @@ func RemoveProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := Store.Projects().Remove(models.Project{Key: key})
+	err := Store.Projects().Remove(models.Project{Key: pkey})
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(apiError(err.Error()))
