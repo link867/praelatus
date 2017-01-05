@@ -14,12 +14,12 @@ import (
 func fieldRouter() chi.Router {
 	router := chi.NewRouter()
 
-	router.Get("/fields", GetAllFields)
-	router.Post("/fields", CreateField)
+	router.Get("/", GetAllFields)
+	router.Post("/", CreateField)
 
-	router.Get("/fields/:id", GetField)
-	router.Put("/fields/:id", UpdateField)
-	router.Delete("/fields/:id", DeleteField)
+	router.Get("/:id", GetField)
+	router.Put("/:id", UpdateField)
+	router.Delete("/:id", DeleteField)
 
 	return router
 }
