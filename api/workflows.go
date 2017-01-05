@@ -14,12 +14,12 @@ import (
 func workflowRouter() chi.Router {
 	router := chi.NewRouter()
 
-	router.Get("/workflows", GetAllWorkflows)
-	router.Post("/workflows/:pkey", CreateWorkflow)
+	router.Get("/", GetAllWorkflows)
+	router.Post("/:pkey", CreateWorkflow)
 
-	router.Get("/workflows/:id", GetWorkflow)
-	router.Put("/workflows/:id", UpdateWorkflow)
-	router.Delete("/workflows/:id", RemoveWorkflow)
+	router.Get("/:id", GetWorkflow)
+	router.Put("/:id", UpdateWorkflow)
+	router.Delete("/:id", RemoveWorkflow)
 
 	return router
 }
@@ -88,9 +88,7 @@ func CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 
 // GetWorkflow will return the json representation of a workflow in the database
 func GetWorkflow(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[len("/workflows/"):]
-
-	i, err := strconv.Atoi(id)
+	i, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write(apiError("invalid id"))
@@ -132,6 +130,18 @@ func UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if t.ID == 0 {
+		id := chi.URLParam(r, "id")
+		i, err := strconv.Atoi(id)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write(apiError(http.StatusText(http.StatusBadRequest)))
+			return
+		}
+
+		t.ID = int64(i)
+	}
+
 	p := models.Project{Key: r.Context().Value("pkey").(string)}
 
 	err = Store.Projects().Get(&p)
@@ -163,7 +173,7 @@ func RemoveWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err := strconv.Atoi(r.Context().Value("id").(string))
+	i, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write(apiError("invalid id"))
