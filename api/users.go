@@ -14,11 +14,11 @@ import (
 func userRouter() chi.Router {
 	router := chi.NewRouter()
 
-	router.Put("/users/:username", UpdateUser)
-	router.Delete("/users/:username", DeleteUser)
-	router.Get("/users/:username", GetUser)
-	router.Get("/users", GetAllUsers)
-	router.Post("/users", CreateUser)
+	router.Put("/:username", UpdateUser)
+	router.Delete("/:username", DeleteUser)
+	router.Get("/:username", GetUser)
+	router.Get("/", GetAllUsers)
+	router.Post("/", CreateUser)
 
 	router.Post("/sessions", CreateSession)
 	router.Get("/sessions", RefreshSession)
@@ -54,7 +54,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u.Password = ""
-	u.Settings = models.Settings{}
 
 	sendJSON(w, u)
 }
@@ -79,7 +78,7 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	for i := range users {
 		users[i].Password = ""
-		users[i].Settings = models.Settings{}
+		users[i].Settings = nil
 	}
 
 	sendJSON(w, users)
@@ -191,7 +190,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 func CreateSession(w http.ResponseWriter, r *http.Request) {
 	type loginRequest struct {
 		Username string `json:"username"`
-		Password string `json:"passoword"`
+		Password string `json:"password"`
 	}
 
 	var l loginRequest
