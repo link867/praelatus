@@ -67,6 +67,9 @@ func (ms mockUsersStore) Get(u *models.User) error {
 	return nil
 }
 
+// because you can't use a pointer in a struct initializer
+var settings = models.Settings{}
+
 func (ms mockUsersStore) GetAll() ([]models.User, error) {
 	return []models.User{
 		models.User{
@@ -76,10 +79,9 @@ func (ms mockUsersStore) GetAll() ([]models.User, error) {
 			"foo@foo.com",
 			"Foo McFooserson",
 			"",
-			"",
 			false,
 			true,
-			models.Settings{},
+			&settings,
 		},
 		models.User{
 			2,
@@ -88,10 +90,9 @@ func (ms mockUsersStore) GetAll() ([]models.User, error) {
 			"foo@foo.com",
 			"Foo McFooserson",
 			"",
-			"",
 			false,
 			true,
-			models.Settings{},
+			&settings,
 		},
 	}, nil
 }
@@ -122,10 +123,9 @@ func (ms mockTeamStore) Get(t *models.Team) error {
 		"foo@foo.com",
 		"Foo McFooserson",
 		"",
-		"",
 		false,
 		true,
-		models.Settings{},
+		&settings,
 	}
 	t.Members = []models.User{
 		models.User{
@@ -135,10 +135,9 @@ func (ms mockTeamStore) Get(t *models.Team) error {
 			"foo@foo.com",
 			"Foo McFooserson",
 			"",
-			"",
 			false,
 			true,
-			models.Settings{},
+			&settings,
 		},
 		models.User{
 			2,
@@ -147,10 +146,9 @@ func (ms mockTeamStore) Get(t *models.Team) error {
 			"foo@foo.com",
 			"Foo McFooserson",
 			"",
-			"",
 			false,
 			true,
-			models.Settings{},
+			&settings,
 		},
 	}
 	return nil
@@ -168,10 +166,9 @@ func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 					"foo@foo.com",
 					"Foo McFooserson",
 					"",
-					"",
 					false,
 					true,
-					models.Settings{},
+					&settings,
 				},
 				Members: []models.User{
 					models.User{
@@ -181,10 +178,9 @@ func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 						"foo@foo.com",
 						"Foo McFooserson",
 						"",
-						"",
 						false,
 						true,
-						models.Settings{},
+						&settings,
 					},
 					models.User{
 						2,
@@ -193,10 +189,9 @@ func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 						"foo@foo.com",
 						"Foo McFooserson",
 						"",
-						"",
 						false,
 						true,
-						models.Settings{},
+						&settings,
 					},
 				},
 			},
@@ -210,10 +205,9 @@ func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 					"foo@foo3.com",
 					"Foo McFooserson3",
 					"",
-					"",
 					false,
 					true,
-					models.Settings{},
+					&settings,
 				},
 				Members: []models.User{
 					models.User{
@@ -223,10 +217,9 @@ func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 						"foo@foo3.com",
 						"Foo McFooserson3",
 						"",
-						"",
 						false,
 						true,
-						models.Settings{},
+						&settings,
 					},
 					models.User{
 						4,
@@ -235,10 +228,9 @@ func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 						"foo@foo4.com",
 						"Foo McFooserson4",
 						"",
-						"",
 						false,
 						true,
-						models.Settings{},
+						&settings,
 					},
 				},
 			},
@@ -258,10 +250,9 @@ func (ms mockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 				"foo@foo.com",
 				"Foo McFooserson",
 				"",
-				"",
 				false,
 				true,
-				models.Settings{},
+				&settings,
 			},
 			Members: []models.User{
 				models.User{
@@ -271,10 +262,9 @@ func (ms mockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 					"foo@foo.com",
 					"Foo McFooserson",
 					"",
-					"",
 					false,
 					true,
-					models.Settings{},
+					&settings,
 				},
 				models.User{
 					2,
@@ -283,10 +273,9 @@ func (ms mockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 					"foo@foo.com",
 					"Foo McFooserson",
 					"",
-					"",
 					false,
 					true,
-					models.Settings{},
+					&settings,
 				},
 			},
 		},
@@ -300,10 +289,9 @@ func (ms mockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 				"foo@foo3.com",
 				"Foo McFooserson3",
 				"",
-				"",
 				false,
 				true,
-				models.Settings{},
+				&settings,
 			},
 			Members: []models.User{
 				models.User{
@@ -313,10 +301,9 @@ func (ms mockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 					"foo@foo3.com",
 					"Foo McFooserson3",
 					"",
-					"",
 					false,
 					true,
-					models.Settings{},
+					&settings,
 				},
 				models.User{
 					4,
@@ -325,10 +312,9 @@ func (ms mockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 					"foo@foo4.com",
 					"Foo McFooserson4",
 					"",
-					"",
 					false,
 					true,
-					models.Settings{},
+					&settings,
 				},
 			},
 		},
@@ -489,10 +475,9 @@ func (mockTicketStore) Get(t *models.Ticket) error {
 		"foo@foo.com",
 		"Foo McFooserson",
 		"",
-		"",
 		false,
 		true,
-		models.Settings{},
+		&settings,
 	}
 
 	t.Assignee = models.User{
@@ -502,10 +487,9 @@ func (mockTicketStore) Get(t *models.Ticket) error {
 		"bar@bar.com",
 		"Bar McBarserson",
 		"",
-		"",
 		true,
 		true,
-		models.Settings{},
+		&settings,
 	}
 
 	t.Status = models.Status{
@@ -559,10 +543,9 @@ func (ms mockTicketStore) GetAll() ([]models.Ticket, error) {
 				"foo@foo.com",
 				"Foo McFooserson",
 				"",
-				"",
 				false,
 				true,
-				models.Settings{},
+				&settings,
 			},
 
 			Assignee: models.User{
@@ -572,10 +555,9 @@ func (ms mockTicketStore) GetAll() ([]models.Ticket, error) {
 				"bar@bar.com",
 				"Bar McBarserson",
 				"",
-				"",
 				true,
 				true,
-				models.Settings{},
+				&settings,
 			},
 
 			Status: models.Status{
@@ -625,10 +607,9 @@ func (ms mockTicketStore) GetAll() ([]models.Ticket, error) {
 				"foo@foo.com",
 				"Foo McFooserson",
 				"",
-				"",
 				false,
 				true,
-				models.Settings{},
+				&settings,
 			},
 
 			Assignee: models.User{
@@ -638,10 +619,9 @@ func (ms mockTicketStore) GetAll() ([]models.Ticket, error) {
 				"bar@bar.com",
 				"Bar McBarserson",
 				"",
-				"",
 				true,
 				true,
-				models.Settings{},
+				&settings,
 			},
 
 			Status: models.Status{
@@ -694,10 +674,9 @@ func (ms mockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, er
 				"foo@foo.com",
 				"Foo McFooserson",
 				"",
-				"",
 				false,
 				true,
-				models.Settings{},
+				&settings,
 			},
 
 			Assignee: models.User{
@@ -707,10 +686,9 @@ func (ms mockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, er
 				"bar@bar.com",
 				"Bar McBarserson",
 				"",
-				"",
 				true,
 				true,
-				models.Settings{},
+				&settings,
 			},
 
 			Status: models.Status{
@@ -760,10 +738,9 @@ func (ms mockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, er
 				"foo@foo.com",
 				"Foo McFooserson",
 				"",
-				"",
 				false,
 				true,
-				models.Settings{},
+				&settings,
 			},
 
 			Assignee: models.User{
@@ -773,10 +750,9 @@ func (ms mockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, er
 				"bar@bar.com",
 				"Bar McBarserson",
 				"",
-				"",
 				true,
 				true,
-				models.Settings{},
+				&settings,
 			},
 
 			Status: models.Status{
@@ -801,10 +777,9 @@ func (ms mockTicketStore) GetComments(t models.Ticket) ([]models.Comment, error)
 				"bar@bar.com",
 				"Bar McBarserson",
 				"",
-				"",
 				true,
 				true,
-				models.Settings{},
+				&settings,
 			},
 		},
 	}, nil
@@ -890,10 +865,9 @@ func (ms mockProjectStore) Get(p *models.Project) error {
 		"bar@bar.com",
 		"Bar McBarserson",
 		"",
-		"",
 		true,
 		true,
-		models.Settings{},
+		&settings,
 	}
 	return nil
 }
@@ -912,10 +886,9 @@ func (ms mockProjectStore) GetAll() ([]models.Project, error) {
 				"bar@bar.com",
 				"Bar McBarserson",
 				"",
-				"",
 				true,
 				true,
-				models.Settings{},
+				&settings,
 			},
 		},
 		models.Project{
@@ -930,10 +903,9 @@ func (ms mockProjectStore) GetAll() ([]models.Project, error) {
 				"foo@foo.com",
 				"Foo McFooserson",
 				"",
-				"",
 				false,
 				true,
-				models.Settings{},
+				&settings,
 			},
 		},
 	}, nil
@@ -1187,10 +1159,9 @@ func testLogin(r *http.Request) {
 		"foo@foo.com",
 		"Foo McFooserson",
 		"",
-		"",
 		false,
 		true,
-		models.Settings{},
+		&settings,
 	}
 
 	token, err := mw.JWTSignUser(u)
@@ -1209,10 +1180,9 @@ func testAdminLogin(r *http.Request) {
 		"foo@foo.com",
 		"Foo McFooserson",
 		"",
-		"",
 		true,
 		true,
-		models.Settings{},
+		&settings,
 	}
 
 	token, err := mw.JWTSignUser(u)
