@@ -30,7 +30,7 @@ var v2schema = schema{2, users, "create user tables"}
 const teams = `
 CREATE TABLE IF NOT EXISTS teams (
     id           SERIAL PRIMARY KEY,
-    name         varchar(40) NOT NULL,
+    name         varchar(40) UNIQUE NOT NULL,
 
     lead_id integer REFERENCES users (id)
 );
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS projects (
     id              SERIAL PRIMARY KEY,
 	created_date    timestamp DEFAULT current_timestamp,
     name            varchar(250) NOT NULL,
-    key				varchar(40) NOT NULL UNIQUE,
+    key				varchar(40)  NOT NULL UNIQUE,
     repo			varchar(250),
     homepage        varchar(250),
     icon_url        varchar(250),
@@ -62,19 +62,19 @@ var v4schema = schema{4, projects, "create project tables"}
 const workflows = `
 CREATE TABLE IF NOT EXISTS statuses (
     id   SERIAL PRIMARY KEY,
-    name varchar(250) NOT NULL
+    name varchar(250) UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS workflows (
     id   SERIAL PRIMARY KEY,
-    name varchar(250),
+    name varchar(250) UNIQUE NOT NULL,
 
     project_id integer REFERENCES projects (id)
 );
 
 CREATE TABLE IF NOT EXISTS transitions (
     id          SERIAL PRIMARY KEY,
-	name		varchar(250),
+	name		varchar(250) NOT NULL,
 
     workflow_id integer REFERENCES workflows (id),
 	from_status integer REFERENCES statuses (id),
@@ -83,8 +83,8 @@ CREATE TABLE IF NOT EXISTS transitions (
 
 CREATE TABLE IF NOT EXISTS hooks (
     id            SERIAL PRIMARY KEY,
-	endpoint      varchar(250),
-	method        varchar(10),
+	endpoint      varchar(250) NOT NULL,
+	method        varchar(10) NOT NULL,
 	body          text,
 
     transition_id integer REFERENCES transitions (id)
@@ -96,14 +96,14 @@ var v5schema = schema{5, workflows, "create workflow tables"}
 const tickets = `
 CREATE TABLE IF NOT EXISTS fields (
     id        SERIAL PRIMARY KEY,
-    name      varchar(250) UNIQUE,
+    name      varchar(250) UNIQUE NOT NULL,
 
     data_type varchar(6)
 );
 
 CREATE TABLE IF NOT EXISTS ticket_types (
     id        SERIAL PRIMARY KEY,
-    name      varchar(250),
+    name      varchar(250) UNIQUE NOT NULL,
     icon_path varchar(250)
 );
 
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     id           SERIAL PRIMARY KEY,
 	updated_date timestamp DEFAULT current_timestamp,
 	created_date timestamp DEFAULT current_timestamp,
-    key          varchar(250) NOT NULL CHECK (key <> ''),
+    key          varchar(250) UNIQUE NOT NULL CHECK (key <> ''),
     summary      varchar(250) NOT NULL CHECK (summary <> ''),
     description  text NOT NULL,
 
@@ -124,8 +124,8 @@ CREATE TABLE IF NOT EXISTS tickets (
 
 CREATE TABLE IF NOT EXISTS field_values (
     id		  SERIAL PRIMARY KEY,
-	name	  varchar(250),
-	data_type varchar(6),
+	name	  varchar(250) NOT NULL,
+	data_type varchar(6) NOT NULL,
 
     int_value integer,
 	flt_value decimal,
@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS comments (
 	id SERIAL PRIMARY KEY,
 	updated_date timestamp DEFAULT current_timestamp,
 	created_date timestamp DEFAULT current_timestamp,
-	body text,
+	body text NOT NULL,
 	author_id integer REFERENCES users (id) NOT NULL,
 	ticket_id integer REFERENCES tickets (id) NOT NULL
 );`
@@ -170,7 +170,7 @@ var v7schema = schema{7, comments, "add comments table"}
 const labels = `
 CREATE TABLE IF NOT EXISTS labels (
 	id SERIAL PRIMARY KEY,
-	name varchar(255)
+	name varchar(255) UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS tickets_labels (
