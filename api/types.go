@@ -14,12 +14,12 @@ import (
 func typeRouter() chi.Router {
 	router := chi.NewRouter()
 
-	router.Get("/types", GetAllTicketTypes)
-	router.Post("/types", CreateTicketType)
+	router.Get("/", GetAllTicketTypes)
+	router.Post("/", CreateTicketType)
 
-	router.Get("/types/:id", GetTicketType)
-	router.Put("/types/:id", UpdateTicketType)
-	router.Delete("/types/:id", RemoveTicketType)
+	router.Get("/:id", GetTicketType)
+	router.Put("/:id", UpdateTicketType)
+	router.Delete("/:id", RemoveTicketType)
 
 	return router
 }
@@ -78,7 +78,7 @@ func CreateTicketType(w http.ResponseWriter, r *http.Request) {
 
 // GetTicketType will return the json representation of a type in the database
 func GetTicketType(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[len("/types/"):]
+	id := chi.URLParam(r, "id")
 
 	i, err := strconv.Atoi(id)
 	if err != nil {
@@ -122,7 +122,19 @@ func UpdateTicketType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = Store.Types().New(&t)
+	if t.ID == 0 {
+		id := chi.URLParam(r, "id")
+		i, err := strconv.Atoi(id)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write(apiError(http.StatusText(http.StatusBadRequest)))
+			return
+		}
+
+		t.ID = int64(i)
+	}
+
+	err = Store.Types().Save(t)
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write(apiError(err.Error()))
@@ -143,7 +155,7 @@ func RemoveTicketType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err := strconv.Atoi(r.Context().Value("id").(string))
+	i, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write(apiError("invalid id"))
