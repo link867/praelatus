@@ -1,7 +1,5 @@
 package migrations
 
-// TODO add field options
-
 const dbInfo = `
 CREATE TABLE IF NOT EXISTS database_information (
 	id SERIAL PRIMARY KEY,
@@ -21,8 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     full_name       varchar(250) NOT NULL,
     is_admin        boolean DEFAULT false,
     is_active       boolean DEFAULT true,
-    gravatar        varchar(250),
-    profile_picture varchar(250)
+    profile_picture varchar(250) NOT NULL
 );`
 
 var v2schema = schema{2, users, "create user tables"}
