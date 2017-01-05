@@ -9,7 +9,7 @@ import (
 	"github.com/praelatus/backend/mw"
 	"github.com/praelatus/backend/store"
 	"github.com/pressly/chi"
-	"github.com/pressly/chi/middleware"
+	"github.com/pressly/chi/docgen"
 )
 
 // Store is the global store used in our HTTP handlers.
@@ -18,17 +18,25 @@ var Store store.Store
 // Cache is the global cache object used in our HTTP handlers.
 var Cache *store.Cache
 
+func index(rtr chi.Router) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		jsnStr := docgen.JSONRoutesDoc(rtr)
+		w.Write([]byte(jsnStr))
+	})
+}
+
 // New will start running the api on the given port
-func New(store store.Store) http.Handler {
+func New(store store.Store) chi.Router {
 	Store = store
 
 	router := chi.NewRouter()
 
 	router.Use(mw.Default...)
-	router.Use(middleware.Recoverer)
+	// router.Use(middleware.Recoverer)
 
 	api := chi.NewRouter()
 
+	api.Mount("/routes", index(api))
 	api.Mount("/fields", fieldRouter())
 	api.Mount("/labels", labelRouter())
 	api.Mount("/projects", projectRouter())
@@ -40,6 +48,9 @@ func New(store store.Store) http.Handler {
 
 	router.Mount("/api", api)
 	router.Mount("/api/v1", api)
+
+	// Left here for debugging purposes
+	// docgen.PrintRoutes(router)
 
 	return router
 }
