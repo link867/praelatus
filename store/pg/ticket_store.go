@@ -261,22 +261,41 @@ func (ts *TicketStore) GetAllByProject(p models.Project) ([]models.Ticket, error
 	return tickets, nil
 }
 
+func saveFieldValue(db *sql.DB, fv models.FieldValue) error {
+	// Yay interface{} hacks!
+	fvint, _ := fv.Value.(int)
+	fvflt, _ := fv.Value.(float64)
+	fvstr, _ := fv.Value.(string)
+	fvdte, _ := fv.Value.(time.Time)
+	fvopt, _ := fv.Value.(models.FieldOption)
+
+	_, err := db.Exec(`UPDATE field_values 
+                           SET (name, data_type, int_value, flt_value, 
+                                str_value, dte_value, opt_value) =
+                           ($1, $2, $3, $4, $5, $6, $7)
+                           WHERE id = $8`,
+		fv.Name,
+		fv.DataType,
+		fvint,
+		fvflt,
+		fvstr,
+		fvdte,
+		fvopt.Selected,
+		fv.ID)
+
+	return handlePqErr(err)
+}
+
 // Save will update an existing ticket in the postgres DB
 func (ts *TicketStore) Save(ticket models.Ticket) error {
 	_, err := ts.db.Exec(`UPDATE tickets SET 
-						  (summary, description, updated_date) = ($1, $2, $3) 
-						  WHERE id = $4`,
+			      (summary, description, updated_date) = ($1, $2, $3) 
+			      WHERE id = $4`,
 		ticket.Summary, ticket.Description, time.Now(), ticket.ID)
 
 	for _, fv := range ticket.Fields {
-		jsn, err := json.Marshal(fv.Value)
-		if err != nil {
-			return err
-		}
+		err = saveFieldValue(ts.db, fv)
 
-		_, err = ts.db.Exec(`UPDATE field_values 
-							 SET (name, data_type, value) = ($1, $2, $3)
-							 WHERE id = $4`, fv.Name, fv.DataType, jsn, fv.ID)
 		if err != nil {
 			return handlePqErr(err)
 		}
