@@ -16,9 +16,9 @@ type WorkflowStore struct {
 // Get gets a workflow from the database
 func (ws *WorkflowStore) Get(w *models.Workflow) error {
 	row := ws.db.QueryRow(`SELECT w.id, w.name 
-						   FROM workflows AS w
-						   JOIN projects AS p ON w.project_id = p.id
-						   WHERE w.id = $1 OR w.name = $2`, w.ID, w.Name)
+                               FROM workflows AS w
+                               JOIN projects AS p ON w.project_id = p.id
+                               WHERE w.id = $1 OR w.name = $2`, w.ID, w.Name)
 
 	err := row.Scan(&w.ID, &w.Name)
 	if err != nil {
@@ -31,8 +31,8 @@ func (ws *WorkflowStore) Get(w *models.Workflow) error {
 
 func (ws *WorkflowStore) getHooks(t *models.Transition) error {
 	rows, err := ws.db.Query(`SELECT h.id, endpoint, method, body
-						   FROM hooks AS h
-						   JOIN transitions AS t ON t.id = h.transition_id`)
+                                  FROM hooks AS h
+                                  JOIN transitions AS t ON t.id = h.transition_id`)
 	if err != nil {
 		return err
 	}
@@ -52,13 +52,11 @@ func (ws *WorkflowStore) getHooks(t *models.Transition) error {
 }
 
 func (ws *WorkflowStore) getTransitions(w *models.Workflow) error {
-	rows, err := ws.db.Query(`SELECT t.id, t.name, 
-									 from_s.name,
-									 row_to_json(to_s.*)
-							  FROM transitions AS t
-							  JOIN statuses AS from_s ON from_s.id = t.from_status
-							  JOIN statuses AS to_s ON to_s.id = t.to_status`)
-
+	rows, err := ws.db.Query(`SELECT t.id, t.name,
+                                         from_s.name, row_to_json(to_s.*)
+                                  FROM transitions AS t
+                                  JOIN statuses AS from_s ON from_s.id = t.from_status
+                                  JOIN statuses AS to_s ON to_s.id = t.to_status`)
 	if err != nil {
 		return handlePqErr(err)
 	}
@@ -206,7 +204,8 @@ func (ws *WorkflowStore) Save(w models.Workflow) error {
 		return handlePqErr(err)
 	}
 
-	_, err = tx.Exec(`UPDATE workflows SET (name) = ($1) WHERE id = $2`, w.Name, w.ID)
+	_, err = tx.Exec(`UPDATE workflows SET (name) = ($1) 
+                          WHERE id = $2`, w.Name, w.ID)
 	if err != nil {
 		tx.Rollback()
 		return handlePqErr(err)
