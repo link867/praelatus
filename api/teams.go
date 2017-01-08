@@ -78,7 +78,7 @@ func CreateTeam(w http.ResponseWriter, r *http.Request) {
 
 // GetTeam will return the json representation of a team in the database
 func GetTeam(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[len("/teams/"):]
+	id := chi.URLParam(r, "id")
 
 	i, err := strconv.Atoi(id)
 	if err != nil {

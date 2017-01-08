@@ -11,7 +11,7 @@ import (
 
 func TestGetType(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/types/1", nil)
+	r := httptest.NewRequest("GET", "/api/v1/types/1", nil)
 
 	router.ServeHTTP(w, r)
 
@@ -31,7 +31,7 @@ func TestGetType(t *testing.T) {
 
 func TestGetAllTypes(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/types", nil)
+	r := httptest.NewRequest("GET", "/api/v1/types", nil)
 	testLogin(r)
 
 	router.ServeHTTP(w, r)
@@ -60,7 +60,7 @@ func TestCreateType(t *testing.T) {
 	rd := bytes.NewReader(byt)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/types", rd)
+	r := httptest.NewRequest("POST", "/api/v1/types", rd)
 	testAdminLogin(r)
 
 	router.ServeHTTP(w, r)

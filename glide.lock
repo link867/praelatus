@@ -1,5 +1,5 @@
 hash: 904937b928d3d02c2e4a0a65bd836c1655203c4b8eb017372c447f13276b2fda
-updated: 2017-01-04T12:14:23.636464257-05:00
+updated: 2017-01-05T14:34:24.376647142-05:00
 imports:
 - name: github.com/dgrijalva/jwt-go
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
@@ -10,7 +10,7 @@ imports:
 - name: github.com/pressly/chi
   version: bda7fc49d11ad4024c761b858e295360ecb7fbaf
   subpackages:
-  - middleware
+  - docgen
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:

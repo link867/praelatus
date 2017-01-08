@@ -11,7 +11,7 @@ import (
 
 func TestGetLabel(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/labels/1", nil)
+	r := httptest.NewRequest("GET", "/api/v1/labels/1", nil)
 
 	router.ServeHTTP(w, r)
 
@@ -31,7 +31,7 @@ func TestGetLabel(t *testing.T) {
 
 func TestGetAllLabels(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/labels", nil)
+	r := httptest.NewRequest("GET", "/api/v1/labels", nil)
 	testLogin(r)
 
 	router.ServeHTTP(w, r)
@@ -60,7 +60,7 @@ func TestCreateLabel(t *testing.T) {
 	rd := bytes.NewReader(byt)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/labels", rd)
+	r := httptest.NewRequest("POST", "/api/v1/labels", rd)
 	testAdminLogin(r)
 
 	router.ServeHTTP(w, r)

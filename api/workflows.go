@@ -15,7 +15,7 @@ func workflowRouter() chi.Router {
 	router := chi.NewRouter()
 
 	router.Get("/", GetAllWorkflows)
-	router.Post("/:pkey", CreateWorkflow)
+	router.Post("/:id", CreateWorkflow)
 
 	router.Get("/:id", GetWorkflow)
 	router.Put("/:id", UpdateWorkflow)
@@ -65,7 +65,7 @@ func CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := models.Project{Key: r.Context().Value("pkey").(string)}
+	p := models.Project{Key: chi.URLParam(r, "id")}
 
 	err = Store.Projects().Get(&p)
 	if err != nil {

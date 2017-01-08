@@ -22,7 +22,7 @@ func ticketRouter() chi.Router {
 	router.Put("/:pkey/:key", UpdateTicket)
 
 	router.Post("/:pkey", CreateTicket)
-	router.Get("/:pkey/tickets", GetAllTicketsByProject)
+	router.Get("/:pkey", GetAllTicketsByProject)
 
 	router.Get("/:pkey/:key/comments", GetComments)
 	router.Post("/:pkey/:key/comments", CreateComment)
@@ -201,7 +201,7 @@ func UpdateTicket(w http.ResponseWriter, r *http.Request) {
 // GetComments will get the comments for the ticket indicated by the ticket key
 // in the url
 func GetComments(w http.ResponseWriter, r *http.Request) {
-	key := r.Context().Value("key").(string)
+	key := chi.URLParam(r, "key")
 
 	comments, err := Store.Tickets().GetComments(models.Ticket{Key: key})
 	if err != nil {
@@ -235,7 +235,7 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if cm.ID == 0 {
-		id, _ := strconv.Atoi(r.Context().Value("id").(string))
+		id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 		cm.ID = int64(id)
 	}
 
@@ -259,7 +259,7 @@ func RemoveComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, _ := strconv.Atoi(r.Context().Value("id").(string))
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
 	err := Store.Tickets().RemoveComment(models.Comment{ID: int64(id)})
 	if err != nil {
@@ -292,7 +292,7 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	key := r.Context().Value("key").(string)
+	key := chi.URLParam(r, "key")
 	err = Store.Tickets().NewComment(models.Ticket{Key: key}, &cm)
 	if err != nil {
 		w.WriteHeader(500)

@@ -11,7 +11,7 @@ import (
 
 func TestGetWorkflow(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/workflows/1", nil)
+	r := httptest.NewRequest("GET", "/api/v1/workflows/1", nil)
 
 	router.ServeHTTP(w, r)
 
@@ -31,7 +31,7 @@ func TestGetWorkflow(t *testing.T) {
 
 func TestGetAllWorkflows(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/workflows", nil)
+	r := httptest.NewRequest("GET", "/api/v1/workflows", nil)
 	testLogin(r)
 
 	router.ServeHTTP(w, r)
@@ -60,7 +60,7 @@ func TestCreateWorkflow(t *testing.T) {
 	rd := bytes.NewReader(byt)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/workflows/TEST", rd)
+	r := httptest.NewRequest("POST", "/api/v1/workflows/TEST", rd)
 	testAdminLogin(r)
 
 	router.ServeHTTP(w, r)

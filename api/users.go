@@ -36,7 +36,7 @@ type TokenResponse struct {
 // GetUser will get a user from the database by the given username
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	u := models.User{
-		Username: r.Context().Value("username").(string),
+		Username: chi.URLParam(r, "username"),
 	}
 
 	err := Store.Users().Get(&u)
@@ -149,6 +149,10 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if u.Username == "" {
+		u.Username = chi.URLParam(r, "username")
+	}
+
 	err = Store.Users().Save(u)
 	if err != nil {
 		w.WriteHeader(500)
@@ -172,6 +176,10 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		w.Write(apiError(err.Error()))
 		log.Println(err)
 		return
+	}
+
+	if u.Username == "" {
+		u.Username = chi.URLParam(r, "username")
 	}
 
 	err = Store.Users().Remove(u)

@@ -11,7 +11,7 @@ import (
 
 func TestGetUser(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/users/foouser", nil)
+	r := httptest.NewRequest("GET", "/api/v1/users/foouser", nil)
 
 	router.ServeHTTP(w, r)
 
@@ -35,7 +35,7 @@ func TestGetUser(t *testing.T) {
 
 func TestGetAllUsers(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/users", nil)
+	r := httptest.NewRequest("GET", "/api/v1/users", nil)
 	testAdminLogin(r)
 
 	router.ServeHTTP(w, r)
@@ -71,7 +71,7 @@ func TestCreateUser(t *testing.T) {
 	rd := bytes.NewReader(byt)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/users", rd)
+	r := httptest.NewRequest("POST", "/api/v1/users", rd)
 
 	router.ServeHTTP(w, r)
 
@@ -86,7 +86,7 @@ func TestCreateUser(t *testing.T) {
 		t.Errorf("Expected 1 Got %d", u.ID)
 	}
 
-	if l.User.Gravatar == "" {
+	if l.User.ProfilePic == "" {
 		t.Error("Expected a gravatar but got nothing.")
 	}
 
@@ -99,7 +99,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestRefreshSession(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/sessions", nil)
+	r := httptest.NewRequest("GET", "/api/v1/users/sessions", nil)
 	testLogin(r)
 
 	router.ServeHTTP(w, r)

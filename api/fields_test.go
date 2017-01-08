@@ -11,7 +11,7 @@ import (
 
 func TestGetField(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/fields/1", nil)
+	r := httptest.NewRequest("GET", "/api/v1/fields/1", nil)
 
 	router.ServeHTTP(w, r)
 
@@ -31,7 +31,7 @@ func TestGetField(t *testing.T) {
 
 func TestGetAllFields(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/fields", nil)
+	r := httptest.NewRequest("GET", "/api/v1/fields", nil)
 	testLogin(r)
 
 	router.ServeHTTP(w, r)
@@ -60,7 +60,7 @@ func TestCreateField(t *testing.T) {
 	rd := bytes.NewReader(byt)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/fields", rd)
+	r := httptest.NewRequest("POST", "/api/v1/fields", rd)
 	testAdminLogin(r)
 
 	router.ServeHTTP(w, r)

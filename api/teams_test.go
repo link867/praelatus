@@ -11,7 +11,7 @@ import (
 
 func TestGetTeam(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/teams/1", nil)
+	r := httptest.NewRequest("GET", "/api/v1/teams/1", nil)
 
 	router.ServeHTTP(w, r)
 
@@ -31,7 +31,7 @@ func TestGetTeam(t *testing.T) {
 
 func TestGetAllTeams(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/teams", nil)
+	r := httptest.NewRequest("GET", "/api/v1/teams", nil)
 	testLogin(r)
 
 	router.ServeHTTP(w, r)
@@ -60,7 +60,7 @@ func TestCreateTeam(t *testing.T) {
 	rd := bytes.NewReader(byt)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/teams", rd)
+	r := httptest.NewRequest("POST", "/api/v1/teams", rd)
 	testAdminLogin(r)
 
 	router.ServeHTTP(w, r)
