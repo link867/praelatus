@@ -5,25 +5,30 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/mw"
+	"github.com/pressly/chi"
 )
 
-func initProjectRoutes() {
-	Router.Handle("/projects", mw.Default(GetAllProjects)).Methods("GET")
-	Router.Handle("/projects", mw.Default(CreateProject)).Methods("POST")
-	Router.Handle("/projects/{pkey}", mw.Default(GetProject)).Methods("GET")
-	Router.Handle("/projects/{pkey}", mw.Default(RemoveProject)).Methods("DELETE")
-	Router.Handle("/projects/{pkey}", mw.Default(UpdateProject)).Methods("PUT")
+func projectRouter() chi.Router {
+	router := chi.NewRouter()
+
+	router.Get("/", GetAllProjects)
+	router.Post("/", CreateProject)
+
+	router.Get("/:pkey", GetProject)
+	router.Delete("/:pkey", RemoveProject)
+	router.Put("/:pkey", UpdateProject)
+
+	return router
 }
 
-// GetProject will get a project by it's project key
+// GetProject will get a project by it's project pkey
 func GetProject(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	pkey := chi.URLParam(r, "pkey")
 
 	p := models.Project{
-		Key: vars["key"],
+		Key: pkey,
 	}
 
 	err := Store.Projects().Get(&p)
@@ -91,10 +96,10 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 	sendJSON(w, p)
 }
 
-// RemoveProject will remove the project indicated by the key passed in as a
+// RemoveProject will remove the project indicated by the pkey passed in as a
 // url parameter
 func RemoveProject(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	pkey := chi.URLParam(r, "pkey")
 
 	u := mw.GetUser(r.Context())
 	if u == nil || !u.IsAdmin {
@@ -103,7 +108,7 @@ func RemoveProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := Store.Projects().Remove(models.Project{Key: vars["key"]})
+	err := Store.Projects().Remove(models.Project{Key: pkey})
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(apiError(err.Error()))

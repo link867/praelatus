@@ -5,21 +5,25 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/mw"
 	"github.com/praelatus/backend/store"
+	"github.com/pressly/chi"
 )
 
-func initUserRoutes() {
-	Router.Handle("/users/{username}", mw.Default(UpdateUser)).Methods("PUT")
-	Router.Handle("/users/{username}", mw.Default(DeleteUser)).Methods("DELETE")
-	Router.Handle("/users/{username}", mw.Default(GetUser)).Methods("GET")
-	Router.Handle("/users", mw.Default(GetAllUsers)).Methods("GET")
-	Router.Handle("/users", mw.Default(CreateUser)).Methods("POST")
+func userRouter() chi.Router {
+	router := chi.NewRouter()
 
-	Router.Handle("/sessions", mw.Default(CreateSession)).Methods("POST")
-	Router.Handle("/sessions", mw.Default(RefreshSession)).Methods("GET")
+	router.Put("/:username", UpdateUser)
+	router.Delete("/:username", DeleteUser)
+	router.Get("/:username", GetUser)
+	router.Get("/", GetAllUsers)
+	router.Post("/", CreateUser)
+
+	router.Post("/sessions", CreateSession)
+	router.Get("/sessions", RefreshSession)
+
+	return router
 }
 
 // TokenResponse is used when logging in or signing up, it will return a
@@ -31,10 +35,8 @@ type TokenResponse struct {
 
 // GetUser will get a user from the database by the given username
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
 	u := models.User{
-		Username: vars["username"],
+		Username: chi.URLParam(r, "username"),
 	}
 
 	err := Store.Users().Get(&u)
@@ -74,6 +76,11 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for i := range users {
+		users[i].Password = ""
+		users[i].Settings = nil
+	}
+
 	sendJSON(w, users)
 }
 
@@ -90,7 +97,15 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = Store.Users().New(&u)
+	usr, err := models.NewUser(u.Username, u.Password, u.FullName, u.Email, false)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	err = Store.Users().New(usr)
 	if err != nil {
 		if err == store.ErrDuplicateEntry {
 			w.WriteHeader(400)
@@ -104,7 +119,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := mw.JWTSignUser(u)
+	token, err := mw.JWTSignUser(*usr)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(apiError(err.Error()))
@@ -112,9 +127,10 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	usr.Password = ""
 	sendJSON(w, TokenResponse{
 		token,
-		u,
+		*usr,
 	})
 }
 
@@ -131,6 +147,10 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		w.Write(apiError(err.Error()))
 		log.Println(err)
 		return
+	}
+
+	if u.Username == "" {
+		u.Username = chi.URLParam(r, "username")
 	}
 
 	err = Store.Users().Save(u)
@@ -158,6 +178,10 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if u.Username == "" {
+		u.Username = chi.URLParam(r, "username")
+	}
+
 	err = Store.Users().Remove(u)
 	if err != nil {
 		w.WriteHeader(500)
@@ -174,7 +198,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 func CreateSession(w http.ResponseWriter, r *http.Request) {
 	type loginRequest struct {
 		Username string `json:"username"`
-		Password string `json:"passoword"`
+		Password string `json:"password"`
 	}
 
 	var l loginRequest

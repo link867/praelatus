@@ -30,8 +30,7 @@ func intoTeam(db *sql.DB, row rowScanner, t *models.Team) error {
 	t.Lead = u
 
 	rows, err := db.Query(`SELECT u.id, u.username, u.email, 
-								  u.full_name, u.gravatar, u.profile_picture,
-								  u.is_admin
+								  u.full_name, u.profile_picture, u.is_admin
 						   FROM teams_users AS tu 
 						   JOIN users AS u ON tu.user_id = u.id
 						   JOIN teams AS t ON tu.team_id = t.id
@@ -46,7 +45,7 @@ func intoTeam(db *sql.DB, row rowScanner, t *models.Team) error {
 		var u models.User
 
 		err = rows.Scan(&u.ID, &u.Username, &u.Email, &u.FullName,
-			&u.Gravatar, &u.ProfilePic, &u.IsAdmin)
+			&u.ProfilePic, &u.IsAdmin)
 		if err != nil {
 			return err
 		}
@@ -59,7 +58,8 @@ func intoTeam(db *sql.DB, row rowScanner, t *models.Team) error {
 
 // Get retrieves a team from the database based on ID
 func (ts *TeamStore) Get(t *models.Team) error {
-	row := ts.db.QueryRow(`SELECT t.id, t.name, row_to_json(lead.*) as lead
+	row := ts.db.QueryRow(`SELECT t.id, t.name, 
+							  json_build_object('id', lead.id, 'username', lead.username, 'email', lead.email, 'full_name', lead.full_name, 'profile_picture', lead.profile_picture) AS lead 
 							  FROM teams AS t
 							  JOIN users AS lead ON lead.id = t.lead_id
 							  WHERE t.id = $1
@@ -71,8 +71,8 @@ func (ts *TeamStore) Get(t *models.Team) error {
 
 // GetMembers will get the members for the given team.
 func (ts *TeamStore) GetMembers(t *models.Team) error {
-	rows, err := ts.db.Query(`SELECT u.id, username, password, email, full_name, 
-									 gravatar, profile_picture, is_admin
+	rows, err := ts.db.Query(`SELECT u.id, username, email, full_name, 
+									 profile_picture, is_admin
 							  FROM teams_users AS tu
 							  JOIN users AS u ON tu.user_id = u.id
 							  WHERE tu.team_id = $1`, t.ID)
@@ -85,7 +85,8 @@ func (ts *TeamStore) GetMembers(t *models.Team) error {
 	for rows.Next() {
 		var u *models.User
 
-		err = intoUser(rows, u)
+		err = rows.Scan(&u.ID, &u.Username, &u.Email, &u.FullName,
+			&u.ProfilePic, &u.IsAdmin)
 		if err != nil {
 			return handlePqErr(err)
 		}
@@ -100,7 +101,8 @@ func (ts *TeamStore) GetMembers(t *models.Team) error {
 func (ts *TeamStore) GetAll() ([]models.Team, error) {
 	var teams []models.Team
 
-	rows, err := ts.db.Query(`SELECT t.id, t.name, row_to_json(lead.*) AS lead
+	rows, err := ts.db.Query(`SELECT t.id, t.name, 
+							  json_build_object('id', lead.id, 'username', lead.username, 'email', lead.email, 'full_name', lead.full_name, 'profile_picture', lead.profile_picture) AS lead
 							  FROM teams AS t
 							  JOIN users AS lead ON lead.id = t.lead_id`)
 	if err != nil {

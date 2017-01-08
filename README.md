@@ -1,4 +1,4 @@
-# Praelatus [![License](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/chasinglogic/praelatus/blob/master/LICENSE) [![GoDoc](https://godoc.org/github.com/praelatus/backend?status.svg)](https://godoc.org/github.com/praelatus/backend)
+# Praelatus [![License](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/chasinglogic/praelatus/blob/master/LICENSE) [![GoDoc](https://godoc.org/github.com/praelatus/backend?status.svg)](https://godoc.org/github.com/praelatus/backend) ![GoReportCard](https://goreportcard.com/badge/github.com/praelatus/backend)
 An Open Source bug tracker and ticketing system.
 
 If you're looking for the official web frontend it's

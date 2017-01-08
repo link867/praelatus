@@ -11,9 +11,9 @@ import (
 
 func TestGetUser(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/users/foouser", nil)
+	r := httptest.NewRequest("GET", "/api/v1/users/foouser", nil)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var u models.User
 
@@ -35,10 +35,10 @@ func TestGetUser(t *testing.T) {
 
 func TestGetAllUsers(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/users", nil)
+	r := httptest.NewRequest("GET", "/api/v1/users", nil)
 	testAdminLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var u []models.User
 
@@ -56,7 +56,13 @@ func TestGetAllUsers(t *testing.T) {
 		t.Errorf("Expected foouser Got %s", u[0].Username)
 	}
 
-	t.Log(w.Body)
+	if u[0].Password != "" {
+		t.Errorf("Expected no passsword but got %s\n", u[0].Password)
+	}
+
+	for _, usr := range u {
+		t.Log(usr.String())
+	}
 }
 
 func TestCreateUser(t *testing.T) {
@@ -65,9 +71,9 @@ func TestCreateUser(t *testing.T) {
 	rd := bytes.NewReader(byt)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/users", rd)
+	r := httptest.NewRequest("POST", "/api/v1/users", rd)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var l TokenResponse
 
@@ -80,6 +86,10 @@ func TestCreateUser(t *testing.T) {
 		t.Errorf("Expected 1 Got %d", u.ID)
 	}
 
+	if l.User.ProfilePic == "" {
+		t.Error("Expected a profile pic but got nothing.")
+	}
+
 	if l.Token == "" {
 		t.Errorf("Expected a token got %s\n", l.Token)
 	}
@@ -89,10 +99,10 @@ func TestCreateUser(t *testing.T) {
 
 func TestRefreshSession(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/sessions", nil)
+	r := httptest.NewRequest("GET", "/api/v1/users/sessions", nil)
 	testLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	if w.Body.String() == "" {
 		t.Errorf("Expected a token response got %s\n", w.Body.String())

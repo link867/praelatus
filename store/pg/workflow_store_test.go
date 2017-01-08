@@ -37,7 +37,7 @@ func TestWorkflowGetByProject(t *testing.T) {
 }
 
 func TestWorkflowSave(t *testing.T) {
-	wk := models.Workflow{ID: 2}
+	wk := models.Workflow{ID: 1}
 	e := s.Workflows().Get(&wk)
 	failIfErr("Workflow Save", t, e)
 
@@ -46,7 +46,7 @@ func TestWorkflowSave(t *testing.T) {
 	e = s.Workflows().Save(wk)
 	failIfErr("Workflow Save", t, e)
 
-	wk = models.Workflow{ID: 2}
+	wk = models.Workflow{ID: 1}
 	e = s.Workflows().Get(&wk)
 	failIfErr("Workflow Save", t, e)
 

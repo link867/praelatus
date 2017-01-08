@@ -2,11 +2,52 @@ package store
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"strconv"
 
 	"github.com/praelatus/backend/models"
 )
+
+// DefaultWorkflow should be given when the /api/workflows/default endpoint is
+// queried
+var DefaultWorkflow = models.Workflow{
+	Name: "Simple Workflow",
+	Transitions: map[string][]models.Transition{
+		"Backlog": []models.Transition{
+			models.Transition{
+				Name:     "In Progress",
+				ToStatus: models.Status{ID: 2},
+				Hooks:    []models.Hook{},
+			},
+		},
+		"In Progress": []models.Transition{
+			models.Transition{
+				Name:     "Done",
+				ToStatus: models.Status{ID: 3},
+				Hooks:    []models.Hook{},
+			},
+			models.Transition{
+				Name:     "Backlog",
+				ToStatus: models.Status{ID: 1},
+				Hooks:    []models.Hook{},
+			},
+		},
+		"Done": []models.Transition{
+			models.Transition{
+				Name:     "ReOpen",
+				ToStatus: models.Status{ID: 1},
+				Hooks:    []models.Hook{},
+			},
+		},
+	},
+}
+
+var defaults = []func(s Store) error{
+	SeedTicketTypes,
+	SeedFields,
+	SeedStatuses,
+}
 
 var seedFuncs = []func(s Store) error{
 	SeedUsers,
@@ -19,6 +60,19 @@ var seedFuncs = []func(s Store) error{
 	SeedTickets,
 	SeedComments,
 	SeedWorkflows,
+}
+
+// SeedDefaults will seed the database with the basics needed to use Praelatus
+func SeedDefaults(s Store) error {
+	log.Println("Seeding database with defaults...")
+	for _, f := range defaults {
+		e := f(s)
+		if e != nil {
+			return e
+		}
+	}
+
+	return nil
 }
 
 // SeedAll will run all of the seed functions
@@ -62,8 +116,8 @@ func SeedLabels(s Store) error {
 func SeedTickets(s Store) error {
 	fmt.Println("Seeding tickets")
 	for i := 0; i < 50; i++ {
-		t := &models.Ticket{
-			Key:         s.Tickets().NextTicketKey(models.Project{ID: 1}),
+		t := models.Ticket{
+			Key:         s.Tickets().NextTicketKey(models.Project{ID: 1, Key: "TEST"}),
 			Summary:     "This is a test ticket. #" + strconv.Itoa(i),
 			Description: "No really, this is just a test",
 			Reporter:    models.User{ID: 1},
@@ -75,7 +129,7 @@ func SeedTickets(s Store) error {
 			Fields: []models.FieldValue{
 				models.FieldValue{
 					Name:  "Story Points",
-					Value: rand.Int(),
+					Value: rand.Intn(100),
 				},
 				models.FieldValue{
 					Name: "Priority",
@@ -88,7 +142,7 @@ func SeedTickets(s Store) error {
 			Type: models.TicketType{ID: 1},
 		}
 
-		e := s.Tickets().New(models.Project{ID: 1}, t)
+		e := s.Tickets().New(models.Project{ID: 1, Key: "TEST"}, &t)
 		if e != nil && e != ErrDuplicateEntry {
 			return e
 		}
