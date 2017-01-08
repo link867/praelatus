@@ -43,7 +43,7 @@ func TestStatusSave(t *testing.T) {
 	e = s.Statuses().Save(*l)
 	failIfErr("Status Save", t, e)
 
-	l = &models.Status{ID: 1}
+	l = &models.Status{ID: 4}
 	e = s.Statuses().Get(l)
 	failIfErr("Status Save", t, e)
 
