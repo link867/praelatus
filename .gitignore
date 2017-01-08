@@ -1,5 +1,5 @@
-# Compiled Object files, Static and Dynamic libs (Shared Objects)
-*.o
+# # Compiled Object files, Static and Dynamic libs (Shared Objects)
+# *.o
 *.a
 *.so
 
@@ -30,3 +30,5 @@ gin-bin
 client/dist/*
 
 .vagrant/*
+
+*jwt_secret.key*

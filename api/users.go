@@ -1,87 +1,272 @@
 package api
 
-// import (
-// 	"encoding/json"
-// 	"net/http"
-// 	"strconv"
+import (
+	"encoding/json"
+	"log"
+	"net/http"
 
-// 	mw "github.com/praelatus/backend/middleware"
-// 	"github.com/praelatus/backend/models"
-// )
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/mw"
+	"github.com/praelatus/backend/store"
+	"github.com/pressly/chi"
+)
 
-// func InitUserRoutes() {
-// 	BaseRoutes.Users.Handle("/", mw.Admin(ListUsers)).Methods("GET")
-// 	BaseRoutes.Users.Handle("/", mw.Default(CreateUser)).Methods("POST")
-// 	BaseRoutes.Users.Handle("/{name}", mw.Auth(GetUser)).Methods("GET")
-// 	BaseRoutes.Users.Handle("/{name}", mw.Auth(UpdateUser)).Methods("POST", "PUT")
-// }
+func userRouter() chi.Router {
+	router := chi.NewRouter()
 
-// func ListUsers(c *mw.Context) (int, []byte) {
-// 	users, err := Store.Users().GetAll()
-// 	// TODO: better error handling
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+	router.Put("/:username", UpdateUser)
+	router.Delete("/:username", DeleteUser)
+	router.Get("/:username", GetUser)
+	router.Get("/", GetAllUsers)
+	router.Post("/", CreateUser)
 
-// 	jsn, err := json.Marshal(&users)
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+	router.Post("/sessions", CreateSession)
+	router.Get("/sessions", RefreshSession)
 
-// 	return http.StatusOK, jsn
-// }
+	return router
+}
 
-// func CreateUser(c *mw.Context) (int, []byte) {
-// 	// TODO: Handle errors properly (i.e. username taken etc.)
-// 	var u models.User
+// TokenResponse is used when logging in or signing up, it will return a
+// generated token plus the user model for use by the client.
+type TokenResponse struct {
+	Token string      `json:"token"`
+	User  models.User `json:"user"`
+}
 
-// 	err := c.JSON(&u)
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+// GetUser will get a user from the database by the given username
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	u := models.User{
+		Username: chi.URLParam(r, "username"),
+	}
 
-// 	err = Store.Users().Save(&u)
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+	err := Store.Users().Get(&u)
+	if err != nil {
+		if err == store.ErrNotFound {
+			w.WriteHeader(404)
+			w.Write(apiError("No user exists with that username."))
+			return
+		}
 
-// 	jsn, err := json.Marshal(&u)
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
 
-// 	return http.StatusOK, jsn
-// }
+	u.Password = ""
 
-// func LoginUser(c *mw.Context) (int, []byte) {
-// 	return http.StatusNotImplemented, []byte("Not implemented")
-// }
+	sendJSON(w, u)
+}
 
-// func GetUser(c *mw.Context) (int, []byte) {
-// 	var u *models.User
-// 	var err error
+// GetAllUsers will return the json encoded array of all users in the given
+// store
+func GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	u := mw.GetUser(r.Context())
+	if u == nil {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in to view other users"))
+		return
+	}
 
-// 	username := c.Var("username")
+	users, err := Store.Users().GetAll()
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
 
-// 	// If we get an integer search based on ID instead of username
-// 	if id, err := strconv.Atoi(username); err == nil {
-// 		u, err = Store.Users().Get(int64(id))
-// 	} else {
-// 		u, err = Store.Users().GetByUsername(username)
-// 	}
+	for i := range users {
+		users[i].Password = ""
+		users[i].Settings = nil
+	}
 
-// 	// TODO: Properly return not found when appropriate
-// 	if err != nil {
-// 		// TODO: Don't return raw terrible stuff.
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+	sendJSON(w, users)
+}
 
-// 	ujson, err := json.Marshal(&u)
+// CreateUser will take the JSON given and attempt to
+func CreateUser(w http.ResponseWriter, r *http.Request) {
+	var u models.User
 
-// 	return http.StatusOK, ujson
-// }
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&u)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
 
-// // TODO: implement this
-// func UpdateUser(c *mw.Context) (int, []byte) {
-// 	return http.StatusNotImplemented, []byte("Not implemented")
-// }
+	usr, err := models.NewUser(u.Username, u.Password, u.FullName, u.Email, false)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	err = Store.Users().New(usr)
+	if err != nil {
+		if err == store.ErrDuplicateEntry {
+			w.WriteHeader(400)
+			w.Write(apiError(err.Error()))
+			return
+		}
+
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	token, err := mw.JWTSignUser(*usr)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	usr.Password = ""
+	sendJSON(w, TokenResponse{
+		token,
+		*usr,
+	})
+}
+
+// UpdateUser will update a user in the database, it will reject the call if
+// the user sending is not the user being updated or if the user sending is not
+// a sys admin
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	var u models.User
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&u)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	if u.Username == "" {
+		u.Username = chi.URLParam(r, "username")
+	}
+
+	err = Store.Users().Save(u)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	sendJSON(w, u)
+}
+
+// DeleteUser will remove a user from the database by setting is_inactive = 1
+// can only be used by sys admins
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	var u models.User
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&u)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	if u.Username == "" {
+		u.Username = chi.URLParam(r, "username")
+	}
+
+	err = Store.Users().Remove(u)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	w.Write([]byte(""))
+}
+
+// CreateSession will log in a user and create a jwt token for the current
+// session
+func CreateSession(w http.ResponseWriter, r *http.Request) {
+	type loginRequest struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	var l loginRequest
+
+	decode := json.NewDecoder(r.Body)
+	err := decode.Decode(&l)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	u := models.User{Username: l.Username}
+
+	err = Store.Users().Get(&u)
+	if err != nil {
+		if err == store.ErrNotFound {
+			w.WriteHeader(404)
+			w.Write(apiError("No user exists with that username."))
+			return
+		}
+
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	if u.CheckPw([]byte(l.Password)) {
+		u.Password = ""
+		token, err := mw.JWTSignUser(u)
+		if err != nil {
+			w.WriteHeader(500)
+			w.Write(apiError(err.Error()))
+			log.Println(err)
+			return
+
+		}
+
+		sendJSON(w, TokenResponse{
+			token,
+			u,
+		})
+
+		return
+	}
+
+	w.WriteHeader(401)
+	w.Write(apiError("invalid password", "password"))
+}
+
+// RefreshSession will reset the expiration on the current jwt token
+func RefreshSession(w http.ResponseWriter, r *http.Request) {
+	u := mw.GetUser(r.Context())
+	if u == nil {
+		w.WriteHeader(401)
+		w.Write(apiError("you must be logged in to refresh your session"))
+		return
+	}
+
+	token, err := mw.JWTSignUser(*u)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	w.Write([]byte(token))
+}

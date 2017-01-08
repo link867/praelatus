@@ -32,8 +32,8 @@ func intoProject(row rowScanner, p *models.Project) error {
 // Get gets a project by it's ID in a postgres DB.
 func (ps *ProjectStore) Get(p *models.Project) error {
 	row := ps.db.QueryRow(`SELECT p.id, created_date, name, 
-								   key, homepage, icon_url, repo,
-								   row_to_json(lead.*)
+								  key, homepage, icon_url, repo,
+							 	  json_build_object('id', lead.id, 'username', lead.username, 'email', lead.email, 'full_name', lead.full_name, 'profile_picture', lead.profile_picture) AS lead
 						   FROM projects  AS p
 						   JOIN users AS lead ON lead.id = p.lead_id
 						   WHERE p.id = $1
@@ -49,7 +49,8 @@ func (ps *ProjectStore) GetAll() ([]models.Project, error) {
 
 	rows, err := ps.db.Query(`SELECT p.id, p.created_date, p.name, 
 								  p.key, p.repo, p.homepage,
-								  p.icon_url, row_to_json(lead.*)
+								  p.icon_url, 
+							 	  json_build_object('id', lead.id, 'username', lead.username, 'email', lead.email, 'full_name', lead.full_name, 'profile_picture', lead.profile_picture) AS lead
 							  FROM projects AS p
 							  JOIN users AS lead ON p.lead_id = lead.id;`)
 	if err != nil {

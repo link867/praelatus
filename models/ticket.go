@@ -36,6 +36,10 @@ type Status struct {
 	Name string `json:"name"`
 }
 
+func (s *Status) String() string {
+	return jsonString(s)
+}
+
 // Label is a label used on tickets
 type Label struct {
 	ID   int64  `json:"id"`

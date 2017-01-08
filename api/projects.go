@@ -1,49 +1,153 @@
 package api
 
-// import (
-// 	"encoding/json"
-// 	"net/http"
+import (
+	"encoding/json"
+	"log"
+	"net/http"
 
-// 	mw "github.com/praelatus/backend/middleware"
-// )
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/mw"
+	"github.com/pressly/chi"
+)
 
-// func InitProjectRoutes() {
-// 	BaseRoutes.Projects.Handle("/", mw.Auth(ListProjects)).Methods("GET")
-// 	BaseRoutes.Projects.Handle("/{team_slug}/{pkey}", mw.Auth(GetProject)).Methods("GET")
-// }
+func projectRouter() chi.Router {
+	router := chi.NewRouter()
 
-// // TODO
-// func ListProjects(c *mw.Context) (int, []byte) {
-// 	projects, err := Store.Projects().GetAll()
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+	router.Get("/", GetAllProjects)
+	router.Post("/", CreateProject)
 
-// 	jsn, err := json.Marshal(projects)
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+	router.Get("/:pkey", GetProject)
+	router.Delete("/:pkey", RemoveProject)
+	router.Put("/:pkey", UpdateProject)
 
-// 	return http.StatusOK, jsn
-// }
+	return router
+}
 
-// // TODO
-// func GetProject(c *mw.Context) (int, []byte) {
-// 	p, err := Store.Projects().GetByKey(c.Var("team_slug"), c.Var("key"))
+// GetProject will get a project by it's project pkey
+func GetProject(w http.ResponseWriter, r *http.Request) {
+	pkey := chi.URLParam(r, "pkey")
 
-// 	// TODO: better error handling
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+	p := models.Project{
+		Key: pkey,
+	}
 
-// 	if p.Key == "" {
-// 		return http.StatusNotFound, []byte("Project does not exist.")
-// 	}
+	err := Store.Projects().Get(&p)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
 
-// 	jsn, err := json.Marshal(&p)
-// 	if err != nil {
-// 		return http.StatusInternalServerError, []byte(err.Error())
-// 	}
+	sendJSON(w, p)
+}
 
-// 	return http.StatusOK, jsn
-// }
+// GetAllProjects will get all the projects on this instance that the user has
+// permissions to
+// TODO handle permissions
+func GetAllProjects(w http.ResponseWriter, r *http.Request) {
+	u := mw.GetUser(r.Context())
+	if u == nil {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in to view all projects"))
+		return
+	}
+
+	projects, err := Store.Projects().GetAll()
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	sendJSON(w, projects)
+}
+
+// CreateProject will create a project based on the JSON representation sent to
+// the API
+func CreateProject(w http.ResponseWriter, r *http.Request) {
+	var p models.Project
+
+	u := mw.GetUser(r.Context())
+	if u == nil || !u.IsAdmin {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in as a system administrator to create a project"))
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&p)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write(apiError("invalid body"))
+		log.Println(err)
+		return
+	}
+
+	err = Store.Projects().New(&p)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	sendJSON(w, p)
+}
+
+// RemoveProject will remove the project indicated by the pkey passed in as a
+// url parameter
+func RemoveProject(w http.ResponseWriter, r *http.Request) {
+	pkey := chi.URLParam(r, "pkey")
+
+	u := mw.GetUser(r.Context())
+	if u == nil || !u.IsAdmin {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in as a system administrator to create a project"))
+		return
+	}
+
+	err := Store.Projects().Remove(models.Project{Key: pkey})
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	w.Write([]byte{})
+
+}
+
+// UpdateProject will update a project based on the JSON representation sent to
+// the API
+func UpdateProject(w http.ResponseWriter, r *http.Request) {
+	var p models.Project
+
+	u := mw.GetUser(r.Context())
+	if u == nil || !u.IsAdmin {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in as a system administrator to create a project"))
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&p)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write(apiError("invalid body"))
+		log.Println(err)
+		return
+	}
+
+	err = Store.Projects().New(&p)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	sendJSON(w, p)
+}
