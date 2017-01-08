@@ -78,7 +78,7 @@ func CreateField(w http.ResponseWriter, r *http.Request) {
 
 // GetField will return the json representation of a field in the database
 func GetField(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[len("/fields/"):]
+	id := chi.URLParam(r, "id")
 
 	i, err := strconv.Atoi(id)
 	if err != nil {
@@ -122,7 +122,7 @@ func UpdateField(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = Store.Fields().New(&t)
+	err = Store.Fields().Save(t)
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write(apiError(err.Error()))
@@ -136,7 +136,7 @@ func UpdateField(w http.ResponseWriter, r *http.Request) {
 // DeleteField will remove the project indicated by the id passed in as a
 // url parameter
 func DeleteField(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value("id").(string)
+	id := chi.URLParam(r, "id")
 
 	u := mw.GetUser(r.Context())
 	if u == nil || !u.IsAdmin {
