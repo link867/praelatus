@@ -86,8 +86,8 @@ func TestCreateUser(t *testing.T) {
 		t.Errorf("Expected 1 Got %d", u.ID)
 	}
 
-	if l.User.Gravatar == "" {
-		t.Error("Expected a gravatar but got nothing.")
+	if l.User.ProfilePic == "" {
+		t.Error("Expected a profile pic but got nothing.")
 	}
 
 	if l.Token == "" {
