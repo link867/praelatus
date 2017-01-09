@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/mw"
+	"github.com/praelatus/backend/store"
 )
 
 func initLabelRoutes() {
@@ -122,7 +123,23 @@ func DeleteLabel(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Label successfully deleted"))
 }
 
-// SearchLabels
+// SearchLabels will take a url param of query and try to find a label
+// with the given name
 func SearchLabels(w http.ResponseWriter, r *http.Request) {
+	query := r.FormValue("query")
 
+	labels, err := Store.Labels.Search(query)
+	if err != nil {
+		if err == store.ErrNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write(apiError("No labels match that query"))
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(apiError(err.Error()))
+		return
+	}
+
+	sendJSON(w, labels)
 }
