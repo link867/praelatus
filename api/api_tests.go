@@ -379,6 +379,15 @@ func (ms mockLabelStore) GetAll() ([]models.Label, error) {
 	}, nil
 }
 
+func (ms mockLabelStore) Search(query string) ([]models.Label, error) {
+	return []models.Label{
+		models.Label{
+			ID:   2,
+			Name: "fake",
+		},
+	}, nil
+}
+
 func (ms mockLabelStore) New(l *models.Label) error {
 	l.ID = 1
 	return nil
