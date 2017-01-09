@@ -144,4 +144,6 @@ type LabelStore interface {
 	New(*models.Label) error
 	Save(models.Label) error
 	Remove(models.Label) error
+
+	Search(query string) ([]models.Label, error)
 }
