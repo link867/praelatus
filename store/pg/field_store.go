@@ -119,6 +119,19 @@ func (fs *FieldStore) New(field *models.Field) error {
 						  RETURNING id;`,
 		field.Name, field.DataType).
 		Scan(&field.ID)
+	if err != nil {
+		return handlePqErr(err)
+	}
+
+	if field.DataType == "OPT" {
+		for _, opt := range field.Options.Options {
+			_, err = fs.db.Exec(`INSERT INTO field_options (option, field_id) 
+								 VALUES ($1, $2)`, opt, field.ID)
+			if err != nil {
+				return handlePqErr(err)
+			}
+		}
+	}
 
 	return handlePqErr(err)
 }

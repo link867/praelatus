@@ -1,16 +1,16 @@
-hash: 6e6bf5e806d89f195ecd31ce64ecd3e706dfdb136309b91693a338d472f9ca64
-updated: 2016-12-16T10:17:16.676945777-05:00
+hash: 904937b928d3d02c2e4a0a65bd836c1655203c4b8eb017372c447f13276b2fda
+updated: 2017-01-05T14:34:24.376647142-05:00
 imports:
 - name: github.com/dgrijalva/jwt-go
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
-- name: github.com/gorilla/context
-  version: 1ea25387ff6f684839d82767c1733ff4d4d15d0a
-- name: github.com/gorilla/mux
-  version: 0eeaf8392f5b04950925b8a69fe70f110fa7cbfc
 - name: github.com/lib/pq
   version: d8eeeb8bae8896dd8e1b7e514ab0d396c4f12a1b
   subpackages:
   - oid
+- name: github.com/pressly/chi
+  version: bda7fc49d11ad4024c761b858e295360ecb7fbaf
+  subpackages:
+  - docgen
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:

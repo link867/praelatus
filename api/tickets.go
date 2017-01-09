@@ -6,42 +6,50 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/mw"
 	"github.com/praelatus/backend/store"
+	"github.com/pressly/chi"
 )
 
-func initTicketRoutes() {
-	Router.Handle("/tickets", mw.Default(GetAllTickets)).Methods("GET")
-	Router.Handle("/tickets/{pkey}", mw.Default(CreateTicket)).Methods("POST")
-	Router.Handle("/tickets/{pkey}", mw.Default(GetAllTicketsByProject)).Methods("GET")
-	Router.Handle("/tickets/{pkey}/{key}", mw.Default(GetTicket)).Methods("GET")
-	Router.Handle("/tickets/{pkey}/{key}", mw.Default(RemoveTicket)).Methods("DELETE")
-	Router.Handle("/tickets/{pkey}/{key}", mw.Default(UpdateTicket)).Methods("PUT")
-	Router.Handle("/tickets/{pkey}/{key}/comments", mw.Default(GetComments)).Methods("GET")
-	Router.Handle("/tickets/{pkey}/{key}/comments", mw.Default(CreateComment)).Methods("POST")
+func ticketRouter() chi.Router {
+	router := chi.NewRouter()
 
-	Router.Handle("/comments/{id}", mw.Default(UpdateComment)).Methods("PUT")
-	Router.Handle("/comments/{id}", mw.Default(RemoveComment)).Methods("DELETE")
+	router.Get("/", GetAllTickets)
+
+	router.Get("/:pkey/:key", GetTicket)
+	router.Delete("/:pkey/:key", RemoveTicket)
+	router.Put("/:pkey/:key", UpdateTicket)
+
+	router.Post("/:pkey", CreateTicket)
+	router.Get("/:pkey", GetAllTicketsByProject)
+
+	router.Get("/:pkey/:key/comments", GetComments)
+	router.Post("/:pkey/:key/comments", CreateComment)
+
+	router.Put("/comments/:id", UpdateComment)
+	router.Delete("/comments/:id", RemoveComment)
+
+	return router
 }
 
 // GetTicket will get a ticket by the ticket key
 func GetTicket(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	var preload bool
+	key := chi.URLParam(r, "key")
+	preload := false
 
 	if r.FormValue("preload") != "" {
 		preload = true
 	}
 
 	tk := &models.Ticket{
-		Key: vars["key"],
+		Key: key,
 	}
 
 	err := Store.Tickets().Get(tk)
 	if err != nil {
+		log.Println(err.Error())
+
 		if err == store.ErrNotFound {
 			w.WriteHeader(404)
 			w.Write(apiError("ticket not found"))
@@ -49,14 +57,13 @@ func GetTicket(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(500)
-		w.Write(apiError("failed to retrieve comments"))
-		log.Println(err)
+		w.Write(apiError(err.Error()))
 		return
 	}
 
 	if preload {
 		cm, err := Store.Tickets().GetComments(*tk)
-		if err != nil {
+		if err != nil && err != store.ErrNotFound {
 			w.WriteHeader(500)
 			w.Write(apiError("failed to retrieve comments"))
 			log.Println(err)
@@ -84,9 +91,9 @@ func GetAllTickets(w http.ResponseWriter, r *http.Request) {
 
 // GetAllTicketsByProject will get all the tickets for a given project
 func GetAllTicketsByProject(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	pkey := chi.URLParam(r, "pkey")
 
-	tks, err := Store.Tickets().GetAllByProject(models.Project{Key: vars["pkey"]})
+	tks, err := Store.Tickets().GetAllByProject(models.Project{Key: pkey})
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(apiError("failed to retrieve tickets from the database"))
@@ -100,7 +107,7 @@ func GetAllTicketsByProject(w http.ResponseWriter, r *http.Request) {
 // CreateTicket will create a ticket in the database and send the json
 // representation of the ticket back
 func CreateTicket(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	pkey := chi.URLParam(r, "pkey")
 
 	u := mw.GetUser(r.Context())
 	if u == nil {
@@ -120,7 +127,7 @@ func CreateTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = Store.Tickets().New(models.Project{Key: vars["pkey"]}, &tk)
+	err = Store.Tickets().New(models.Project{Key: pkey}, &tk)
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write(apiError(err.Error()))
@@ -133,7 +140,7 @@ func CreateTicket(w http.ResponseWriter, r *http.Request) {
 
 // RemoveTicket will remove the ticket with the given key from the database
 func RemoveTicket(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	key := r.Context().Value("key").(string)
 
 	u := mw.GetUser(r.Context())
 	if u == nil {
@@ -142,7 +149,7 @@ func RemoveTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := Store.Tickets().Remove(models.Ticket{Key: vars["key"]})
+	err := Store.Tickets().Remove(models.Ticket{Key: key})
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(apiError(err.Error()))
@@ -156,7 +163,7 @@ func RemoveTicket(w http.ResponseWriter, r *http.Request) {
 // UpdateTicket will update the ticket indicated by given key using the json
 // from the body of the request
 func UpdateTicket(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	key := r.Context().Value("key").(string)
 
 	u := mw.GetUser(r.Context())
 	if u == nil {
@@ -177,7 +184,7 @@ func UpdateTicket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if tk.Key == "" {
-		tk.Key = vars["key"]
+		tk.Key = key
 	}
 
 	err = Store.Tickets().Save(tk)
@@ -194,9 +201,9 @@ func UpdateTicket(w http.ResponseWriter, r *http.Request) {
 // GetComments will get the comments for the ticket indicated by the ticket key
 // in the url
 func GetComments(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	key := chi.URLParam(r, "key")
 
-	comments, err := Store.Tickets().GetComments(models.Ticket{Key: vars["key"]})
+	comments, err := Store.Tickets().GetComments(models.Ticket{Key: key})
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(apiError(err.Error()))
@@ -209,8 +216,6 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 
 // UpdateComment will update the comment with the given ID
 func UpdateComment(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
 	u := mw.GetUser(r.Context())
 	if u == nil {
 		w.WriteHeader(403)
@@ -230,7 +235,7 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if cm.ID == 0 {
-		id, _ := strconv.Atoi(vars["id"])
+		id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 		cm.ID = int64(id)
 	}
 
@@ -247,8 +252,6 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 
 // RemoveComment will remove the ticket with the given key from the database
 func RemoveComment(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
 	u := mw.GetUser(r.Context())
 	if u == nil {
 		w.WriteHeader(403)
@@ -256,7 +259,7 @@ func RemoveComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, _ := strconv.Atoi(vars["id"])
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
 	err := Store.Tickets().RemoveComment(models.Comment{ID: int64(id)})
 	if err != nil {
@@ -271,8 +274,6 @@ func RemoveComment(w http.ResponseWriter, r *http.Request) {
 
 // CreateComment will add a comment to the ticket indicated in the url
 func CreateComment(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
 	u := mw.GetUser(r.Context())
 	if u == nil {
 		w.WriteHeader(403)
@@ -291,7 +292,8 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = Store.Tickets().NewComment(models.Ticket{Key: vars["key"]}, &cm)
+	key := chi.URLParam(r, "key")
+	err = Store.Tickets().NewComment(models.Ticket{Key: key}, &cm)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(apiError(err.Error()))

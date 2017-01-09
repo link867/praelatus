@@ -18,11 +18,10 @@ type Project struct {
 	CreatedDate time.Time `json:"created_date"`
 	Name        string    `json:"name"`
 	Key         string    `json:"key"`
-	Homepage    string    `json:"homepage"`
-	IconURL     string    `json:"icon_url"`
-	Repo        string    `json:"repo,omitempty"`
 	Lead        User      `json:"lead"`
-	Team        User      `json:"team"`
+	Homepage    string    `json:"homepage,omitempty"`
+	IconURL     string    `json:"icon_url,omitempty"`
+	Repo        string    `json:"repo,omitempty"`
 }
 
 func (p *Project) String() string {

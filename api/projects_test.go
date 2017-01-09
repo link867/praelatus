@@ -11,9 +11,9 @@ import (
 
 func TestGetProject(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/projects/TEST", nil)
+	r := httptest.NewRequest("GET", "/api/v1/projects/TEST", nil)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var p models.Project
 
@@ -31,10 +31,10 @@ func TestGetProject(t *testing.T) {
 
 func TestGetAllProjects(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/projects", nil)
+	r := httptest.NewRequest("GET", "/api/v1/projects", nil)
 	testLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var p []models.Project
 
@@ -60,10 +60,10 @@ func TestCreateProject(t *testing.T) {
 	rd := bytes.NewReader(byt)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/projects", rd)
+	r := httptest.NewRequest("POST", "/api/v1/projects", rd)
 	testAdminLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	e := json.Unmarshal(w.Body.Bytes(), &p)
 	if e != nil {

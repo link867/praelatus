@@ -11,9 +11,9 @@ import (
 
 func TestGetTicket(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/tickets/TEST/TEST-1", nil)
+	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST/TEST-1", nil)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var tk models.Ticket
 
@@ -31,9 +31,9 @@ func TestGetTicket(t *testing.T) {
 
 func TestGetTicketPreloadComments(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/tickets/TEST/TEST-1?preload=comments", nil)
+	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST/TEST-1?preload=comments", nil)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var tk models.Ticket
 
@@ -55,9 +55,9 @@ func TestGetTicketPreloadComments(t *testing.T) {
 
 func TestGetAllTickets(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/tickets", nil)
+	r := httptest.NewRequest("GET", "/api/v1/tickets", nil)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var tk []models.Ticket
 
@@ -80,9 +80,9 @@ func TestGetAllTickets(t *testing.T) {
 
 func TestGetAllTicketsByProject(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/tickets/TEST", nil)
+	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST", nil)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var tk []models.Ticket
 
@@ -108,10 +108,10 @@ func TestCreateTicket(t *testing.T) {
 	rd := bytes.NewReader(byt)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/tickets/TEST", rd)
+	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST", rd)
 	testLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	e := json.Unmarshal(w.Body.Bytes(), &tk)
 	if e != nil {
@@ -127,9 +127,9 @@ func TestCreateTicket(t *testing.T) {
 
 func TestGetComments(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/tickets/TEST/TEST-1/comments", nil)
+	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST/TEST-1/comments", nil)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	var cm []models.Comment
 
@@ -152,10 +152,10 @@ func TestCreateComment(t *testing.T) {
 	rd := bytes.NewReader(byt)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/tickets/TEST/TEST-1/comments", rd)
+	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST/TEST-1/comments", rd)
 	testLogin(r)
 
-	Router.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	e := json.Unmarshal(w.Body.Bytes(), &cm)
 	if e != nil {

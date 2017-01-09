@@ -18,9 +18,9 @@ func (ss *StatusStore) Get(s *models.Status) error {
 	var row *sql.Row
 
 	row = ss.db.QueryRow(`SELECT id, name 
-						  FROM statuses 
-						  WHERE id = $1
-						  OR name = $2`, s.ID, s.Name)
+                              FROM statuses 
+                              WHERE id = $1
+                              OR name = $2`, s.ID, s.Name)
 
 	err := row.Scan(&s.ID, &s.Name)
 	return handlePqErr(err)
@@ -57,7 +57,8 @@ func (ss *StatusStore) New(status *models.Status) error {
 
 // Save updates a Status in the postgres DB
 func (ss *StatusStore) Save(status models.Status) error {
-	_, err := ss.db.Exec(`UPDATE statuses SET (name) = ($1);`, status.Name)
+	_, err := ss.db.Exec(`UPDATE statuses SET (name) = ($1)
+                              WHERE id = $2;`, status.Name, status.ID)
 	return handlePqErr(err)
 }
 
