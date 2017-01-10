@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http/httptest"
 	"testing"
 
@@ -72,6 +73,33 @@ func TestCreateLabel(t *testing.T) {
 
 	if p.ID != 1 {
 		t.Errorf("Expected 1 Got %d", p.ID)
+	}
+
+	t.Log(w.Body)
+}
+
+func TestSearchLabels(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/api/v1/labels/search?query=fake", nil)
+	testLogin(r)
+
+	router.ServeHTTP(w, r)
+
+	var p []models.Label
+
+	fmt.Println(w.Body.String())
+
+	e := json.Unmarshal(w.Body.Bytes(), &p)
+	if e != nil {
+		t.Errorf("Failed with error %s\n", e.Error())
+	}
+
+	if p[0].Name != "fake" {
+		t.Errorf("Expected fake Got %s\n", p[0].Name)
+	}
+
+	if len(p) != 1 {
+		t.Errorf("Expected 1 Got %d\n", len(p))
 	}
 
 	t.Log(w.Body)
