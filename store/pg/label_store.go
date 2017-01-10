@@ -86,7 +86,7 @@ func (ls *LabelStore) Remove(label models.Label) error {
 // in the store
 func (ls *LabelStore) Search(query string) ([]models.Label, error) {
 	rows, err := ls.db.Query(`SELECT id, name FROM labels
-                                  WHERE name LIKE '$1%'`, query)
+                                  WHERE name LIKE $1`, query+"%")
 	if err != nil {
 		return nil, handlePqErr(err)
 	}
