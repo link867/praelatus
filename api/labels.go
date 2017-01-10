@@ -18,6 +18,7 @@ func labelRouter() chi.Router {
 	router.Get("/", GetAllLabels)
 	router.Post("/", CreateLabel)
 
+	router.Get("/search", SearchLabels)
 	router.Get("/:id", GetLabel)
 	router.Delete("/:id", DeleteLabel)
 	router.Put("/:id", UpdateLabel)
@@ -167,7 +168,7 @@ func DeleteLabel(w http.ResponseWriter, r *http.Request) {
 func SearchLabels(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("query")
 
-	labels, err := Store.Labels.Search(query)
+	labels, err := Store.Labels().Search(query)
 	if err != nil {
 		if err == store.ErrNotFound {
 			w.WriteHeader(http.StatusNotFound)
