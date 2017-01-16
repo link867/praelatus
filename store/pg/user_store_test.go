@@ -16,6 +16,15 @@ func TestUserGet(t *testing.T) {
 	}
 }
 
+func TestUserSearch(t *testing.T) {
+	u, e := s.Users().Search("test")
+	failIfErr("User Search", t, e)
+
+	if len(u) == 0 {
+		t.Error("Expected to get more than 0 types.")
+	}
+}
+
 func TestUserGetAll(t *testing.T) {
 	u, e := s.Users().GetAll()
 	failIfErr("User Get All", t, e)
