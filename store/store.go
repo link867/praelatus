@@ -62,6 +62,8 @@ type UserStore interface {
 	New(*models.User) error
 	Save(models.User) error
 	Remove(models.User) error
+
+	Search(string) ([]models.User, error)
 }
 
 // ProjectStore contains methods for storing and retrieving Projects
