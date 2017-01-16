@@ -15,6 +15,8 @@ func workflowRouter() chi.Router {
 	router := chi.NewRouter()
 
 	router.Get("/", GetAllWorkflows)
+
+	// Because of how chi does routing the id is actually the project key
 	router.Post("/:id", CreateWorkflow)
 
 	router.Get("/:id", GetWorkflow)
@@ -65,6 +67,7 @@ func CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Because of how chi does routing the id is actually the project key
 	p := models.Project{Key: chi.URLParam(r, "id")}
 
 	err = Store.Projects().Get(&p)
