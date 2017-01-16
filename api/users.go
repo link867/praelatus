@@ -16,6 +16,7 @@ func userRouter() chi.Router {
 
 	router.Put("/:username", UpdateUser)
 	router.Delete("/:username", DeleteUser)
+	router.Get("/search", SearchUsers)
 	router.Get("/:username", GetUser)
 	router.Get("/", GetAllUsers)
 	router.Post("/", CreateUser)
@@ -69,6 +70,34 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	users, err := Store.Users().GetAll()
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	for i := range users {
+		users[i].Password = ""
+		users[i].Settings = nil
+	}
+
+	sendJSON(w, users)
+}
+
+// SearchUsers will return the json encoded array of all users in the given
+// store which match the provided query
+func SearchUsers(w http.ResponseWriter, r *http.Request) {
+	u := mw.GetUser(r.Context())
+	if u == nil {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in to view other users"))
+		return
+	}
+
+	query := r.FormValue("query")
+
+	users, err := Store.Users().Search(query)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(apiError(err.Error()))

@@ -69,6 +69,11 @@ CREATE TABLE IF NOT EXISTS workflows (
     project_id integer REFERENCES projects (id)
 );
 
+CREATE TABLE IF NOT EXISTS workflow_statuses (
+    workflow_id integer REFERENCES workflows (id),
+    status_id   integer REFERENCES statuses (id)
+);
+
 CREATE TABLE IF NOT EXISTS transitions (
     id          SERIAL PRIMARY KEY,
 	name		varchar(250) NOT NULL,

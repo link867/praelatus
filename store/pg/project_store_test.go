@@ -53,7 +53,7 @@ func TestProjectSave(t *testing.T) {
 }
 
 func TestProjectRemove(t *testing.T) {
-	p := &models.Project{ID: 2}
+	p := &models.Project{ID: 3}
 	e := s.Projects().Remove(*p)
 	failIfErr("Project Remove", t, e)
 }

@@ -114,3 +114,31 @@ func TestRefreshSession(t *testing.T) {
 
 	t.Log(w.Body)
 }
+
+func TestSearchUsers(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/api/v1/users/search?query=foo", nil)
+	testAdminLogin(r)
+
+	router.ServeHTTP(w, r)
+
+	var u []models.User
+
+	e := json.Unmarshal(w.Body.Bytes(), &u)
+	if e != nil {
+		t.Errorf("Failed with error %s", e.Error())
+		t.Log(w.Body)
+	}
+
+	if len(u) != 2 {
+		t.Errorf("Expected 2 users got %d", len(u))
+	}
+
+	if u[0].Username != "foouser" {
+		t.Errorf("Expected foouser Got %s", u[0].Username)
+	}
+
+	if u[0].Password != "" {
+		t.Errorf("Expected no passsword but got %s\n", u[0].Password)
+	}
+}

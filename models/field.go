@@ -20,12 +20,12 @@ type Field struct {
 	ID       int64       `json:"id"`
 	Name     string      `json:"name"`
 	DataType string      `json:"data_type"`
-	Options  FieldOption `json:"options,omitempty"`
+	Options  *FieldOption `json:"options,omitempty"`
 }
 
 // FieldOption is used as the value for FieldValues which are selects.
 type FieldOption struct {
-	Selected string   `json:"selected"`
+	Selected string   `json:"selected,omitempty"`
 	Options  []string `json:"options"`
 }
 
