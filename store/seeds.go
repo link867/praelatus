@@ -75,9 +75,12 @@ func SeedDefaults(s Store) error {
 	return nil
 }
 
+var dev bool
+
 // SeedAll will run all of the seed functions
 func SeedAll(s Store) error {
 	fmt.Println("Seeding All")
+	dev = true
 	for _, f := range seedFuncs {
 		e := f(s)
 		if e != nil {
@@ -115,6 +118,11 @@ func SeedLabels(s Store) error {
 // SeedTickets will add some test tickets to the database
 func SeedTickets(s Store) error {
 	fmt.Println("Seeding tickets")
+	priorities := &models.FieldOption{
+		Selected: []string{"HIGH", "MEDIUM", "LOW"}[rand.Intn(3)],
+		Options:  []string{"HIGH", "MEDIUM", "LOW"},
+	}
+
 	for i := 0; i < 50; i++ {
 		t := models.Ticket{
 			Key:         s.Tickets().NextTicketKey(models.Project{ID: 1, Key: "TEST"}),
@@ -132,11 +140,8 @@ func SeedTickets(s Store) error {
 					Value: rand.Intn(100),
 				},
 				models.FieldValue{
-					Name: "Priority",
-					Value: models.FieldOption{
-						Selected: []string{"HIGH", "MEDIUM", "LOW"}[rand.Intn(3)],
-						Options:  []string{"HIGH", "MEDIUM", "LOW"},
-					},
+					Name:  "Priority",
+					Value: priorities,
 				},
 			},
 			Type: models.TicketType{ID: 1},
@@ -218,6 +223,11 @@ func SeedComments(s Store) error {
 
 // SeedFields will seed the given store with some test Fields.
 func SeedFields(s Store) error {
+	priorities := &models.FieldOption{
+		Selected: "LOW",
+		Options:  []string{"HIGH", "MEDIUM", "LOW"},
+	}
+
 	fields := []models.Field{
 		models.Field{
 			Name:     "Story Points",
@@ -238,10 +248,7 @@ func SeedFields(s Store) error {
 		models.Field{
 			Name:     "Priority",
 			DataType: "OPT",
-			Options: models.FieldOption{
-				Selected: "LOW",
-				Options:  []string{"HIGH", "MEDIUM", "LOW"},
-			},
+			Options:  priorities,
 		},
 	}
 
@@ -280,6 +287,11 @@ func SeedProjects(s Store) error {
 		models.Project{
 			Name: "TEST Project 2",
 			Key:  "TEST2",
+			Lead: models.User{ID: 2},
+		},
+		models.Project{
+			Name: "TEST Project 3",
+			Key:  "TEST3",
 			Lead: models.User{ID: 2},
 		},
 	}
@@ -414,38 +426,7 @@ func SeedUsers(s Store) error {
 func SeedWorkflows(s Store) error {
 	p1 := models.Project{ID: 1}
 	p2 := models.Project{ID: 2}
-
-	wk1 := models.Workflow{
-		Name: "Simple Workflow",
-		Transitions: map[string][]models.Transition{
-			"Backlog": []models.Transition{
-				models.Transition{
-					Name:     "In Progress",
-					ToStatus: models.Status{ID: 2},
-					Hooks:    []models.Hook{},
-				},
-			},
-			"In Progress": []models.Transition{
-				models.Transition{
-					Name:     "Done",
-					ToStatus: models.Status{ID: 3},
-					Hooks:    []models.Hook{},
-				},
-				models.Transition{
-					Name:     "Backlog",
-					ToStatus: models.Status{ID: 1},
-					Hooks:    []models.Hook{},
-				},
-			},
-			"Done": []models.Transition{
-				models.Transition{
-					Name:     "ReOpen",
-					ToStatus: models.Status{ID: 1},
-					Hooks:    []models.Hook{},
-				},
-			},
-		},
-	}
+	wk1 := DefaultWorkflow
 
 	fmt.Println("Seeding workflows")
 	e := s.Workflows().New(p1, &wk1)
@@ -453,16 +434,23 @@ func SeedWorkflows(s Store) error {
 		return e
 	}
 
+	if !dev {
+		return nil
+	}
+
+	wk1.Name = wk1.Name + "-TEST"
 	e = s.Workflows().New(p1, &wk1)
 	if e != nil && e != ErrDuplicateEntry {
 		return e
 	}
 
+	wk1.Name = wk1.Name + "-TEST1"
 	e = s.Workflows().New(p2, &wk1)
 	if e != nil && e != ErrDuplicateEntry {
 		return e
 	}
 
+	wk1.Name = wk1.Name + "-TEST2"
 	e = s.Workflows().New(p2, &wk1)
 	if e != nil && e != ErrDuplicateEntry {
 		return e
