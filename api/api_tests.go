@@ -97,6 +97,37 @@ func (ms mockUsersStore) GetAll() ([]models.User, error) {
 	}, nil
 }
 
+func (ms mockUsersStore) Search(query string) ([]models.User, error) {
+	if query != "foo" {
+		return nil, nil
+	}
+
+	return []models.User{
+		models.User{
+			1,
+			"foouser",
+			"foopass",
+			"foo@foo.com",
+			"Foo McFooserson",
+			"",
+			false,
+			true,
+			&settings,
+		},
+		models.User{
+			2,
+			"foouser",
+			"foopass",
+			"foo@foo.com",
+			"Foo McFooserson",
+			"",
+			false,
+			true,
+			&settings,
+		},
+	}, nil
+}
+
 func (ms mockUsersStore) New(u *models.User) error {
 	u.ID = 1
 	return nil
@@ -361,6 +392,10 @@ func (ms mockLabelStore) GetAll() ([]models.Label, error) {
 }
 
 func (ms mockLabelStore) Search(query string) ([]models.Label, error) {
+	if query != "fake" {
+		return nil, nil
+	}
+
 	return []models.Label{
 		models.Label{
 			ID:   2,
