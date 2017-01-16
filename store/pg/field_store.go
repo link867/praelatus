@@ -18,10 +18,23 @@ func (fs *FieldStore) Get(f *models.Field) error {
 	var row *sql.Row
 
 	row = fs.db.QueryRow(`SELECT id, name, data_type FROM fields 
-						  WHERE id = $1 OR name = $2`, f.ID, f.Name)
+			      WHERE id = $1 OR name = $2`, f.ID, f.Name)
 	err := row.Scan(&f.ID, &f.Name, &f.DataType)
+	if err != nil {
+		return handlePqErr(err)
+	}
 
-	return handlePqErr(err)
+	if f.DataType == "OPT" {
+		fo := models.FieldOption{}
+		err = getOpts(fs.db, f.ID, &fo)
+		if err != nil {
+			return handlePqErr(err)
+		}
+		
+		f.Options = &fo
+	}
+
+	return nil
 }
 
 // GetAll will return all fields from the DB
@@ -39,6 +52,16 @@ func (fs *FieldStore) GetAll() ([]models.Field, error) {
 		err = rows.Scan(&f.ID, &f.Name, &f.DataType)
 		if err != nil {
 			return fields, handlePqErr(err)
+		}
+
+		if f.DataType == "OPT" {
+			fo := models.FieldOption{}
+			err = getOpts(fs.db, f.ID, &fo)
+			if err != nil {
+				return fields, handlePqErr(err)
+			}
+
+			f.Options = &fo
 		}
 
 		fields = append(fields, f)
@@ -126,7 +149,7 @@ func (fs *FieldStore) New(field *models.Field) error {
 	if field.DataType == "OPT" {
 		for _, opt := range field.Options.Options {
 			_, err = fs.db.Exec(`INSERT INTO field_options (option, field_id) 
-								 VALUES ($1, $2)`, opt, field.ID)
+                                             VALUES ($1, $2)`, opt, field.ID)
 			if err != nil {
 				return handlePqErr(err)
 			}
