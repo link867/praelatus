@@ -1,5 +1,6 @@
 package: github.com/praelatus/backend
 import:
+- package: github.com/pressly/chi
 - package: github.com/lib/pq
 - package: golang.org/x/crypto
   subpackages:
