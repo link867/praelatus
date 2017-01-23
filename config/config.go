@@ -102,3 +102,8 @@ func LogWriter() io.Writer {
 
 	return io.MultiWriter(writers...)
 }
+
+// GetRedis will get the redis cache location
+func GetRedis() string {
+	return ""
+}
