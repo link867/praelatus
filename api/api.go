@@ -15,8 +15,9 @@ import (
 // Store is the global store used in our HTTP handlers.
 var Store store.Store
 
-// Cache is the global cache object used in our HTTP handlers.
-var Cache *store.Cache
+// Bolt is the global boltdb connection  used in our HTTP handlers.
+// primarily for session management
+var Bolt *bolt.DB
 
 func index(rtr chi.Router) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
