@@ -1,6 +1,8 @@
 package api
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"log"
 	"net/http"
 	"time"
@@ -11,21 +13,53 @@ import (
 // DefaultMiddleware is the default middleware stack for Praelatus
 var DefaultMiddleware = []func(http.Handler) http.Handler{
 	Logger,
-	Auth,
 }
 
 // GetUser will check the given http.Request for a session token and if found
 // it will return the corresponding user.
-func GetUser(r *http.Request) *models.User {
-	cookie, err := r.Cookie("PRASESSION")
+func GetUserSession(r *http.Request) *models.User {
+	cookie, err := r.Cookie("PRAESESSION")
 	if err != nil {
 		log.Println("Error getting cookie:", err)
 		return nil
 	}
 
-	token := cookie.String()
+	id := cookie.Value
 
-	return nil
+	user, err := Cache.Get(id)
+
+	if err != nil {
+		log.Println("Error fetching session from store: ", err)
+		return nil
+	}
+
+	return &user
+}
+
+func SetUserSession(u models.User, r *http.Request) error {
+	id, err := generateSessionID()
+
+	if err != nil {
+		return err
+	}
+
+	duration, _ := time.ParseDuration("3h")
+	c := http.Cookie{
+		Name:   "PRAESESSION",
+		Value:  id,
+		MaxAge: int(time.Now().Add(duration).Unix()),
+		Secure: true,
+	}
+
+	r.AddCookie(&c)
+	return Cache.Set(id, u)
+}
+
+func generateSessionID() (string, error) {
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
+
+	return base64.URLEncoding.EncodeToString(b), err
 }
 
 // LoggedResponseWriter wraps http.ResponseWriter so we can capture the status
