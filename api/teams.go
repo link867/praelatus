@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/mw"
 	"github.com/pressly/chi"
 )
 

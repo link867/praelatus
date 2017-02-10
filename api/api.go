@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/praelatus/backend/mw"
 	"github.com/praelatus/backend/store"
 	"github.com/pressly/chi"
 	"github.com/pressly/chi/docgen"
@@ -32,7 +31,7 @@ func New(store store.Store) chi.Router {
 
 	router := chi.NewRouter()
 
-	router.Use(mw.Default...)
+	router.Use(DefaultMiddleware...)
 	// router.Use(middleware.Recoverer)
 
 	api := chi.NewRouter()

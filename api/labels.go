@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/mw"
 	"github.com/praelatus/backend/store"
 	"github.com/pressly/chi"
 )
@@ -69,7 +68,7 @@ func GetLabel(w http.ResponseWriter, r *http.Request) {
 func CreateLabel(w http.ResponseWriter, r *http.Request) {
 	var lbl models.Label
 
-	u := mw.GetUser(r.Context())
+	u := GetUser(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to create a label"))
@@ -101,7 +100,7 @@ func CreateLabel(w http.ResponseWriter, r *http.Request) {
 func UpdateLabel(w http.ResponseWriter, r *http.Request) {
 	var lbl models.Label
 
-	u := mw.GetUser(r.Context())
+	u := GetUser(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to create a label"))

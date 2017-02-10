@@ -1,4 +1,4 @@
-package mw
+package api
 
 import (
 	"net/http"
