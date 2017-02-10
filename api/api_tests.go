@@ -13,7 +13,8 @@ var loc, _ = time.LoadLocation("")
 var router http.Handler
 
 func init() {
-	router = New(mockStore{}, mockSessionStore{})
+	m := make(map[string]*models.User, 0)
+	router = New(mockStore{}, mockSessionStore{m})
 }
 
 type mockStore struct{}
@@ -1207,7 +1208,7 @@ func testLogin(r *http.Request) {
 		&settings,
 	}
 
-	err := SetUser(u, r)
+	err := SetUserSession(u, r)
 	if err != nil {
 		panic(err)
 	}
@@ -1226,28 +1227,36 @@ func testAdminLogin(r *http.Request) {
 		&settings,
 	}
 
-	err := SetUser(u, r)
+	err := SetUserSession(u, r)
 	if err != nil {
 		panic(err)
 	}
 }
 
-type mockSessionStore struct{}
-
-func (m *mockSessionStore) Get(id string) (models.User, error) {
-	return models.User{
-		1,
-		"foouser",
-		"foopass",
-		"foo@foo.com",
-		"Foo McFooserson",
-		"",
-		false,
-		true,
-		&settings,
-	}, nil
+type mockSessionStore struct {
+	store map[string]*models.User
 }
 
-func (m *mockSessionStore) Set(id string, u models.User) error {
+func (m mockSessionStore) Get(id string) (models.User, error) {
+	u := m.store[id]
+	if u == nil {
+		return models.User{
+			1,
+			"foouser",
+			"foopass",
+			"foo@foo.com",
+			"Foo McFooserson",
+			"",
+			false,
+			true,
+			&settings,
+		}, nil
+	}
+
+	return *u, nil
+}
+
+func (m mockSessionStore) Set(id string, u models.User) error {
+	m.store[id] = &u
 	return nil
 }

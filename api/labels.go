@@ -68,7 +68,7 @@ func GetLabel(w http.ResponseWriter, r *http.Request) {
 func CreateLabel(w http.ResponseWriter, r *http.Request) {
 	var lbl models.Label
 
-	u := GetUser(r)
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to create a label"))
@@ -100,7 +100,7 @@ func CreateLabel(w http.ResponseWriter, r *http.Request) {
 func UpdateLabel(w http.ResponseWriter, r *http.Request) {
 	var lbl models.Label
 
-	u := GetUser(r)
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to create a label"))

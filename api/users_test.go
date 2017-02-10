@@ -75,23 +75,19 @@ func TestCreateUser(t *testing.T) {
 
 	router.ServeHTTP(w, r)
 
-	var l TokenResponse
+	var l models.User
 
 	e := json.Unmarshal(w.Body.Bytes(), &l)
 	if e != nil {
 		t.Errorf("Failed with error %s", e.Error())
 	}
 
-	if l.User.ID != 1 {
+	if l.ID != 1 {
 		t.Errorf("Expected 1 Got %d", u.ID)
 	}
 
-	if l.User.ProfilePic == "" {
+	if l.ProfilePic == "" {
 		t.Error("Expected a profile pic but got nothing.")
-	}
-
-	if l.Token == "" {
-		t.Errorf("Expected a token got %s\n", l.Token)
 	}
 
 	t.Log(w.Body)
@@ -103,10 +99,6 @@ func TestRefreshSession(t *testing.T) {
 	testLogin(r)
 
 	router.ServeHTTP(w, r)
-
-	if w.Body.String() == "" {
-		t.Errorf("Expected a token response got %s\n", w.Body.String())
-	}
 
 	if w.Code != 200 {
 		t.Errorf("Expected 200 Got %d\n", w.Code)
