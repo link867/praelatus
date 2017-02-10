@@ -47,12 +47,13 @@ func (c *SessionStore) Set(key string, model models.User) error {
 	})
 }
 
-func New(filename string) (*SessionStore, error) {
+func New(filename string) (store.SessionStore, error) {
+	ss := &SessionStore{}
 	db, err := bolt.Open(filename, 0600, nil)
 	if err != nil {
-		return nil, err
+		return ss, err
 	}
 
-	ss := SessionStore{db}
-	return &ss, err
+	ss.db = db
+	return ss, err
 }

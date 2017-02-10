@@ -17,6 +17,7 @@ func main() {
 	log.Println("Initializing database...")
 
 	s := config.Store()
+	ss := config.SessionStore()
 
 	var err error
 
@@ -32,7 +33,7 @@ func main() {
 	}
 
 	log.Println("Prepping API")
-	r := api.New(s)
+	r := api.New(s, ss)
 
 	log.Println("Ready to serve requests!")
 	err = http.ListenAndServe(config.Port(), r)

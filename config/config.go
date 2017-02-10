@@ -9,6 +9,7 @@ import (
 
 	"github.com/praelatus/backend/store"
 	"github.com/praelatus/backend/store/pg"
+	"github.com/praelatus/backend/store/session/bolt"
 )
 
 // GetDbURL will return the environment variable PRAELATUS_DB if set, otherwise
@@ -48,6 +49,14 @@ func Port() string {
 // instance
 func Store() store.Store {
 	return pg.New(GetDbURL())
+}
+
+func SessionStore() store.SessionStore {
+	ss, err := bolt.New("sessions.db")
+	if err != nil {
+		panic(err)
+	}
+	return ss
 }
 
 func logging() []string {
