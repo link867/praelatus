@@ -14,9 +14,8 @@ import (
 // Store is the global store used in our HTTP handlers.
 var Store store.Store
 
-// Bolt is the global boltdb connection  used in our HTTP handlers.
-// primarily for session management
-var Bolt *bolt.DB
+// Cache is the global session store used in our HTTP handlers.
+var Cache store.SessionStore
 
 func index(rtr chi.Router) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -26,8 +25,10 @@ func index(rtr chi.Router) http.Handler {
 }
 
 // New will start running the api on the given port
-func New(store store.Store) chi.Router {
+func New(store store.Store, ss store.SessionStore) chi.Router {
 	Store = store
+
+	Cache = ss
 
 	router := chi.NewRouter()
 

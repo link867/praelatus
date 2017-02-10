@@ -13,7 +13,7 @@ var loc, _ = time.LoadLocation("")
 var router http.Handler
 
 func init() {
-	router = New(mockStore{})
+	router = New(mockStore{}, mockSessionStore{})
 }
 
 type mockStore struct{}
@@ -1207,12 +1207,10 @@ func testLogin(r *http.Request) {
 		&settings,
 	}
 
-	token, err := mw.JWTSignUser(u)
+	err := SetUser(u, r)
 	if err != nil {
 		panic(err)
 	}
-
-	r.Header.Add("Authorization", "Bearer "+token)
 }
 
 func testAdminLogin(r *http.Request) {
@@ -1228,10 +1226,28 @@ func testAdminLogin(r *http.Request) {
 		&settings,
 	}
 
-	token, err := mw.JWTSignUser(u)
+	err := SetUser(u, r)
 	if err != nil {
 		panic(err)
 	}
+}
 
-	r.Header.Add("Authorization", "Bearer "+token)
+type mockSessionStore struct{}
+
+func (m *mockSessionStore) Get(id string) (models.User, error) {
+	return models.User{
+		1,
+		"foouser",
+		"foopass",
+		"foo@foo.com",
+		"Foo McFooserson",
+		"",
+		false,
+		true,
+		&settings,
+	}, nil
+}
+
+func (m *mockSessionStore) Set(id string, u models.User) error {
+	return nil
 }
