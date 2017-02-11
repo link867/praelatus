@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/mw"
 	"github.com/praelatus/backend/store"
 )
 
@@ -14,7 +13,8 @@ var loc, _ = time.LoadLocation("")
 var router http.Handler
 
 func init() {
-	router = New(mockStore{})
+	m := make(map[string]*models.User, 0)
+	router = New(mockStore{}, mockSessionStore{m})
 }
 
 type mockStore struct{}
@@ -1208,12 +1208,10 @@ func testLogin(r *http.Request) {
 		&settings,
 	}
 
-	token, err := mw.JWTSignUser(u)
+	err := SetUserSession(u, r)
 	if err != nil {
 		panic(err)
 	}
-
-	r.Header.Add("Authorization", "Bearer "+token)
 }
 
 func testAdminLogin(r *http.Request) {
@@ -1229,10 +1227,36 @@ func testAdminLogin(r *http.Request) {
 		&settings,
 	}
 
-	token, err := mw.JWTSignUser(u)
+	err := SetUserSession(u, r)
 	if err != nil {
 		panic(err)
 	}
+}
 
-	r.Header.Add("Authorization", "Bearer "+token)
+type mockSessionStore struct {
+	store map[string]*models.User
+}
+
+func (m mockSessionStore) Get(id string) (models.User, error) {
+	u := m.store[id]
+	if u == nil {
+		return models.User{
+			1,
+			"foouser",
+			"foopass",
+			"foo@foo.com",
+			"Foo McFooserson",
+			"",
+			false,
+			true,
+			&settings,
+		}, nil
+	}
+
+	return *u, nil
+}
+
+func (m mockSessionStore) Set(id string, u models.User) error {
+	m.store[id] = &u
+	return nil
 }

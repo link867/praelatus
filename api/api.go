@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/praelatus/backend/mw"
 	"github.com/praelatus/backend/store"
 	"github.com/pressly/chi"
 	"github.com/pressly/chi/docgen"
@@ -15,8 +14,8 @@ import (
 // Store is the global store used in our HTTP handlers.
 var Store store.Store
 
-// Cache is the global cache object used in our HTTP handlers.
-var Cache *store.Cache
+// Cache is the global session store used in our HTTP handlers.
+var Cache store.SessionStore
 
 func index(rtr chi.Router) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -26,12 +25,14 @@ func index(rtr chi.Router) http.Handler {
 }
 
 // New will start running the api on the given port
-func New(store store.Store) chi.Router {
+func New(store store.Store, ss store.SessionStore) chi.Router {
 	Store = store
+
+	Cache = ss
 
 	router := chi.NewRouter()
 
-	router.Use(mw.Default...)
+	router.Use(DefaultMiddleware...)
 	// router.Use(middleware.Recoverer)
 
 	api := chi.NewRouter()

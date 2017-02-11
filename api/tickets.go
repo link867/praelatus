@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/mw"
 	"github.com/praelatus/backend/store"
 	"github.com/pressly/chi"
 )
@@ -109,7 +108,7 @@ func GetAllTicketsByProject(w http.ResponseWriter, r *http.Request) {
 func CreateTicket(w http.ResponseWriter, r *http.Request) {
 	pkey := chi.URLParam(r, "pkey")
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to create a ticket"))
@@ -142,7 +141,7 @@ func CreateTicket(w http.ResponseWriter, r *http.Request) {
 func RemoveTicket(w http.ResponseWriter, r *http.Request) {
 	key := r.Context().Value("key").(string)
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to remove a ticket"))
@@ -165,7 +164,7 @@ func RemoveTicket(w http.ResponseWriter, r *http.Request) {
 func UpdateTicket(w http.ResponseWriter, r *http.Request) {
 	key := r.Context().Value("key").(string)
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to update a ticket"))
@@ -216,7 +215,7 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 
 // UpdateComment will update the comment with the given ID
 func UpdateComment(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to update a ticket"))
@@ -252,7 +251,7 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 
 // RemoveComment will remove the ticket with the given key from the database
 func RemoveComment(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to update a ticket"))
@@ -274,7 +273,7 @@ func RemoveComment(w http.ResponseWriter, r *http.Request) {
 
 // CreateComment will add a comment to the ticket indicated in the url
 func CreateComment(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to update a ticket"))

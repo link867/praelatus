@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/mw"
 	"github.com/pressly/chi"
 )
 
@@ -46,7 +45,7 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 // permissions to
 // TODO handle permissions
 func GetAllProjects(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to view all projects"))
@@ -69,7 +68,7 @@ func GetAllProjects(w http.ResponseWriter, r *http.Request) {
 func CreateProject(w http.ResponseWriter, r *http.Request) {
 	var p models.Project
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))
@@ -101,7 +100,7 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 func RemoveProject(w http.ResponseWriter, r *http.Request) {
 	pkey := chi.URLParam(r, "pkey")
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))
@@ -125,7 +124,7 @@ func RemoveProject(w http.ResponseWriter, r *http.Request) {
 func UpdateProject(w http.ResponseWriter, r *http.Request) {
 	var p models.Project
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))

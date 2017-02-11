@@ -13,6 +13,12 @@ var (
 	// ErrNotFound is returned when an invalid resource is given or searched
 	// for
 	ErrNotFound = errors.New("no such resource")
+
+	// ErrNoSession is returned when a session does not exist in the SessionStore
+	ErrNoSession = errors.New("no session found")
+
+	// ErrSessionInvalid is returned when a session has timed out
+	ErrSessionInvalid = errors.New("session invalid")
 )
 
 // Store is an interface for storing and retrieving models.
@@ -34,10 +40,11 @@ type SQLStore interface {
 	Conn() *sql.DB
 }
 
-// Cache is an abstraction over using Redis or any other caching system.
-type Cache interface {
-	Get(string) interface{}
-	Set(string, interface{}) error
+// SessionStore is an abstraction over using a caching system to store
+// user sessions
+type SessionStore interface {
+	Get(string) (models.User, error)
+	Set(string, models.User) error
 }
 
 // FieldStore contains methods for storing and retrieving Fields and FieldValues
