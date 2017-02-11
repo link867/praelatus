@@ -16,15 +16,15 @@ func ticketRouter() chi.Router {
 
 	router.Get("/", GetAllTickets)
 
-	router.Get("/:pkey/:key", GetTicket)
-	router.Delete("/:pkey/:key", RemoveTicket)
-	router.Put("/:pkey/:key", UpdateTicket)
+	router.Get("/:key", GetTicket)
+	router.Delete("/:key", RemoveTicket)
+	router.Put("/:key", UpdateTicket)
 
-	router.Post("/:pkey", CreateTicket)
-	router.Get("/:pkey", GetAllTicketsByProject)
+	router.Post("/:key", CreateTicket)
+	router.Get("/:key", GetAllTicketsByProject)
 
-	router.Get("/:pkey/:key/comments", GetComments)
-	router.Post("/:pkey/:key/comments", CreateComment)
+	router.Get("/:key/comments", GetComments)
+	router.Post("/:key/comments", CreateComment)
 
 	router.Put("/comments/:id", UpdateComment)
 	router.Delete("/comments/:id", RemoveComment)
@@ -90,7 +90,7 @@ func GetAllTickets(w http.ResponseWriter, r *http.Request) {
 
 // GetAllTicketsByProject will get all the tickets for a given project
 func GetAllTicketsByProject(w http.ResponseWriter, r *http.Request) {
-	pkey := chi.URLParam(r, "pkey")
+	pkey := chi.URLParam(r, "key")
 
 	tks, err := Store.Tickets().GetAllByProject(models.Project{Key: pkey})
 	if err != nil {
@@ -106,7 +106,7 @@ func GetAllTicketsByProject(w http.ResponseWriter, r *http.Request) {
 // CreateTicket will create a ticket in the database and send the json
 // representation of the ticket back
 func CreateTicket(w http.ResponseWriter, r *http.Request) {
-	pkey := chi.URLParam(r, "pkey")
+	pkey := chi.URLParam(r, "key")
 
 	u := GetUserSession(r)
 	if u == nil {
