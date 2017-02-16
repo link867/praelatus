@@ -96,6 +96,8 @@ func Logger(next http.Handler) http.Handler {
 		start := time.Now()
 		lrw := &LoggedResponseWriter{0, w}
 
+		lrw.Header().Add("Access-Control-Allow-Origin", "*")
+
 		next.ServeHTTP(lrw, r)
 
 		log.Printf("|%s| [%d] %s %s",
