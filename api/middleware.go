@@ -45,10 +45,10 @@ func SetUserSession(u models.User, r *http.Request) error {
 
 	duration, _ := time.ParseDuration("3h")
 	c := http.Cookie{
-		Name:   "PRAESESSION",
-		Value:  id,
-		MaxAge: int(time.Now().Add(duration).Unix()),
-		Secure: true,
+		Name:    "PRAESESSION",
+		Value:   id,
+		Expires: time.Now().Add(duration),
+		Secure:  true,
 	}
 
 	r.AddCookie(&c)
