@@ -7,8 +7,25 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/securecookie"
 	"github.com/praelatus/backend/models"
 )
+
+var hashKey = genSecKey(64)
+var blockKey = genSecKey(32)
+var sec = securecookie.New(hashKey, blockKey)
+
+func genSecKey(leng int) []byte {
+	b := make([]byte, leng)
+	_, err := rand.Read(b)
+
+	// if we can't generate secure strings fail out
+	if err != nil {
+		panic(err)
+	}
+
+	return b
+}
 
 // DefaultMiddleware is the default middleware stack for Praelatus
 var DefaultMiddleware = []func(http.Handler) http.Handler{
@@ -24,7 +41,11 @@ func GetUserSession(r *http.Request) *models.User {
 		return nil
 	}
 
-	id := cookie.Value
+	var id string
+	if err := sec.Decode("PRAESESSION", cookie.Value, &id); err != nil {
+		log.Println("Error decoding cookie:", err)
+		return nil
+	}
 
 	user, err := Cache.Get(id)
 
@@ -37,8 +58,8 @@ func GetUserSession(r *http.Request) *models.User {
 }
 
 func SetUserSession(u models.User, r *http.Request) error {
-	id, err := generateSessionID()
-
+	id := generateSessionID()
+	encoded, err := sec.Encode("PRAESESSION", id)
 	if err != nil {
 		return err
 	}
@@ -46,7 +67,7 @@ func SetUserSession(u models.User, r *http.Request) error {
 	duration, _ := time.ParseDuration("3h")
 	c := http.Cookie{
 		Name:    "PRAESESSION",
-		Value:   id,
+		Value:   encoded,
 		Expires: time.Now().Add(duration),
 		Secure:  true,
 	}
@@ -55,11 +76,9 @@ func SetUserSession(u models.User, r *http.Request) error {
 	return Cache.Set(id, u)
 }
 
-func generateSessionID() (string, error) {
-	b := make([]byte, 32)
-	_, err := rand.Read(b)
-
-	return base64.URLEncoding.EncodeToString(b), err
+func generateSessionID() string {
+	b := genSecKey(32)
+	return base64.URLEncoding.EncodeToString(b)
 }
 
 // LoggedResponseWriter wraps http.ResponseWriter so we can capture the status
