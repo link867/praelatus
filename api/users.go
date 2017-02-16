@@ -274,7 +274,7 @@ func CreateSession(w http.ResponseWriter, r *http.Request) {
 	w.Write(apiError("invalid password", "password"))
 }
 
-// RefreshSession will reset the expiration on the current jwt token
+// RefreshSession will reset the expiration on the current session
 func RefreshSession(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("PRAESESSION")
 	if err != nil {
@@ -285,7 +285,7 @@ func RefreshSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	duration, _ := time.ParseDuration("3h")
-	cookie.MaxAge = int(time.Now().Add(duration).Unix())
+	cookie.Expires = time.Now().Add(duration)
 	r.AddCookie(cookie)
 
 	w.Write([]byte{})
