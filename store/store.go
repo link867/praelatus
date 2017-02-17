@@ -39,6 +39,7 @@ type Store interface {
 type SQLStore interface {
 	Conn() *sql.DB
 	Drop() error
+	Migrate() error
 }
 
 // SessionStore is an abstraction over using a caching system to store
