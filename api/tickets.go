@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -15,12 +14,12 @@ import (
 func ticketRouter() chi.Router {
 	router := chi.NewRouter()
 
+	router.Get("/", GetAllTickets)
 	router.Get("/:key", GetTicket)
 	router.Delete("/:key", RemoveTicket)
 	router.Put("/:key", UpdateTicket)
 
 	router.Post("/:key", CreateTicket)
-	router.Get("/:key", GetAllTicketsByProject)
 
 	router.Get("/:key/comments", GetComments)
 	router.Post("/:key/comments", CreateComment)
@@ -34,15 +33,7 @@ func ticketRouter() chi.Router {
 // GetTicket will get a ticket by the ticket key
 func GetTicket(w http.ResponseWriter, r *http.Request) {
 	key := chi.URLParam(r, "key")
-
-	fmt.Println("key", key)
-
 	preload, _ := strconv.ParseBool(r.FormValue("preload"))
-
-	if key == "" {
-		GetAllTickets(w, r)
-		return
-	}
 
 	tk := &models.Ticket{
 		Key: key,
