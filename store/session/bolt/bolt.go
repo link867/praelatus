@@ -2,6 +2,7 @@ package bolt
 
 import (
 	"encoding/json"
+	"log"
 
 	"github.com/boltdb/bolt"
 	"github.com/praelatus/backend/models"
@@ -13,6 +14,7 @@ type SessionStore struct {
 	db *bolt.DB
 }
 
+// Get will get the sesion information for the given session key
 func (c *SessionStore) Get(key string) (models.User, error) {
 	var u models.User
 	var jsn []byte
@@ -31,6 +33,7 @@ func (c *SessionStore) Get(key string) (models.User, error) {
 	return u, err
 }
 
+// Set will set the session information for the given session key
 func (c *SessionStore) Set(key string, model models.User) error {
 	jsn, err := json.Marshal(model)
 	if err != nil {
@@ -47,13 +50,14 @@ func (c *SessionStore) Set(key string, model models.User) error {
 	})
 }
 
-func New(filename string) (store.SessionStore, error) {
+// New will open boltdb at filename for storing session info in
+func New(filename string) store.SessionStore {
 	ss := &SessionStore{}
 	db, err := bolt.Open(filename, 0600, nil)
 	if err != nil {
-		return ss, err
+		log.Panicln("Error starting session db:", err.Error())
 	}
 
 	ss.db = db
-	return ss, err
+	return ss
 }

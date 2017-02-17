@@ -34,7 +34,7 @@ func New(conn string, replicas ...string) store.Store {
 
 	d, err := sql.Open("postgres", conn)
 	if err != nil {
-		log.Panicln("Error connection:", err)
+		log.Panicln("Connecting to db:", err)
 	}
 
 	s := &Store{
