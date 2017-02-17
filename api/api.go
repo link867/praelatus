@@ -63,7 +63,7 @@ func New(store store.Store, ss store.SessionStore) chi.Router {
 
 	router.Mount("/api", api)
 	router.Mount("/api/v1", api)
-	router.Mount("/", index)
+	router.Mount("/", index())
 
 	// Left here for debugging purposes
 	// docgen.PrintRoutes(router)
