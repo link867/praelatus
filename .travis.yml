@@ -2,11 +2,10 @@ language: go
 
 go:
     - 1.7
-    - master
 
 services:
     - postgres
-    - redis-server
+    # - redis-server
 
 env:
     - PRAELATUS_DB="postgres://postgres@localhost:5432/prae_ci_test?sslmode=disable"
