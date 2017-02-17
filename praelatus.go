@@ -34,9 +34,9 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
-			Name:   "seed",
+			Name:   "seeddb",
 			Usage:  "seed the database with test data",
-			Action: seed,
+			Action: seedDB,
 		},
 		{
 			Name:   "serve",
@@ -55,6 +55,17 @@ func main() {
 			Usage:  "view the configuration for this instance, useful for debugging",
 		},
 		{
+			Name:   "testdb",
+			Usage:  "will test the connections to the databases",
+			Action: testDB,
+		},
+		{
+			Name:   "cleandb",
+			Usage:  "will clean the database (remove all tables), useful for testing",
+			Action: cleanDB,
+		},
+		{
+			// TODO expand upon this as necessary
 			Name:  "admin",
 			Usage: "various admin functions for the instance",
 			Subcommands: []cli.Command{
@@ -82,11 +93,6 @@ func main() {
 					},
 				},
 			},
-		},
-		{
-			Name:   "testdb",
-			Usage:  "will test the connections to the databases",
-			Action: testDB,
 		},
 	}
 
@@ -129,7 +135,7 @@ func adminCreateUser(c *cli.Context) error {
 	return nil
 }
 
-func seed(c *cli.Context) error {
+func seedDB(c *cli.Context) error {
 	s := config.Store()
 	return store.SeedAll(s)
 }
@@ -143,6 +149,23 @@ func testDB(c *cli.Context) error {
 	// these methods panic if connection fails
 	config.Store()
 	config.SessionStore()
+	return nil
+}
+
+func cleanDB(c *cli.Context) error {
+	s := config.Store()
+	sql, ok := s.(store.SQLStore)
+	if !ok {
+		fmt.Println("Configured database is not sql nothing to do.")
+		return nil
+	}
+
+	err := sql.Drop()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Database cleaned.")
 	return nil
 }
 
