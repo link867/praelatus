@@ -103,6 +103,14 @@ if ! [ -x "$(command -v webpack)" ]; then
     sudo npm install -g webpack
 fi
 
+if ! [ -x "$(command -v glide)" ]; then
+    echo "glide not detected attempting to install..."
+    go get github.com/Masterminds/glide
+    if ! [ -x "$(command -v glide)" ]; then
+        echo "installed glide but \$GOBIN isn't in \$PATH"
+        exit 1
+    fi
+fi
 
 if [ -d "build" ]; then
     echo "cleaning build directory..."
