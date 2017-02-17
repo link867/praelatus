@@ -6,6 +6,11 @@
 # Requires go, npm, node, and curl be installed.
 #
 
+if [ "$GOOS" == "" ]; then
+    echo "\$GOOS not set defaulting to linux"
+    export GOOS="linux"
+fi
+
 function print_help() {
     echo "Usage: 
     ./package.sh tag_name name_of_release prelease_bool:optional
@@ -45,6 +50,7 @@ STARTING_DIR=$(pwd)
 echo "Tag Name: $TAG_NAME"
 echo "Release Name: $RELEASE_NAME"
 echo "Prelease: $PRELEASE"
+echo ""
 
 echo "Checking for dependencies..."
 if ! [ -x "$(command -v go)" ]; then
@@ -77,8 +83,6 @@ if ! [ -x "$(command -v webpack)" ]; then
     sudo npm install -g webpack
 fi
 
-exit 0
-
 mkdir build
 if [ "$?" -ne  0 ]; then
     echo "cleaning build directory..."
@@ -86,25 +90,44 @@ if [ "$?" -ne  0 ]; then
     mkdir build
 fi
 
+# create the final client directory
+mkdir build/client
+
 # install deps for backend
-glide install
+echo "installing dependencies for backend"
+glide install &>/dev/null
 
 # compile the backend
+# TODO add cross-compilation
+echo "compiling the backend"
+export GOARCH="amd64"
 go build -o build/praelatus
 
 # get the frontend
-git clone https://github.com/praelatus/frontend build/frontend
+echo "downloading the frontend"
+git clone https://github.com/praelatus/frontend build/frontend &>/dev/null
 
 # change to frontend git repo
 cd build/frontend
 
 # install frontend deps
-npm install
+echo "installing dependencies for frontend"
+yarn install &>/dev/null
 
+echo "compiling the frontend"
+webpack -p &>/dev/null
+mv build/debug/static ../client/
+cp index.html ../client/index.html
 
+echo "cleaning up"
+rm -rf build/frontend
 
 # go back to backend repo
 cd $STARTING_DIR
+echo $PWD
+
+echo "building release tar"
+tar czf praelatus-$TAG_NAME-$GOOS-$GOARCH.tar.gz build/*
 
 # create the tag
 # echo "Tagging release..."
