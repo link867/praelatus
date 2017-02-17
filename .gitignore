@@ -33,3 +33,5 @@ client/dist/*
 .vagrant/*
 
 *jwt_secret.key*
+
+build/*
