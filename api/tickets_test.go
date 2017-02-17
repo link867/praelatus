@@ -108,14 +108,16 @@ func TestCreateTicket(t *testing.T) {
 	rd := bytes.NewReader(byt)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/api/v1/tickets", rd)
+	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST", rd)
 	testLogin(r)
 
 	router.ServeHTTP(w, r)
 
 	e := json.Unmarshal(w.Body.Bytes(), &tk)
 	if e != nil {
-		t.Errorf("Failed with error %s", e.Error())
+		t.Logf("Failed with error %s", e.Error())
+		t.Logf("Received %s", string(w.Body.Bytes()))
+		t.Fail()
 	}
 
 	if tk.ID != 1 {
