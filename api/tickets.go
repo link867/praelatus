@@ -33,7 +33,7 @@ func ticketRouter() chi.Router {
 // GetTicket will get a ticket by the ticket key
 func GetTicket(w http.ResponseWriter, r *http.Request) {
 	key := chi.URLParam(r, "key")
-	preload, _ := strconv.ParseBool(r.FormValue("preload"))
+	preload := r.FormValue("preload")
 
 	tk := &models.Ticket{
 		Key: key,
@@ -54,7 +54,7 @@ func GetTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if preload {
+	if preload == "comments" {
 		cm, err := Store.Tickets().GetComments(*tk)
 		if err != nil && err != store.ErrNotFound {
 			w.WriteHeader(500)
