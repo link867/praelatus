@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/praelatus/backend/store"
+
 	"github.com/pressly/chi"
 	"github.com/pressly/chi/docgen"
 )
@@ -17,7 +18,20 @@ var Store store.Store
 // Cache is the global session store used in our HTTP handlers.
 var Cache store.SessionStore
 
-func index(rtr chi.Router) http.Handler {
+func index() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/",
+		func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, "client/index.html")
+		})
+
+	mux.Handle("/static/",
+		http.StripPrefix("/client/", http.FileServer(http.Dir("client/static"))))
+
+	return mux
+}
+
+func routes(rtr chi.Router) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		jsnStr := docgen.JSONRoutesDoc(rtr)
 		w.Write([]byte(jsnStr))
@@ -37,7 +51,7 @@ func New(store store.Store, ss store.SessionStore) chi.Router {
 
 	api := chi.NewRouter()
 
-	api.Mount("/routes", index(api))
+	api.Mount("/routes", routes(api))
 	api.Mount("/fields", fieldRouter())
 	api.Mount("/labels", labelRouter())
 	api.Mount("/projects", projectRouter())
@@ -49,6 +63,7 @@ func New(store store.Store, ss store.SessionStore) chi.Router {
 
 	router.Mount("/api", api)
 	router.Mount("/api/v1", api)
+	router.Mount("/", index)
 
 	// Left here for debugging purposes
 	// docgen.PrintRoutes(router)
