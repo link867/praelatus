@@ -3,12 +3,9 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"log/syslog"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/praelatus/praelatus/store"
 	"github.com/praelatus/praelatus/store/pg"
@@ -123,45 +120,6 @@ func Store() store.Store {
 // SessionStore will return a session store with a default location
 func SessionStore() store.SessionStore {
 	return bolt.New("sessions.db")
-}
-
-// LogWriter will return an io.writer that is created based on environment
-// configuration
-func LogWriter() io.Writer {
-	var writers []io.Writer
-
-	for _, log := range strings.Split(Cfg.LogLocations, ";") {
-		switch log {
-		case "stdout":
-			writers = append(writers, os.Stdout)
-		case "syslog":
-			sl, err := syslog.New(6, "PRAELATUS")
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-
-			writers = append(writers, sl)
-		default:
-			var f *os.File
-			var e error
-
-			if _, err := os.Stat(log); err == nil {
-				f, e = os.Open(log)
-			} else {
-				f, e = os.Create(log)
-			}
-
-			if e != nil {
-				fmt.Printf("Error opening %s: %s", log, e.Error())
-				continue
-			}
-
-			writers = append(writers, f)
-		}
-	}
-
-	return io.MultiWriter(writers...)
 }
 
 // GetRedis will get the redis cache location
