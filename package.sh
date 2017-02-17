@@ -117,57 +117,68 @@ if [ -d "build" ]; then
     rm -rf build
 fi
 
-# create the final build and build/client directories
-mkdir -p build/client
+# create the final build directories
+mkdir build/
+mkdir build/{client,linux,windows,darwin}
 
-# install deps for backend
-echo "installing dependencies for backend"
-glide install &>/dev/null
+# # get the frontend
+# echo "downloading the frontend"
+# git clone https://github.com/praelatus/frontend build/frontend
 
-# compile the backend
-# TODO add cross-compilation
-echo "compiling the backend"
-export GOARCH="amd64"
-go build -o build/praelatus &>/dev/null
-check_if_success
-
-# get the frontend
-echo "downloading the frontend"
-git clone https://github.com/praelatus/frontend build/frontend &>/dev/null
-
-# change to frontend git repo
-cd build/frontend
+# # change to frontend git repo
+# cd build/frontend
 
 # # install frontend deps
 # echo "installing dependencies for frontend"
-# yarn install &>/dev/null
+# yarn install
 
 # echo "compiling the frontend"
-# webpack -p &>/dev/null
-# mv build/debug/static ../client/
-# cp index.html ../client/index.html
+# webpack -p
+# mv $STARTING_DIR/build/frontend/build/debug/static $STARTING_DIR/build/client/
+# cp $STARTING_DIR/build/frontend/index.html $STARTING_DIR/build/client/index.html
+
+# install deps for backend
+echo "installing dependencies for backend"
+glide install
 
 echo "cleaning up"
 cd $STARTING_DIR
 rm -rf build/frontend
 
-echo "building release tar"
-cd build
+GOARCH="amd64"
 
-PACKAGE_NAME="praelatus-$TAG_NAME-$GOOS-$GOARCH.tar.gz"
+platforms=("linux" "darwin" "windows")
 
-if ! [ -z "$PRERELEASE" ]; then
-    echo "is a PRELEASE"
-    PACKAGE_NAME="praelatus-$TAG_NAME-prelease-$GOOS-$GOARCH.tar.gz"
-fi
+for platform in "${platforms[@]}"
+do
+    GOOS=$platform
+    # compile the backend
+    echo "compiling the backend for $GOOS"
+    go build -o build/$GOOS/praelatus >/dev/null
+    check_if_success
 
-echo $PACKAGE_NAME
-if [ -f $PACKAGE_NAME ]; then
-    echo "old package detected removing..."
-    rm $PACKAGE_NAME
-fi
+    cp -R build/client build/$GOOS/client
 
-tar czf ../$PACKAGE_NAME *
+    echo "building release tar"
+    cd build/$GOOS
+    
+    PACKAGE_NAME="praelatus-$TAG_NAME-$GOOS-$GOARCH.tar.gz"
+    
+    if ! [ -z "$PRERELEASE" ]; then
+        echo "is a PRELEASE"
+        PACKAGE_NAME="praelatus-$TAG_NAME-prelease-$GOOS-$GOARCH.tar.gz"
+    fi
+    
+    echo $PACKAGE_NAME
+    if [ -f "$STARTING_DIR/$PACKAGE_NAME" ]; then
+        echo "old package detected removing..."
+        rm $STARTING_DIR/$PACKAGE_NAME
+    fi
+    
+    tar czf $STARTING_DIR/$PACKAGE_NAME *
+
+    cd $STARTING_DIR
+done
 
 # # create the tag
 # echo "tagging release..."
