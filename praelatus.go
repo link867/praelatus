@@ -2,12 +2,14 @@ package main
 
 import (
 	"net/http"
+	"time"
 
 	"log"
 
 	"github.com/praelatus/backend/api"
 	"github.com/praelatus/backend/config"
 	"github.com/praelatus/backend/store"
+	"github.com/tylerb/graceful"
 )
 
 // this is only used when running in dev mode to make testing the api easier
@@ -48,11 +50,12 @@ func main() {
 	var r http.Handler = api.New(s, ss)
 
 	if config.Dev() {
+		log.Println("Running in dev mode, disabling cors...")
 		r = disableCors(r)
 	}
 
 	log.Println("Ready to serve requests!")
-	err = http.ListenAndServe(config.Port(), r)
+	err = graceful.RunWithErr(config.Port(), time.Minute, r)
 	if err != nil {
 		log.Println(err)
 	}

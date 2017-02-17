@@ -1,5 +1,5 @@
-hash: 22d9b8e6fc3070ab1c8f579ed568a50a2bb6b74474c7885fdd8a742f0c08b45b
-updated: 2017-02-16T17:06:24.864561738-05:00
+hash: 30a54de0274206946fa0fc65e7755a78f857b40d9a9b488172cbc3cb6f2d0378
+updated: 2017-02-16T20:24:37.408103512-05:00
 imports:
 - name: github.com/boltdb/bolt
   version: 583e8937c61f1af6513608ccc75c97b6abdf4ff9
@@ -13,13 +13,15 @@ imports:
   version: 54f435d539226571eab1987ed862b1c0fdfdc892
   subpackages:
   - docgen
+- name: github.com/tylerb/graceful
+  version: 4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:
   - bcrypt
   - blowfish
 - name: golang.org/x/sys
-  version: aaabbdc969c3935a2a7f61efac801e7163c73a2a
+  version: 075e574b89e4c2d22f2286a7e2b919519c6f3547
   subpackages:
   - unix
 testImports: []
