@@ -21,6 +21,16 @@ func main() {
 	app.Usage = "Praelatus, an Open Source bug tracker / ticketing system"
 	app.Version = "0.0.1"
 	app.Action = runServer
+	app.Authors = []cli.Author{
+		{
+			Name:  "Mathew Robinson",
+			Email: "chasinglogic@gmail.com",
+		},
+		{
+			Name:  "Mark Chandler",
+			Email: "mark.allen.chandler@gmail.com",
+		},
+	}
 
 	app.Commands = []cli.Command{
 		{
