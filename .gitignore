@@ -35,3 +35,4 @@ client/dist/*
 *jwt_secret.key*
 
 build/*
+*.tar.gz

@@ -3,8 +3,8 @@ package pg_test
 import (
 	"testing"
 
-	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/store"
+	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/praelatus/store"
 )
 
 func TestWorkflowGet(t *testing.T) {

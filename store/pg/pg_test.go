@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/praelatus/backend/config"
-	"github.com/praelatus/backend/store"
-	"github.com/praelatus/backend/store/pg"
+	"github.com/praelatus/praelatus/config"
+	"github.com/praelatus/praelatus/store"
+	"github.com/praelatus/praelatus/store/pg"
 )
 
 var s store.Store

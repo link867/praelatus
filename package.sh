@@ -14,10 +14,10 @@ function parse_git_branch {
 
 BRANCH=$(parse_git_branch)
 
-if [ $BRANCH != "master" ] && [ $BRANCH != "develop" ]; then
-    echo "you aren't on master or develop, refusing to package a release"
-    exit 1
-fi
+# if [ $BRANCH != "master" ] && [ $BRANCH != "develop" ]; then
+#     echo "you aren't on master or develop, refusing to package a release"
+#     exit 1
+# fi
 
 if [ "$GOOS" == "" ]; then
     echo "\$GOOS not set defaulting to linux"
@@ -103,15 +103,14 @@ if ! [ -x "$(command -v webpack)" ]; then
     sudo npm install -g webpack
 fi
 
-mkdir build
-if [ "$?" -ne  0 ]; then
+
+if [ -d "build" ]; then
     echo "cleaning build directory..."
     rm -rf build
-    mkdir build
 fi
 
-# create the final client directory
-mkdir build/client
+# create the final build and build/client directories
+mkdir -p build/client
 
 # install deps for backend
 echo "installing dependencies for backend"
@@ -131,14 +130,14 @@ git clone https://github.com/praelatus/frontend build/frontend &>/dev/null
 # change to frontend git repo
 cd build/frontend
 
-# install frontend deps
-echo "installing dependencies for frontend"
-yarn install &>/dev/null
+# # install frontend deps
+# echo "installing dependencies for frontend"
+# yarn install &>/dev/null
 
-echo "compiling the frontend"
-webpack -p &>/dev/null
-mv build/debug/static ../client/
-cp index.html ../client/index.html
+# echo "compiling the frontend"
+# webpack -p &>/dev/null
+# mv build/debug/static ../client/
+# cp index.html ../client/index.html
 
 echo "cleaning up"
 cd $STARTING_DIR
@@ -146,11 +145,30 @@ rm -rf build/frontend
 
 echo "building release tar"
 cd build
-tar czf ../praelatus-$TAG_NAME-$GOOS-$GOARCH.tar.gz *
 
-# create the tag
-# echo "Tagging release..."
-# git tag -a $TAG_NAME -m $RELEASE_NAME
+PACKAGE_NAME="praelatus-$TAG_NAME-$GOOS-$GOARCH.tar.gz"
+
+if ! [ -z "$PRERELEASE" ]; then
+    echo "is a PRELEASE"
+    PACKAGE_NAME="praelatus-$TAG_NAME-prelease-$GOOS-$GOARCH.tar.gz"
+fi
+
+echo $PACKAGE_NAME
+if [ -f $PACKAGE_NAME ]; then
+    echo "old package detected removing..."
+    rm $PACKAGE_NAME
+fi
+
+tar czf ../$PACKAGE_NAME *
+
+# # create the tag
+# echo "tagging release..."
+# if [ $TAG_NAME == "nightly" ]; then
+#     # we just move nightly up to the current commit instead of retagging
+#     git tag -af $TAG_NAME -m $RELEASE_NAME
+# else
+#     git tag -a $TAG_NAME -m $RELEASE_NAME
+# fi
 
 # # push the tag
 # echo "Pushing tags..."

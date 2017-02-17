@@ -3,7 +3,7 @@ package pg
 import (
 	"database/sql"
 
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/models"
 )
 
 // LabelStore contains methods for storing and retrieving Labels from a

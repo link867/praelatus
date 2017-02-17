@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/praelatus/backend/store"
+	"github.com/praelatus/praelatus/store"
 
 	"github.com/pressly/chi"
 	"github.com/pressly/chi/docgen"

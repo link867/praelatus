@@ -1,4 +1,4 @@
-# Praelatus [![License](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/chasinglogic/praelatus/blob/master/LICENSE) [![GoDoc](https://godoc.org/github.com/praelatus/backend?status.svg)](https://godoc.org/github.com/praelatus/backend) ![GoReportCard](https://goreportcard.com/badge/github.com/praelatus/backend)
+# Praelatus [![License](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/chasinglogic/praelatus/blob/master/LICENSE) [![GoDoc](https://godoc.org/github.com/praelatus/praelatus/?status.svg)](https://godoc.org/github.com/praelatus/praelatus/) ![GoReportCard](https://goreportcard.com/badge/github.com/praelatus/praelatus/)
 An Open Source bug tracker and ticketing system.
 
 If you're looking for the official web frontend it's
@@ -31,7 +31,7 @@ We follow the Contributor Covenant code of conduct, you can find it
 [here](https://github.com/chasinglogic/praelatus/blob/master/CODE_OF_CONDUCT.md)
 
 Need help getting started hacking on Praelatus? No problem we have a
-[doc for that!](https://github.com/praelatus/backend/blob/develop/CONTRIBUTING.md)
+[doc for that!](https://github.com/praelatus/praelatus/blob/develop/CONTRIBUTING.md)
 
 ## License
 

@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/lib/pq"
-	"github.com/praelatus/backend/store"
-	"github.com/praelatus/backend/store/pg/migrations"
+	"github.com/praelatus/praelatus/store"
+	"github.com/praelatus/praelatus/store/pg/migrations"
 )
 
 type rowScanner interface {

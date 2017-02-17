@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/models"
 	"github.com/pressly/chi"
 )
 

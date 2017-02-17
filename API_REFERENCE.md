@@ -1,4 +1,4 @@
-# github.com/praelatus/backend
+# github.com/praelatus/praelatus/
 
 This is the REST API reference documentation for the Praelatus REST API, Praelatus is an Open Source Bug Tracking / Ticketing system.
 

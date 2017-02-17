@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/models"
 )
 
 // TicketStore contains methods for storing and retrieving Tickets from

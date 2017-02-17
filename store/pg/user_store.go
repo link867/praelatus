@@ -3,7 +3,7 @@ package pg
 import (
 	"database/sql"
 
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/models"
 )
 
 // UserStore contains methods for storing and retrieving Users from a Postgres
