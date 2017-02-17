@@ -10,6 +10,18 @@ import (
 	"github.com/praelatus/backend/store"
 )
 
+// this is only used when running in dev mode to make testing the api easier
+func disableCors(next http.Handler) http.Handler {
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			if w.Header().Get("Access-Control-Allow-Origin") == "" {
+				w.Header().Add("Access-Control-Allow-Origin", "*")
+			}
+
+			next.ServeHTTP(w, r)
+		})
+}
+
 func main() {
 	log.SetOutput(config.LogWriter())
 
@@ -33,7 +45,11 @@ func main() {
 	}
 
 	log.Println("Prepping API")
-	r := api.New(s, ss)
+	var r http.Handler = api.New(s, ss)
+
+	if config.Dev() {
+		r = disableCors(r)
+	}
 
 	log.Println("Ready to serve requests!")
 	err = http.ListenAndServe(config.Port(), r)
