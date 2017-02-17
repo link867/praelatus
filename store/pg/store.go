@@ -2,7 +2,9 @@ package pg
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/lib/pq"
 	"github.com/praelatus/backend/store"
@@ -30,11 +32,17 @@ type Store struct {
 
 // New connects to the postgres database provided and returns a store
 // that's connected.
-func New(conn string, replicas ...string) store.Store {
-
+func New(conn string, replicas ...string) *Store {
 	d, err := sql.Open("postgres", conn)
 	if err != nil {
-		log.Panicln("Connecting to db:", err)
+		fmt.Println("Invalid database url:", err)
+		os.Exit(1)
+	}
+
+	err = d.Ping()
+	if err != nil {
+		fmt.Println("Error connecting to postgres:", err)
+		os.Exit(1)
 	}
 
 	s := &Store{
@@ -49,11 +57,6 @@ func New(conn string, replicas ...string) store.Store {
 		types:     &TypeStore{d},
 		statuses:  &StatusStore{d},
 		teams:     &TeamStore{d},
-	}
-
-	err = migrations.RunMigrations(s.db)
-	if err != nil {
-		log.Panicln("Error migrating:", err)
 	}
 
 	return s
@@ -113,6 +116,11 @@ func (pg *Store) Conn() *sql.DB {
 func (pg *Store) Drop() error {
 	_, err := pg.db.Exec("DROP SCHEMA public CASCADE; CREATE SCHEMA public;")
 	return err
+}
+
+// Migrate implements store.SQLStore for postgres db
+func (pg *Store) Migrate() error {
+	return migrations.RunMigrations(pg.db)
 }
 
 // toPqErr converts an error to a pq.Error so we can access more info about what
