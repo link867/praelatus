@@ -7,8 +7,7 @@
 #
 
 function print_help() {
-    echo "
-Usage: 
+    echo "Usage: 
     ./package.sh tag_name name_of_release prelease_bool:optional
 
 Examples:
@@ -27,15 +26,15 @@ Examples:
     ./package.sh v1.0.0 \"Aces High\""
 }
 
-if [ "$#" -ne 4 && "$#" -ne 3 ]; then
+if [[ "$1" == *"help"* || "-h" == "$1" ]]; then
+    print_help
+    exit 0
+fi
+
+if [[ "$#" -ne 4 && "$#" -ne 3 ]]; then
     echo "wrong number of arguments"
     print_help
     exit 1
-fi
-
-if [ "$1" == "*help*" || "-h" == "$1" ]; then
-    print_help
-    exit 0
 fi
 
 TAG_NAME = $1
