@@ -11,7 +11,7 @@ import (
 
 func TestGetTicket(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST/TEST-1", nil)
+	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1", nil)
 
 	router.ServeHTTP(w, r)
 
@@ -31,7 +31,7 @@ func TestGetTicket(t *testing.T) {
 
 func TestGetTicketPreloadComments(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST/TEST-1?preload=comments", nil)
+	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1?preload=comments", nil)
 
 	router.ServeHTTP(w, r)
 
@@ -80,7 +80,7 @@ func TestGetAllTickets(t *testing.T) {
 
 func TestGetAllTicketsByProject(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST", nil)
+	r := httptest.NewRequest("GET", "/api/v1/projects/TEST/tickets", nil)
 
 	router.ServeHTTP(w, r)
 
@@ -115,7 +115,9 @@ func TestCreateTicket(t *testing.T) {
 
 	e := json.Unmarshal(w.Body.Bytes(), &tk)
 	if e != nil {
-		t.Errorf("Failed with error %s", e.Error())
+		t.Logf("Failed with error %s", e.Error())
+		t.Logf("Received %s", string(w.Body.Bytes()))
+		t.Fail()
 	}
 
 	if tk.ID != 1 {
@@ -127,7 +129,7 @@ func TestCreateTicket(t *testing.T) {
 
 func TestGetComments(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST/TEST-1/comments", nil)
+	r := httptest.NewRequest("GET", "/api/v1/tickets/TEST-1/comments", nil)
 
 	router.ServeHTTP(w, r)
 
@@ -152,7 +154,7 @@ func TestCreateComment(t *testing.T) {
 	rd := bytes.NewReader(byt)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST/TEST-1/comments", rd)
+	r := httptest.NewRequest("POST", "/api/v1/tickets/TEST-1/comments", rd)
 	testLogin(r)
 
 	router.ServeHTTP(w, r)

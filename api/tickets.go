@@ -15,13 +15,11 @@ func ticketRouter() chi.Router {
 	router := chi.NewRouter()
 
 	router.Get("/", GetAllTickets)
-
 	router.Get("/:key", GetTicket)
 	router.Delete("/:key", RemoveTicket)
 	router.Put("/:key", UpdateTicket)
 
 	router.Post("/:key", CreateTicket)
-	router.Get("/:key", GetAllTicketsByProject)
 
 	router.Get("/:key/comments", GetComments)
 	router.Post("/:key/comments", CreateComment)
@@ -35,11 +33,7 @@ func ticketRouter() chi.Router {
 // GetTicket will get a ticket by the ticket key
 func GetTicket(w http.ResponseWriter, r *http.Request) {
 	key := chi.URLParam(r, "key")
-	preload := false
-
-	if r.FormValue("preload") != "" {
-		preload = true
-	}
+	preload := r.FormValue("preload")
 
 	tk := &models.Ticket{
 		Key: key,
@@ -60,7 +54,7 @@ func GetTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if preload {
+	if preload == "comments" {
 		cm, err := Store.Tickets().GetComments(*tk)
 		if err != nil && err != store.ErrNotFound {
 			w.WriteHeader(500)
