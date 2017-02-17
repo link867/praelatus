@@ -15,8 +15,15 @@ var seeded bool
 func init() {
 	if !seeded {
 		fmt.Println("Prepping tests")
-		s = pg.New(config.GetDbURL())
-		e := store.SeedAll(s)
+		p := pg.New(config.GetDbURL())
+
+		e := p.Migrate()
+		if e != nil {
+			panic(e)
+		}
+
+		s = p
+		e = store.SeedAll(s)
 		if e != nil {
 			panic(e)
 		}
