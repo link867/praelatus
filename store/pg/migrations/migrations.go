@@ -29,7 +29,6 @@ func SchemaVersion(db *sql.DB) int {
 
 	rw, err := db.Query("SELECT schema_version FROM database_information WHERE id = 1")
 	if err != nil {
-		log.Printf("Error retrieving schema version, assuming 0: %s\n", err.Error())
 		return 0
 	}
 	defer rw.Close()
@@ -37,7 +36,6 @@ func SchemaVersion(db *sql.DB) int {
 	rw.Next()
 	err = rw.Scan(&v)
 	if err != nil {
-		log.Printf("Error scanning schema version, assuming 0: %s\n", err.Error())
 		return 0
 	}
 
@@ -49,7 +47,6 @@ func SchemaVersion(db *sql.DB) int {
 // returned from the database_information table.
 func RunMigrations(db *sql.DB) error {
 	version := SchemaVersion(db)
-	log.Printf("Current database version %d\n", version)
 
 	for _, schema := range schemas {
 		version = SchemaVersion(db)
