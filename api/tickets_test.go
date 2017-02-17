@@ -80,7 +80,7 @@ func TestGetAllTickets(t *testing.T) {
 
 func TestGetAllTicketsByProject(t *testing.T) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/api/v1/tickets", nil)
+	r := httptest.NewRequest("GET", "/api/v1/projects/TEST/tickets", nil)
 
 	router.ServeHTTP(w, r)
 

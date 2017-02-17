@@ -16,6 +16,7 @@ func projectRouter() chi.Router {
 	router.Post("/", CreateProject)
 
 	router.Get("/:pkey", GetProject)
+	router.Get("/:pkey/tickets", GetAllTicketsByProject)
 	router.Delete("/:pkey", RemoveProject)
 	router.Put("/:pkey", UpdateProject)
 
