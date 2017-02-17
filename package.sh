@@ -6,10 +6,30 @@
 # Requires go, npm, node, and curl be installed.
 #
 
+
+function parse_git_branch {
+    ref=$(git symbolic-ref HEAD 2> /dev/null) || return
+    echo "${ref#refs/heads/} "
+}
+
+BRANCH=$(parse_git_branch)
+
+if [ $BRANCH != "master" ] && [ $BRANCH != "develop" ]; then
+    echo "you aren't on master or develop, refusing to package a release"
+    exit 1
+fi
+
 if [ "$GOOS" == "" ]; then
     echo "\$GOOS not set defaulting to linux"
     export GOOS="linux"
 fi
+
+function check_if_success() {
+    if [ $? -ne 0 ]; then
+        echo "error running last command"
+        exit $?
+    fi
+}
 
 function print_help() {
     echo "Usage: 
@@ -101,7 +121,8 @@ glide install &>/dev/null
 # TODO add cross-compilation
 echo "compiling the backend"
 export GOARCH="amd64"
-go build -o build/praelatus
+go build -o build/praelatus &>/dev/null
+check_if_success
 
 # get the frontend
 echo "downloading the frontend"
@@ -120,14 +141,12 @@ mv build/debug/static ../client/
 cp index.html ../client/index.html
 
 echo "cleaning up"
+cd $STARTING_DIR
 rm -rf build/frontend
 
-# go back to backend repo
-cd $STARTING_DIR
-echo $PWD
-
 echo "building release tar"
-tar czf praelatus-$TAG_NAME-$GOOS-$GOARCH.tar.gz build/*
+cd build
+tar czf ../praelatus-$TAG_NAME-$GOOS-$GOARCH.tar.gz *
 
 # create the tag
 # echo "Tagging release..."
