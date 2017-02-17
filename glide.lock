@@ -1,5 +1,5 @@
-hash: 30a54de0274206946fa0fc65e7755a78f857b40d9a9b488172cbc3cb6f2d0378
-updated: 2017-02-16T20:24:37.408103512-05:00
+hash: f97dd243ba5c9cf1d5a5c3c6b3f4e7fbd23c23d4ef772a5f7f7aa09c11e67404
+updated: 2017-02-16T20:31:06.909116804-05:00
 imports:
 - name: github.com/boltdb/bolt
   version: 583e8937c61f1af6513608ccc75c97b6abdf4ff9
@@ -15,6 +15,8 @@ imports:
   - docgen
 - name: github.com/tylerb/graceful
   version: 4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb
+- name: github.com/urfave/cli
+  version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:
