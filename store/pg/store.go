@@ -104,9 +104,15 @@ func (pg *Store) Labels() store.LabelStore {
 	return pg.labels
 }
 
-// Conn implementes store.SQLStore for postgres db
+// Conn implements store.SQLStore for postgres db
 func (pg *Store) Conn() *sql.DB {
 	return pg.db
+}
+
+// Drop implements store.SQLStore for postgres db
+func (pg *Store) Drop() error {
+	_, err := pg.db.Exec("DROP SCHEMA public CASCADE; CREATE SCHEMA public;")
+	return err
 }
 
 // toPqErr converts an error to a pq.Error so we can access more info about what
