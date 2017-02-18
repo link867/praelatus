@@ -5,9 +5,9 @@
 package defaults
 
 import (
-	"github.com/praelatus/backend/config"
-	"github.com/praelatus/backend/store"
-	"github.com/praelatus/backend/store/pg"
+	"github.com/praelatus/praelatus/config"
+	"github.com/praelatus/praelatus/store"
+	"github.com/praelatus/praelatus/store/pg"
 )
 
 // Store returns the default store.Store implementation (postgres)

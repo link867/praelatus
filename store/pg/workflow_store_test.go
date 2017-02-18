@@ -3,17 +3,25 @@ package pg_test
 import (
 	"testing"
 
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/praelatus/store"
 )
 
 func TestWorkflowGet(t *testing.T) {
-	wk := &models.Workflow{ID: 1}
+	wk := models.Workflow{ID: 1}
+	problem := false
 
-	e := s.Workflows().Get(wk)
+	defer func() {
+		if recover() != nil || problem {
+			t.Errorf("Expected %s got %s\n", store.DefaultWorkflow.String(), wk.String())
+		}
+	}()
+
+	e := s.Workflows().Get(&wk)
 	failIfErr("Workflow Get", t, e)
 
-	if wk.Name == "" {
-		t.Errorf("Expected a name got: %s\n", wk.Name)
+	if wk.Name != store.DefaultWorkflow.Name {
+		t.Errorf("Expected the default workflow got %s\n", wk.String())
 	}
 }
 
@@ -37,7 +45,7 @@ func TestWorkflowGetByProject(t *testing.T) {
 }
 
 func TestWorkflowSave(t *testing.T) {
-	wk := models.Workflow{ID: 1}
+	wk := models.Workflow{ID: 2}
 	e := s.Workflows().Get(&wk)
 	failIfErr("Workflow Save", t, e)
 
@@ -46,7 +54,7 @@ func TestWorkflowSave(t *testing.T) {
 	e = s.Workflows().Save(wk)
 	failIfErr("Workflow Save", t, e)
 
-	wk = models.Workflow{ID: 1}
+	wk = models.Workflow{ID: 2}
 	e = s.Workflows().Get(&wk)
 	failIfErr("Workflow Save", t, e)
 

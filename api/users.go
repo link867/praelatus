@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
-	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/mw"
-	"github.com/praelatus/backend/store"
+	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/praelatus/store"
 	"github.com/pressly/chi"
 )
 
@@ -16,6 +16,7 @@ func userRouter() chi.Router {
 
 	router.Put("/:username", UpdateUser)
 	router.Delete("/:username", DeleteUser)
+	router.Get("/search", SearchUsers)
 	router.Get("/:username", GetUser)
 	router.Get("/", GetAllUsers)
 	router.Post("/", CreateUser)
@@ -61,7 +62,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 // GetAllUsers will return the json encoded array of all users in the given
 // store
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to view other users"))
@@ -69,6 +70,34 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	users, err := Store.Users().GetAll()
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(apiError(err.Error()))
+		log.Println(err)
+		return
+	}
+
+	for i := range users {
+		users[i].Password = ""
+		users[i].Settings = nil
+	}
+
+	sendJSON(w, users)
+}
+
+// SearchUsers will return the json encoded array of all users in the given
+// store which match the provided query
+func SearchUsers(w http.ResponseWriter, r *http.Request) {
+	u := GetUserSession(r)
+	if u == nil {
+		w.WriteHeader(403)
+		w.Write(apiError("you must be logged in to view other users"))
+		return
+	}
+
+	query := r.FormValue("query")
+
+	users, err := Store.Users().Search(query)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(apiError(err.Error()))
@@ -119,7 +148,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := mw.JWTSignUser(*usr)
+	err = SetUserSession(*usr, r)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(apiError(err.Error()))
@@ -128,10 +157,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	usr.Password = ""
-	sendJSON(w, TokenResponse{
-		token,
-		*usr,
-	})
+	sendJSON(w, usr)
 }
 
 // UpdateUser will update a user in the database, it will reject the call if
@@ -230,7 +256,7 @@ func CreateSession(w http.ResponseWriter, r *http.Request) {
 
 	if u.CheckPw([]byte(l.Password)) {
 		u.Password = ""
-		token, err := mw.JWTSignUser(u)
+		err := SetUserSession(u, r)
 		if err != nil {
 			w.WriteHeader(500)
 			w.Write(apiError(err.Error()))
@@ -239,10 +265,7 @@ func CreateSession(w http.ResponseWriter, r *http.Request) {
 
 		}
 
-		sendJSON(w, TokenResponse{
-			token,
-			u,
-		})
+		sendJSON(w, u)
 
 		return
 	}
@@ -251,16 +274,9 @@ func CreateSession(w http.ResponseWriter, r *http.Request) {
 	w.Write(apiError("invalid password", "password"))
 }
 
-// RefreshSession will reset the expiration on the current jwt token
+// RefreshSession will reset the expiration on the current session
 func RefreshSession(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
-	if u == nil {
-		w.WriteHeader(401)
-		w.Write(apiError("you must be logged in to refresh your session"))
-		return
-	}
-
-	token, err := mw.JWTSignUser(*u)
+	cookie, err := r.Cookie("PRAESESSION")
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(apiError(err.Error()))
@@ -268,5 +284,9 @@ func RefreshSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte(token))
+	duration, _ := time.ParseDuration("3h")
+	cookie.Expires = time.Now().Add(duration)
+	r.AddCookie(cookie)
+
+	w.Write([]byte{})
 }

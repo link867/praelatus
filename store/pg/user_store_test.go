@@ -3,7 +3,7 @@ package pg_test
 import (
 	"testing"
 
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/models"
 )
 
 func TestUserGet(t *testing.T) {
@@ -13,6 +13,15 @@ func TestUserGet(t *testing.T) {
 
 	if u.Username == "" {
 		t.Errorf("Expected a username got: %s\n", u.Username)
+	}
+}
+
+func TestUserSearch(t *testing.T) {
+	u, e := s.Users().Search("test")
+	failIfErr("User Search", t, e)
+
+	if len(u) == 0 {
+		t.Error("Expected to get more than 0 types.")
 	}
 }
 

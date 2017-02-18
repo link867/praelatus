@@ -3,7 +3,7 @@ package pg
 import (
 	"database/sql"
 
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/models"
 )
 
 // LabelStore contains methods for storing and retrieving Labels from a
@@ -80,4 +80,29 @@ func (ls *LabelStore) Remove(label models.Label) error {
 	}
 
 	return handlePqErr(tx.Commit())
+}
+
+// Search will take a name and search for the closest matching label
+// in the store
+func (ls *LabelStore) Search(query string) ([]models.Label, error) {
+	rows, err := ls.db.Query(`SELECT id, name FROM labels
+                                  WHERE name LIKE $1`, query+"%")
+	if err != nil {
+		return nil, handlePqErr(err)
+	}
+
+	var labels []models.Label
+
+	for rows.Next() {
+		var l models.Label
+
+		err = rows.Scan(&l.ID, &l.Name)
+		if err != nil {
+			return labels, handlePqErr(err)
+		}
+
+		labels = append(labels, l)
+	}
+
+	return labels, nil
 }

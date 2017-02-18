@@ -3,7 +3,7 @@ package pg_test
 import (
 	"testing"
 
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/models"
 )
 
 func TestLabelGet(t *testing.T) {
@@ -56,4 +56,13 @@ func TestLabelRemove(t *testing.T) {
 	l := models.Label{ID: 3}
 	e := s.Labels().Remove(l)
 	failIfErr("Label Remove", t, e)
+}
+
+func TestLabelSearch(t *testing.T) {
+	l, e := s.Labels().Search("te")
+	failIfErr("Label Search", t, e)
+
+	if l[0].Name != "test" {
+		t.Errorf("Expected test Got %s", l[0].Name)
+	}
 }

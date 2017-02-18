@@ -3,7 +3,7 @@ package pg_test
 import (
 	"testing"
 
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/models"
 )
 
 func TestTicketGet(t *testing.T) {
@@ -37,7 +37,7 @@ func TestTicketGetAllByProject(t *testing.T) {
 func TestTicketGetComments(t *testing.T) {
 	tk := models.Ticket{ID: 1}
 	c, e := s.Tickets().GetComments(tk)
-	failIfErr("Get All Comments", t, e)
+	failIfErr("Get Comments", t, e)
 
 	if len(c) == 0 || c == nil {
 		t.Error("Expected to get some comments instead got none.")

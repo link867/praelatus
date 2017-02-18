@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/models"
 )
 
 func TestGetUser(t *testing.T) {
@@ -75,23 +75,19 @@ func TestCreateUser(t *testing.T) {
 
 	router.ServeHTTP(w, r)
 
-	var l TokenResponse
+	var l models.User
 
 	e := json.Unmarshal(w.Body.Bytes(), &l)
 	if e != nil {
 		t.Errorf("Failed with error %s", e.Error())
 	}
 
-	if l.User.ID != 1 {
+	if l.ID != 1 {
 		t.Errorf("Expected 1 Got %d", u.ID)
 	}
 
-	if l.User.ProfilePic == "" {
+	if l.ProfilePic == "" {
 		t.Error("Expected a profile pic but got nothing.")
-	}
-
-	if l.Token == "" {
-		t.Errorf("Expected a token got %s\n", l.Token)
 	}
 
 	t.Log(w.Body)
@@ -104,13 +100,37 @@ func TestRefreshSession(t *testing.T) {
 
 	router.ServeHTTP(w, r)
 
-	if w.Body.String() == "" {
-		t.Errorf("Expected a token response got %s\n", w.Body.String())
-	}
-
 	if w.Code != 200 {
 		t.Errorf("Expected 200 Got %d\n", w.Code)
 	}
 
 	t.Log(w.Body)
+}
+
+func TestSearchUsers(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/api/v1/users/search?query=foo", nil)
+	testAdminLogin(r)
+
+	router.ServeHTTP(w, r)
+
+	var u []models.User
+
+	e := json.Unmarshal(w.Body.Bytes(), &u)
+	if e != nil {
+		t.Errorf("Failed with error %s", e.Error())
+		t.Log(w.Body)
+	}
+
+	if len(u) != 2 {
+		t.Errorf("Expected 2 users got %d", len(u))
+	}
+
+	if u[0].Username != "foouser" {
+		t.Errorf("Expected foouser Got %s", u[0].Username)
+	}
+
+	if u[0].Password != "" {
+		t.Errorf("Expected no passsword but got %s\n", u[0].Password)
+	}
 }

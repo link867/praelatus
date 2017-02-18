@@ -2,9 +2,9 @@
 
 ## There are multiple ways to contribute to the project
 
-- Submitting bugs or feature requests! For now, you can drop us a line on Github issues [here](https://github.com/praelatus/backend/issues).
+- Submitting bugs or feature requests! For now, you can drop us a line on Github issues [here](https://github.com/praelatus/praelatus/issues).
 
-- Write documentation. We always need contributions in the form of localization, spell check, or net new documentation. For more information, you can check out our [wiki](https://github.com/praelatus/backend/wiki).
+- Write documentation. We always need contributions in the form of localization, spell check, or net new documentation. For more information, you can check out our [wiki](https://github.com/praelatus/praelatus/wiki).
 
 - Code submissions. We always need more code written in the form of new features or bugs.
 
@@ -25,7 +25,7 @@ If you'd like to tackle an existing issue, just add a comment claiming the ticke
 3. All tests must be passing on the CI system before a PR will be accepted.
 4. If your code breaks some other package, feel free to adjust the other package.
 
-Documentation for building Praelatus can be found [here](https://github.com/praelatus/backend/wiki/Building-Praelatus-from-Source)
+Documentation for building Praelatus can be found [here](https://github.com/praelatus/praelatus/wiki/Building-Praelatus-from-Source)
 
 ## Bug Report Guidelines
 

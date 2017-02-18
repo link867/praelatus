@@ -3,7 +3,7 @@ package pg
 import (
 	"database/sql"
 
-	"github.com/praelatus/backend/models"
+	"github.com/praelatus/praelatus/models"
 )
 
 // UserStore contains methods for storing and retrieving Users from a Postgres
@@ -36,6 +36,32 @@ func (s *UserStore) GetAll() ([]models.User, error) {
 	rows, err := s.db.Query(`SELECT id, username, password, email, full_name, 
 								    profile_picture, is_admin 
 							 FROM users`)
+	if err != nil {
+		return users, handlePqErr(err)
+	}
+
+	for rows.Next() {
+		var u models.User
+
+		err := intoUser(rows, &u)
+		if err != nil {
+			return users, handlePqErr(err)
+		}
+
+		users = append(users, u)
+	}
+
+	return users, nil
+}
+
+// Search retrieves a list of users whose name / username matches the given string
+func (s *UserStore) Search(query string) ([]models.User, error) {
+	users := []models.User{}
+	rows, err := s.db.Query(`SELECT id, username, password, email, full_name, 
+                                        profile_picture, is_admin 
+			         FROM users
+                                 WHERE full_name LIKE $1
+                                 OR username LIKE $2`, "%"+query+"%", query+"%")
 	if err != nil {
 		return users, handlePqErr(err)
 	}

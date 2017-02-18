@@ -1,42 +1,11 @@
 package main
 
 import (
-	"net/http"
+	"os"
 
-	"log"
-
-	"github.com/praelatus/backend/api"
-	"github.com/praelatus/backend/config"
-	"github.com/praelatus/backend/store"
+	"github.com/praelatus/praelatus/cli"
 )
 
 func main() {
-	log.SetOutput(config.LogWriter())
-
-	log.Println("Starting Praelatus!")
-	log.Println("Initializing database...")
-
-	s := config.Store()
-
-	var err error
-
-	if config.Dev() {
-		log.Println("Dev environment detected, seeding database with test info...")
-		err = store.SeedAll(s)
-	} else {
-		err = store.SeedDefaults(s)
-	}
-
-	if err != nil {
-		panic(err)
-	}
-
-	log.Println("Prepping API")
-	r := api.New(s)
-
-	log.Println("Ready to serve requests!")
-	err = http.ListenAndServe(config.Port(), r)
-	if err != nil {
-		log.Println(err)
-	}
+	cli.Run(os.Args)
 }

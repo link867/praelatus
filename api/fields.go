@@ -6,8 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/mw"
+	"github.com/praelatus/praelatus/models"
 	"github.com/pressly/chi"
 )
 
@@ -26,7 +25,7 @@ func fieldRouter() chi.Router {
 
 // GetAllFields will retrieve all fields from the DB and send a JSON response
 func GetAllFields(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to view all fields"))
@@ -49,7 +48,7 @@ func GetAllFields(w http.ResponseWriter, r *http.Request) {
 func CreateField(w http.ResponseWriter, r *http.Request) {
 	var t models.Field
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))
@@ -106,7 +105,7 @@ func GetField(w http.ResponseWriter, r *http.Request) {
 func UpdateField(w http.ResponseWriter, r *http.Request) {
 	var t models.Field
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))
@@ -138,7 +137,7 @@ func UpdateField(w http.ResponseWriter, r *http.Request) {
 func DeleteField(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))

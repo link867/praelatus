@@ -5,8 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/mw"
+	"github.com/praelatus/praelatus/models"
 	"github.com/pressly/chi"
 )
 
@@ -16,19 +15,20 @@ func projectRouter() chi.Router {
 	router.Get("/", GetAllProjects)
 	router.Post("/", CreateProject)
 
-	router.Get("/:pkey", GetProject)
-	router.Delete("/:pkey", RemoveProject)
-	router.Put("/:pkey", UpdateProject)
+	router.Get("/:key", GetProject)
+	router.Get("/:key/tickets", GetAllTicketsByProject)
+	router.Delete("/:key", RemoveProject)
+	router.Put("/:key", UpdateProject)
 
 	return router
 }
 
-// GetProject will get a project by it's project pkey
+// GetProject will get a project by it's project key
 func GetProject(w http.ResponseWriter, r *http.Request) {
-	pkey := chi.URLParam(r, "pkey")
+	key := chi.URLParam(r, "key")
 
 	p := models.Project{
-		Key: pkey,
+		Key: key,
 	}
 
 	err := Store.Projects().Get(&p)
@@ -46,7 +46,7 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 // permissions to
 // TODO handle permissions
 func GetAllProjects(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to view all projects"))
@@ -69,7 +69,7 @@ func GetAllProjects(w http.ResponseWriter, r *http.Request) {
 func CreateProject(w http.ResponseWriter, r *http.Request) {
 	var p models.Project
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))
@@ -96,19 +96,19 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 	sendJSON(w, p)
 }
 
-// RemoveProject will remove the project indicated by the pkey passed in as a
+// RemoveProject will remove the project indicated by the key passed in as a
 // url parameter
 func RemoveProject(w http.ResponseWriter, r *http.Request) {
-	pkey := chi.URLParam(r, "pkey")
+	key := chi.URLParam(r, "key")
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))
 		return
 	}
 
-	err := Store.Projects().Remove(models.Project{Key: pkey})
+	err := Store.Projects().Remove(models.Project{Key: key})
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write(apiError(err.Error()))
@@ -125,7 +125,7 @@ func RemoveProject(w http.ResponseWriter, r *http.Request) {
 func UpdateProject(w http.ResponseWriter, r *http.Request) {
 	var p models.Project
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/mw"
+	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/praelatus/store"
 	"github.com/pressly/chi"
 )
 
@@ -17,6 +17,7 @@ func labelRouter() chi.Router {
 	router.Get("/", GetAllLabels)
 	router.Post("/", CreateLabel)
 
+	router.Get("/search", SearchLabels)
 	router.Get("/:id", GetLabel)
 	router.Delete("/:id", DeleteLabel)
 	router.Put("/:id", UpdateLabel)
@@ -67,7 +68,7 @@ func GetLabel(w http.ResponseWriter, r *http.Request) {
 func CreateLabel(w http.ResponseWriter, r *http.Request) {
 	var lbl models.Label
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to create a label"))
@@ -99,7 +100,7 @@ func CreateLabel(w http.ResponseWriter, r *http.Request) {
 func UpdateLabel(w http.ResponseWriter, r *http.Request) {
 	var lbl models.Label
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to create a label"))
@@ -158,5 +159,26 @@ func DeleteLabel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte{})
+	w.Write([]byte("Label successfully deleted"))
+}
+
+// SearchLabels will take a url param of query and try to find a label
+// with the given name
+func SearchLabels(w http.ResponseWriter, r *http.Request) {
+	query := r.FormValue("query")
+
+	labels, err := Store.Labels().Search(query)
+	if err != nil {
+		if err == store.ErrNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write(apiError("No labels match that query"))
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(apiError(err.Error()))
+		return
+	}
+
+	sendJSON(w, labels)
 }

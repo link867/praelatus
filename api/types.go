@@ -6,8 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/mw"
+	"github.com/praelatus/praelatus/models"
 	"github.com/pressly/chi"
 )
 
@@ -26,7 +25,7 @@ func typeRouter() chi.Router {
 
 // GetAllTicketTypes will retrieve all types from the DB and send a JSON response
 func GetAllTicketTypes(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to view all types"))
@@ -49,7 +48,7 @@ func GetAllTicketTypes(w http.ResponseWriter, r *http.Request) {
 func CreateTicketType(w http.ResponseWriter, r *http.Request) {
 	var t models.TicketType
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))
@@ -106,7 +105,7 @@ func GetTicketType(w http.ResponseWriter, r *http.Request) {
 func UpdateTicketType(w http.ResponseWriter, r *http.Request) {
 	var t models.TicketType
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))
@@ -148,7 +147,7 @@ func UpdateTicketType(w http.ResponseWriter, r *http.Request) {
 // RemoveTicketType will remove the project indicated by the id passed in as a
 // url parameter
 func RemoveTicketType(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))

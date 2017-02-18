@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/mw"
-	"github.com/praelatus/backend/store"
+	"github.com/praelatus/praelatus/models"
+	"github.com/praelatus/praelatus/store"
 	"github.com/pressly/chi"
 )
 
@@ -16,16 +15,14 @@ func ticketRouter() chi.Router {
 	router := chi.NewRouter()
 
 	router.Get("/", GetAllTickets)
+	router.Get("/:key", GetTicket)
+	router.Delete("/:key", RemoveTicket)
+	router.Put("/:key", UpdateTicket)
 
-	router.Get("/:pkey/:key", GetTicket)
-	router.Delete("/:pkey/:key", RemoveTicket)
-	router.Put("/:pkey/:key", UpdateTicket)
+	router.Post("/:key", CreateTicket)
 
-	router.Post("/:pkey", CreateTicket)
-	router.Get("/:pkey", GetAllTicketsByProject)
-
-	router.Get("/:pkey/:key/comments", GetComments)
-	router.Post("/:pkey/:key/comments", CreateComment)
+	router.Get("/:key/comments", GetComments)
+	router.Post("/:key/comments", CreateComment)
 
 	router.Put("/comments/:id", UpdateComment)
 	router.Delete("/comments/:id", RemoveComment)
@@ -36,11 +33,7 @@ func ticketRouter() chi.Router {
 // GetTicket will get a ticket by the ticket key
 func GetTicket(w http.ResponseWriter, r *http.Request) {
 	key := chi.URLParam(r, "key")
-	preload := false
-
-	if r.FormValue("preload") != "" {
-		preload = true
-	}
+	preload := r.FormValue("preload")
 
 	tk := &models.Ticket{
 		Key: key,
@@ -61,7 +54,7 @@ func GetTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if preload {
+	if preload == "comments" {
 		cm, err := Store.Tickets().GetComments(*tk)
 		if err != nil && err != store.ErrNotFound {
 			w.WriteHeader(500)
@@ -91,7 +84,7 @@ func GetAllTickets(w http.ResponseWriter, r *http.Request) {
 
 // GetAllTicketsByProject will get all the tickets for a given project
 func GetAllTicketsByProject(w http.ResponseWriter, r *http.Request) {
-	pkey := chi.URLParam(r, "pkey")
+	pkey := chi.URLParam(r, "key")
 
 	tks, err := Store.Tickets().GetAllByProject(models.Project{Key: pkey})
 	if err != nil {
@@ -107,9 +100,9 @@ func GetAllTicketsByProject(w http.ResponseWriter, r *http.Request) {
 // CreateTicket will create a ticket in the database and send the json
 // representation of the ticket back
 func CreateTicket(w http.ResponseWriter, r *http.Request) {
-	pkey := chi.URLParam(r, "pkey")
+	pkey := chi.URLParam(r, "key")
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to create a ticket"))
@@ -142,7 +135,7 @@ func CreateTicket(w http.ResponseWriter, r *http.Request) {
 func RemoveTicket(w http.ResponseWriter, r *http.Request) {
 	key := r.Context().Value("key").(string)
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to remove a ticket"))
@@ -165,7 +158,7 @@ func RemoveTicket(w http.ResponseWriter, r *http.Request) {
 func UpdateTicket(w http.ResponseWriter, r *http.Request) {
 	key := r.Context().Value("key").(string)
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to update a ticket"))
@@ -216,7 +209,7 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 
 // UpdateComment will update the comment with the given ID
 func UpdateComment(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to update a ticket"))
@@ -252,7 +245,7 @@ func UpdateComment(w http.ResponseWriter, r *http.Request) {
 
 // RemoveComment will remove the ticket with the given key from the database
 func RemoveComment(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to update a ticket"))
@@ -274,7 +267,7 @@ func RemoveComment(w http.ResponseWriter, r *http.Request) {
 
 // CreateComment will add a comment to the ticket indicated in the url
 func CreateComment(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to update a ticket"))

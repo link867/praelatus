@@ -6,8 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/praelatus/backend/models"
-	"github.com/praelatus/backend/mw"
+	"github.com/praelatus/praelatus/models"
 	"github.com/pressly/chi"
 )
 
@@ -15,6 +14,8 @@ func workflowRouter() chi.Router {
 	router := chi.NewRouter()
 
 	router.Get("/", GetAllWorkflows)
+
+	// Because of how chi does routing the id is actually the project key
 	router.Post("/:id", CreateWorkflow)
 
 	router.Get("/:id", GetWorkflow)
@@ -26,7 +27,7 @@ func workflowRouter() chi.Router {
 
 // GetAllWorkflows will retrieve all workflows from the DB and send a JSON response
 func GetAllWorkflows(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in to view all workflows"))
@@ -49,7 +50,7 @@ func GetAllWorkflows(w http.ResponseWriter, r *http.Request) {
 func CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 	var t models.Workflow
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))
@@ -65,6 +66,7 @@ func CreateWorkflow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Because of how chi does routing the id is actually the project key
 	p := models.Project{Key: chi.URLParam(r, "id")}
 
 	err = Store.Projects().Get(&p)
@@ -114,7 +116,7 @@ func GetWorkflow(w http.ResponseWriter, r *http.Request) {
 func UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 	var t models.Workflow
 
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))
@@ -166,7 +168,7 @@ func UpdateWorkflow(w http.ResponseWriter, r *http.Request) {
 // RemoveWorkflow will remove the project indicated by the id passed in as a
 // url parameter
 func RemoveWorkflow(w http.ResponseWriter, r *http.Request) {
-	u := mw.GetUser(r.Context())
+	u := GetUserSession(r)
 	if u == nil || !u.IsAdmin {
 		w.WriteHeader(403)
 		w.Write(apiError("you must be logged in as a system administrator to create a project"))
