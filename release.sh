@@ -1,0 +1,217 @@
+#!/bin/bash
+# 
+# Author: Mathew Robinson <chasinglogic@gmail.com>
+# 
+# This script builds praelatus with the frontend and deploys it to Github
+# Requires go, npm, node, and curl be installed.
+#
+
+
+function parse_git_branch {
+    ref=$(git symbolic-ref HEAD 2> /dev/null) || return
+    echo "${ref#refs/heads/} "
+}
+
+BRANCH=$(parse_git_branch)
+
+# if [ $BRANCH != "master" ] && [ $BRANCH != "develop" ]; then
+#     echo "you aren't on master or develop, refusing to package a release"
+#     exit 1
+# fi
+
+if [ "$GOOS" == "" ]; then
+    echo "\$GOOS not set defaulting to linux"
+    export GOOS="linux"
+fi
+
+function check_if_success() {
+    if [ $? -ne 0 ]; then
+        echo "error running last command"
+        exit $?
+    fi
+}
+
+function print_help() {
+    echo "Usage: 
+    ./package.sh tag_name name_of_release prelease_bool:optional
+
+Examples:
+    This would deploy to tag v0.0.1 naming the release MVP and specify it is a 
+    prerelease
+
+    ./package.sh v0.0.1 MVP true
+
+    This would deploy to tag v1.0.0 naming the release Aces High and specify it
+    as not a prerelease
+
+    ./package.sh v1.0.0 \"Aces High\" false
+
+    Alternatively prelease_bool can be omitted (defaults: false)
+
+    ./package.sh v1.0.0 \"Aces High\""
+}
+
+if [ "$1" == "--help" ] || [ "-h" == "$1" ]; then
+    print_help
+    exit 0
+fi
+
+if [ "$#" -ne 3 ] && [ "$#" -ne 2 ]; then
+    echo "wrong number of arguments $#"
+    print_help
+    exit 1
+fi
+
+TAG_NAME=$1
+RELEASE_NAME=$2
+PRERELEASE=$3
+STARTING_DIR=$(pwd)
+
+echo "Tag Name: $TAG_NAME"
+echo "Release Name: $RELEASE_NAME"
+echo "Prelease: $PRERELEASE"
+echo ""
+
+# echo "Checking for dependencies..."
+# if ! [ -x "$(command -v go)" ]; then
+#     echo "You need to install the go tool. https://golang.org/download"
+#     exit 1
+# fi
+
+# if ! [ -x "$(command -v npm)" ]; then
+#     echo "You need to install npm. https://nodejs.org/en/download/"
+#     exit 1
+# fi
+
+# if ! [ -x "$(command -v node)" ]; then
+#     echo "You need to install node. https://nodejs.org/en/download/"
+#     exit 1
+# fi
+
+# if ! [ -x "$(command -v curl)" ]; then
+#     echo "You need to install curl"
+#     exit 1
+# fi
+
+# if ! [ -x "$(command -v yarn)" ]; then
+#     echo "yarn not detected attempting to install..."
+#     sudo npm install -g yarn
+# fi
+
+# if ! [ -x "$(command -v webpack)" ]; then
+#     echo "webpack not detected attempting to install..."
+#     sudo npm install -g webpack
+# fi
+
+# if ! [ -x "$(command -v glide)" ]; then
+#     echo "glide not detected attempting to install..."
+#     go get github.com/Masterminds/glide
+#     if ! [ -x "$(command -v glide)" ]; then
+#         echo "installed glide but \$GOBIN isn't in \$PATH"
+#         exit 1
+#     fi
+# fi
+
+# if [ -d "build" ]; then
+#     echo "cleaning build directory..."
+#     rm -rf build
+# fi
+
+# # create the final build directories
+# mkdir build/
+# mkdir build/{client,linux,windows,darwin}
+
+# # # get the frontend
+# # echo "downloading the frontend"
+# # git clone https://github.com/praelatus/frontend build/frontend
+
+# # # change to frontend git repo
+# # cd build/frontend
+
+# # # install frontend deps
+# # echo "installing dependencies for frontend"
+# # yarn install
+
+# # echo "compiling the frontend"
+# # webpack -p
+# # mv $STARTING_DIR/build/frontend/build/debug/static $STARTING_DIR/build/client/
+# # cp $STARTING_DIR/build/frontend/index.html $STARTING_DIR/build/client/index.html
+
+# # install deps for backend
+# echo "installing dependencies for backend"
+# glide install
+
+# echo "cleaning up"
+# cd $STARTING_DIR
+# rm -rf build/frontend
+
+# GOARCH="amd64"
+
+# platforms=("linux" "darwin" "windows")
+
+# for platform in "${platforms[@]}"
+# do
+#     GOOS=$platform
+#     # compile the backend
+#     echo "compiling the backend for $GOOS"
+#     if [ "$GOOS" == "windows" ]; then
+#         go build -o build/$GOOS/praelatus.exe >/dev/null
+#     else
+#         go build -o build/$GOOS/praelatus >/dev/null
+#     fi
+#     check_if_success
+
+#     cp -R build/client build/$GOOS/client
+
+#     echo "building release tar"
+#     cd build/$GOOS
+    
+#     PACKAGE_NAME="praelatus-$TAG_NAME-$GOOS-$GOARCH.tar.gz"
+    
+#     if ! [ -z "$PRERELEASE" ]; then
+#         PACKAGE_NAME="praelatus-$TAG_NAME-prelease-$GOOS-$GOARCH.tar.gz"
+#     fi
+    
+#     echo $PACKAGE_NAME
+#     if [ -f "$STARTING_DIR/$PACKAGE_NAME" ]; then
+#         echo "old package detected removing..."
+#         rm $STARTING_DIR/$PACKAGE_NAME
+#     fi
+    
+#     tar czf $STARTING_DIR/$PACKAGE_NAME *
+
+#     cd $STARTING_DIR
+# done
+
+# # create the tag
+# echo "tagging release..."
+# if [ $TAG_NAME == "nightly" ]; then
+#     # we just move nightly up to the current commit instead of retagging
+#     git tag -af $TAG_NAME -m $RELEASE_NAME
+# else
+#     git tag -a $TAG_NAME -m $RELEASE_NAME
+# fi
+
+# # push the tag
+# echo "Pushing tags..."
+# git push --follow-tags
+
+# if [ -z "$GITHUB_API_TOKEN" ]; then
+#     echo "no github token detected all done."
+#     exit 0
+# fi
+
+GITHUB_URL="https://api.github.com/repos/$REPO_OWNER/$REPOSITORY/releases?access_token=$GITHUB_API_TOKEN"
+JSON="{ 
+    \"tag_name\": \"$TAG_NAME\", 
+    \"name\": \"$RELEASE_NAME\" 
+    \"body\": \"Praelatus release \\\"$RELEASE_NAME\\\"\"
+    \"draft\": false,
+    \"target_commitsh\": \"master\"
+}"
+
+curl -X POST --data $JSON $GITHUB_URL
+
+echo $JSON
+
+
