@@ -8,8 +8,6 @@
 
 - Code submissions. We always need more code written in the form of new features or bugs.
 
-For all of the above please follow our [Code of Conduct](https://github.com/chasinglogic/praelatus/blob/master/CODE_OF_CONDUCT.md)
-
 ## General Contribution Guidelines
 
 If you're planning on working on something, make sure you open an issue or claim an existing one. This practice helps everyone on the project. It helps us know what everyone is working on (avoiding double work) and also helps us prevent you from working on something that maybe isn't a good fit for Praelatus, saving everyone time.
