@@ -38,7 +38,16 @@ type Store interface {
 // access to the database.
 type SQLStore interface {
 	Conn() *sql.DB
+}
+
+// Droppable should ideally be supported by all databases which can easily be
+// cleared of all data
+type Droppable interface {
 	Drop() error
+}
+
+// Migrater should be satisfied by any database which requires migrations
+type Migrater interface {
 	Migrate() error
 }
 

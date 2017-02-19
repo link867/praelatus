@@ -34,7 +34,7 @@ func runServer(c *cli.Context) error {
 	s := config.Store()
 	ss := config.SessionStore()
 
-	if sql, ok := s.(store.SQLStore); ok {
+	if sql, ok := s.(store.Migrater); ok {
 		log.Println("Migrating database...")
 		err := sql.Migrate()
 		if err != nil {
