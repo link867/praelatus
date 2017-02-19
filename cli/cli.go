@@ -2,6 +2,7 @@ package cli
 
 import "github.com/urfave/cli"
 
+// Run runs the cli of Praelatus with the given argv
 func Run(args []string) {
 	app := cli.NewApp()
 	app.Name = "praelatus"
@@ -50,6 +51,11 @@ func Run(args []string) {
 			Name:   "cleandb",
 			Usage:  "will clean the database (remove all tables), useful for testing",
 			Action: cleanDB,
+		},
+		{
+			Name:   "migratedb",
+			Usage:  "will migrate the database if it is migrateable",
+			Action: migrateDB,
 		},
 		{
 			// TODO expand upon this as necessary
