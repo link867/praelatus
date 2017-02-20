@@ -30,7 +30,7 @@ func (fs *FieldStore) Get(f *models.Field) error {
 		if err != nil {
 			return handlePqErr(err)
 		}
-		
+
 		f.Options = &fo
 	}
 
