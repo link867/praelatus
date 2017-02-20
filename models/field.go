@@ -17,9 +17,9 @@ var DataTypes = []string{
 
 // Field is a ticket field
 type Field struct {
-	ID       int64       `json:"id"`
-	Name     string      `json:"name"`
-	DataType string      `json:"data_type"`
+	ID       int64        `json:"id"`
+	Name     string       `json:"name"`
+	DataType string       `json:"data_type"`
 	Options  *FieldOption `json:"options,omitempty"`
 }
 

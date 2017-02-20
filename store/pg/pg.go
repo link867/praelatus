@@ -1,3 +1,5 @@
+// Package pg implements all of the appropriate interfaces to be used as a
+// store.Store, store.SQLStore, store.Migrater, and store.Droppable
 package pg
 
 import (
@@ -11,6 +13,8 @@ import (
 	"github.com/praelatus/praelatus/store/pg/migrations"
 )
 
+// rowScanner is used internally so we can take a sql.Row or sql.Rows in some
+// of the utility functions
 type rowScanner interface {
 	Scan(dest ...interface{}) error
 }
@@ -31,7 +35,8 @@ type Store struct {
 }
 
 // New connects to the postgres database provided and returns a store
-// that's connected.
+// that's connected. It will stop execution of the program if unable to connect
+// to the database.
 func New(conn string, replicas ...string) *Store {
 	d, err := sql.Open("postgres", conn)
 	if err != nil {
@@ -133,6 +138,9 @@ func toPqErr(e error) *pq.Error {
 	return nil
 }
 
+// handlePqErr takes an error converts it to a pq.Error if appropriate and will
+// return the appropriate store error, if no handling matches it will just
+// return the error as it is.
 func handlePqErr(e error) error {
 	if e == sql.ErrNoRows {
 		return store.ErrNotFound

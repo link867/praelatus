@@ -13,7 +13,7 @@ func TestFieldGet(t *testing.T) {
 	failIfErr("Field Get", t, e)
 
 	if f.Name == "" {
-		t.Error("Expected a name got %s\n", f.Name)
+		t.Errorf("Expected a name got %s\n", f.Name)
 	}
 }
 

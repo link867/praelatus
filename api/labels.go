@@ -139,7 +139,7 @@ func UpdateLabel(w http.ResponseWriter, r *http.Request) {
 	sendJSON(w, lbl)
 }
 
-// DeleteLabel deletes labels from the db and returns a repsonse indicating
+// DeleteLabel deletes labels from the db and returns a response indicating
 // success of failure.
 func DeleteLabel(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")

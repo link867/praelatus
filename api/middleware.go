@@ -32,8 +32,8 @@ var DefaultMiddleware = []func(http.Handler) http.Handler{
 	Logger,
 }
 
-// GetUser will check the given http.Request for a session token and if found
-// it will return the corresponding user.
+// GetUserSession will check the given http.Request for a session token and if
+// found it will return the corresponding user.
 func GetUserSession(r *http.Request) *models.User {
 	cookie, err := r.Cookie("PRAESESSION")
 	if err != nil {
@@ -57,6 +57,8 @@ func GetUserSession(r *http.Request) *models.User {
 	return &user
 }
 
+// SetUserSession will generate a secure cookie for user u, will set the cookie
+// on the request r and will add the user session to the session store
 func SetUserSession(u models.User, r *http.Request) error {
 	id := generateSessionID()
 	encoded, err := sec.Encode("PRAESESSION", id)

@@ -1,3 +1,5 @@
+// Package migrations is where we store all of the migrations for a postgres
+// database store
 package migrations
 
 import (
@@ -5,12 +7,15 @@ import (
 	"log"
 )
 
+// schema stores the query, the name of the migration, and the version number
 type schema struct {
 	v    int
 	q    string
 	name string
 }
 
+// schemas is all of the available schema, if you create a new schema make sure
+// to add it here
 var schemas = []schema{
 	v1schema,
 	v2schema,
