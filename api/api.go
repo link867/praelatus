@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/praelatus/praelatus/config"
 	"github.com/praelatus/praelatus/store"
 
 	"github.com/pressly/chi"
@@ -61,9 +62,10 @@ func New(store store.Store, ss store.SessionStore) chi.Router {
 	api.Mount("/users", userRouter())
 	api.Mount("/workflows", workflowRouter())
 
-	router.Mount("/api", api)
-	router.Mount("/api/v1", api)
-	router.Mount("/", index())
+	context := config.ContextPath()
+	router.Mount(context+"/api", api)
+	router.Mount(context+"/api/v1", api)
+	router.Mount(context+"/", index())
 
 	// Left here for debugging purposes
 	// docgen.PrintRoutes(router)
