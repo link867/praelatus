@@ -1007,34 +1007,32 @@ func (ms mockStatusStore) Remove(p models.Status) error {
 type mockWorkflowStore struct{}
 
 func (ms mockWorkflowStore) Get(w *models.Workflow) error {
-	w = &models.Workflow{
-		Name: "Simple Workflow",
-		Transitions: map[string][]models.Transition{
-			"Backlog": []models.Transition{
-				models.Transition{
-					Name:     "In Progress",
-					ToStatus: models.Status{ID: 2},
-					Hooks:    []models.Hook{},
-				},
+	w.Name = "Simple Workflow"
+	w.Transitions = map[string][]models.Transition{
+		"Backlog": []models.Transition{
+			models.Transition{
+				Name:     "In Progress",
+				ToStatus: models.Status{ID: 2},
+				Hooks:    []models.Hook{},
 			},
-			"In Progress": []models.Transition{
-				models.Transition{
-					Name:     "Done",
-					ToStatus: models.Status{ID: 3},
-					Hooks:    []models.Hook{},
-				},
-				models.Transition{
-					Name:     "Backlog",
-					ToStatus: models.Status{ID: 1},
-					Hooks:    []models.Hook{},
-				},
+		},
+		"In Progress": []models.Transition{
+			models.Transition{
+				Name:     "Done",
+				ToStatus: models.Status{ID: 3},
+				Hooks:    []models.Hook{},
 			},
-			"Done": []models.Transition{
-				models.Transition{
-					Name:     "ReOpen",
-					ToStatus: models.Status{ID: 1},
-					Hooks:    []models.Hook{},
-				},
+			models.Transition{
+				Name:     "Backlog",
+				ToStatus: models.Status{ID: 1},
+				Hooks:    []models.Hook{},
+			},
+		},
+		"Done": []models.Transition{
+			models.Transition{
+				Name:     "ReOpen",
+				ToStatus: models.Status{ID: 1},
+				Hooks:    []models.Hook{},
 			},
 		},
 	}
