@@ -45,7 +45,7 @@ func runServer(c *cli.Context) error {
 
 	log.Println("Prepping API")
 	var r http.Handler = api.New(s, ss)
-	if config.Dev() || c.Bool("devmode") {
+	if c.Bool("devmode") {
 		log.Println("Running in dev mode, disabling cors...")
 		r = disableCors(r)
 	}
