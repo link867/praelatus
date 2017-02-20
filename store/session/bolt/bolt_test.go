@@ -10,11 +10,7 @@ import (
 var s store.SessionStore
 
 func init() {
-	var err error
-	s, err = New("SessionTest.db")
-	if err != nil {
-		panic(err)
-	}
+	s = New("SessionTest.db")
 }
 
 func TestGetAndSet(t *testing.T) {
