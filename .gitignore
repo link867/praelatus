@@ -36,3 +36,4 @@ client/dist/*
 
 build/*
 *.tar.gz
+*.zip
