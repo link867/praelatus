@@ -15,7 +15,7 @@ before_script:
     - psql -c 'create database prae_ci_test;' -U postgres
 
 script:
-    - go test ./api/... ./store/...
+    - go test ./api/... ./store/... ./config/... ./models/... ./cli/...
 
 addons:
     postgresql: "9.4"
