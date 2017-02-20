@@ -72,7 +72,7 @@ var settings = models.Settings{}
 
 func (ms mockUsersStore) GetAll() ([]models.User, error) {
 	return []models.User{
-		models.User{
+		{
 			1,
 			"foouser",
 			"foopass",
@@ -83,7 +83,7 @@ func (ms mockUsersStore) GetAll() ([]models.User, error) {
 			true,
 			&settings,
 		},
-		models.User{
+		{
 			2,
 			"foouser",
 			"foopass",
@@ -103,7 +103,7 @@ func (ms mockUsersStore) Search(query string) ([]models.User, error) {
 	}
 
 	return []models.User{
-		models.User{
+		{
 			1,
 			"foouser",
 			"foopass",
@@ -114,7 +114,7 @@ func (ms mockUsersStore) Search(query string) ([]models.User, error) {
 			true,
 			&settings,
 		},
-		models.User{
+		{
 			2,
 			"foouser",
 			"foopass",
@@ -159,7 +159,7 @@ func (ms mockTeamStore) Get(t *models.Team) error {
 		&settings,
 	}
 	t.Members = []models.User{
-		models.User{
+		{
 			1,
 			"foouser",
 			"foopass",
@@ -170,7 +170,7 @@ func (ms mockTeamStore) Get(t *models.Team) error {
 			true,
 			&settings,
 		},
-		models.User{
+		{
 			2,
 			"foouser",
 			"foopass",
@@ -187,7 +187,7 @@ func (ms mockTeamStore) Get(t *models.Team) error {
 
 func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 	return []models.Team{
-			models.Team{
+			{
 				ID:   1,
 				Name: "A",
 				Lead: models.User{
@@ -202,7 +202,7 @@ func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 					&settings,
 				},
 				Members: []models.User{
-					models.User{
+					{
 						1,
 						"foouser",
 						"foopass",
@@ -213,7 +213,7 @@ func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 						true,
 						&settings,
 					},
-					models.User{
+					{
 						2,
 						"foouser",
 						"foopass",
@@ -226,7 +226,7 @@ func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 					},
 				},
 			},
-			models.Team{
+			{
 				ID:   1,
 				Name: "A",
 				Lead: models.User{
@@ -241,7 +241,7 @@ func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 					&settings,
 				},
 				Members: []models.User{
-					models.User{
+					{
 						3,
 						"foouser3",
 						"foopass",
@@ -252,7 +252,7 @@ func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 						true,
 						&settings,
 					},
-					models.User{
+					{
 						4,
 						"foouser4",
 						"foopass",
@@ -271,7 +271,7 @@ func (ms mockTeamStore) GetAll() ([]models.Team, error) {
 
 func (ms mockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 	return []models.Team{
-		models.Team{
+		{
 			ID:   1,
 			Name: "A",
 			Lead: models.User{
@@ -286,7 +286,7 @@ func (ms mockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 				&settings,
 			},
 			Members: []models.User{
-				models.User{
+				{
 					1,
 					"foouser",
 					"foopass",
@@ -297,7 +297,7 @@ func (ms mockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 					true,
 					&settings,
 				},
-				models.User{
+				{
 					2,
 					"foouser",
 					"foopass",
@@ -310,7 +310,7 @@ func (ms mockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 				},
 			},
 		},
-		models.Team{
+		{
 			ID:   1,
 			Name: "A",
 			Lead: models.User{
@@ -325,7 +325,7 @@ func (ms mockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 				&settings,
 			},
 			Members: []models.User{
-				models.User{
+				{
 					3,
 					"foouser3",
 					"foopass",
@@ -336,7 +336,7 @@ func (ms mockTeamStore) GetForUser(m models.User) ([]models.Team, error) {
 					true,
 					&settings,
 				},
-				models.User{
+				{
 					4,
 					"foouser4",
 					"foopass",
@@ -380,11 +380,11 @@ func (ms mockLabelStore) Get(l *models.Label) error {
 
 func (ms mockLabelStore) GetAll() ([]models.Label, error) {
 	return []models.Label{
-		models.Label{
+		{
 			ID:   1,
 			Name: "mock",
 		},
-		models.Label{
+		{
 			ID:   2,
 			Name: "fake",
 		},
@@ -397,7 +397,7 @@ func (ms mockLabelStore) Search(query string) ([]models.Label, error) {
 	}
 
 	return []models.Label{
-		models.Label{
+		{
 			ID:   2,
 			Name: "fake",
 		},
@@ -429,12 +429,12 @@ func (mockFieldStore) Get(f *models.Field) error {
 
 func (mockFieldStore) GetAll() ([]models.Field, error) {
 	return []models.Field{
-		models.Field{
+		{
 			ID:       1,
 			Name:     "String Field",
 			DataType: "STRING",
 		},
-		models.Field{
+		{
 			ID:       2,
 			Name:     "Int Field",
 			DataType: "INT",
@@ -444,12 +444,12 @@ func (mockFieldStore) GetAll() ([]models.Field, error) {
 
 func (mockFieldStore) GetByProject(p models.Project) ([]models.Field, error) {
 	return []models.Field{
-		models.Field{
+		{
 			ID:       1,
 			Name:     "String Field",
 			DataType: "STRING",
 		},
-		models.Field{
+		{
 			ID:       2,
 			Name:     "Int Field",
 			DataType: "INT",
@@ -489,13 +489,13 @@ func (mockTicketStore) Get(t *models.Ticket) error {
 	t.Description = "This issue is a fake."
 
 	t.Fields = []models.FieldValue{
-		models.FieldValue{
+		{
 			ID:       1,
 			Name:     "String Field",
 			DataType: "STRING",
 			Value:    "This is a string",
 		},
-		models.FieldValue{
+		{
 			ID:       2,
 			Name:     "Int Field",
 			DataType: "INT",
@@ -504,7 +504,7 @@ func (mockTicketStore) Get(t *models.Ticket) error {
 	}
 
 	t.Labels = []models.Label{
-		models.Label{
+		{
 			ID:   1,
 			Name: "mock",
 		},
@@ -546,7 +546,7 @@ func (mockTicketStore) Get(t *models.Ticket) error {
 
 func (ms mockTicketStore) GetAll() ([]models.Ticket, error) {
 	return []models.Ticket{
-		models.Ticket{
+		{
 			ID:          1,
 			CreatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
 			UpdatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
@@ -557,13 +557,13 @@ func (ms mockTicketStore) GetAll() ([]models.Ticket, error) {
 			Description: "This issue is a fake.",
 
 			Fields: []models.FieldValue{
-				models.FieldValue{
+				{
 					ID:       1,
 					Name:     "String Field",
 					DataType: "STRING",
 					Value:    "This is a string",
 				},
-				models.FieldValue{
+				{
 					ID:       2,
 					Name:     "Int Field",
 					DataType: "INT",
@@ -572,7 +572,7 @@ func (ms mockTicketStore) GetAll() ([]models.Ticket, error) {
 			},
 
 			Labels: []models.Label{
-				models.Label{
+				{
 					ID:   1,
 					Name: "mock",
 				},
@@ -610,7 +610,7 @@ func (ms mockTicketStore) GetAll() ([]models.Ticket, error) {
 			},
 		},
 
-		models.Ticket{
+		{
 			ID:          2,
 			CreatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
 			UpdatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
@@ -621,13 +621,13 @@ func (ms mockTicketStore) GetAll() ([]models.Ticket, error) {
 			Description: "This issue is a fake.",
 
 			Fields: []models.FieldValue{
-				models.FieldValue{
+				{
 					ID:       1,
 					Name:     "String Field",
 					DataType: "STRING",
 					Value:    "This is a string",
 				},
-				models.FieldValue{
+				{
 					ID:       2,
 					Name:     "Int Field",
 					DataType: "INT",
@@ -636,7 +636,7 @@ func (ms mockTicketStore) GetAll() ([]models.Ticket, error) {
 			},
 
 			Labels: []models.Label{
-				models.Label{
+				{
 					ID:   1,
 					Name: "mock",
 				},
@@ -677,7 +677,7 @@ func (ms mockTicketStore) GetAll() ([]models.Ticket, error) {
 }
 func (ms mockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, error) {
 	return []models.Ticket{
-		models.Ticket{
+		{
 			ID:          1,
 			CreatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
 			UpdatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
@@ -688,13 +688,13 @@ func (ms mockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, er
 			Description: "This issue is a fake.",
 
 			Fields: []models.FieldValue{
-				models.FieldValue{
+				{
 					ID:       1,
 					Name:     "String Field",
 					DataType: "STRING",
 					Value:    "This is a string",
 				},
-				models.FieldValue{
+				{
 					ID:       2,
 					Name:     "Int Field",
 					DataType: "INT",
@@ -703,7 +703,7 @@ func (ms mockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, er
 			},
 
 			Labels: []models.Label{
-				models.Label{
+				{
 					ID:   1,
 					Name: "mock",
 				},
@@ -741,7 +741,7 @@ func (ms mockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, er
 			},
 		},
 
-		models.Ticket{
+		{
 			ID:          2,
 			CreatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
 			UpdatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
@@ -752,13 +752,13 @@ func (ms mockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, er
 			Description: "This issue is a fake.",
 
 			Fields: []models.FieldValue{
-				models.FieldValue{
+				{
 					ID:       1,
 					Name:     "String Field",
 					DataType: "STRING",
 					Value:    "This is a string",
 				},
-				models.FieldValue{
+				{
 					ID:       2,
 					Name:     "Int Field",
 					DataType: "INT",
@@ -767,7 +767,7 @@ func (ms mockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, er
 			},
 
 			Labels: []models.Label{
-				models.Label{
+				{
 					ID:   1,
 					Name: "mock",
 				},
@@ -809,7 +809,7 @@ func (ms mockTicketStore) GetAllByProject(p models.Project) ([]models.Ticket, er
 
 func (ms mockTicketStore) GetComments(t models.Ticket) ([]models.Comment, error) {
 	return []models.Comment{
-		models.Comment{
+		{
 			1,
 			time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
 			time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
@@ -870,11 +870,11 @@ func (ms mockTypeStore) Get(t *models.TicketType) error {
 
 func (ms mockTypeStore) GetAll() ([]models.TicketType, error) {
 	return []models.TicketType{
-		models.TicketType{
+		{
 			ID:   1,
 			Name: "mock type",
 		},
-		models.TicketType{
+		{
 			ID:   2,
 			Name: "fake type",
 		},
@@ -918,7 +918,7 @@ func (ms mockProjectStore) Get(p *models.Project) error {
 
 func (ms mockProjectStore) GetAll() ([]models.Project, error) {
 	return []models.Project{
-		models.Project{
+		{
 			ID:          1,
 			CreatedDate: time.Date(2016, time.Month(12), 25, 0, 0, 0, 0, loc),
 			Name:        "Test Project",
@@ -935,7 +935,7 @@ func (ms mockProjectStore) GetAll() ([]models.Project, error) {
 				&settings,
 			},
 		},
-		models.Project{
+		{
 			ID:          2,
 			Name:        "mock Project",
 			Key:         "MOCK",
@@ -979,11 +979,11 @@ func (ms mockStatusStore) Get(s *models.Status) error {
 
 func (ms mockStatusStore) GetAll() ([]models.Status, error) {
 	return []models.Status{
-		models.Status{
+		{
 			1,
 			"mock Status",
 		},
-		models.Status{
+		{
 			2,
 			"Fake Status",
 		},
@@ -1009,27 +1009,27 @@ type mockWorkflowStore struct{}
 func (ms mockWorkflowStore) Get(w *models.Workflow) error {
 	w.Name = "Simple Workflow"
 	w.Transitions = map[string][]models.Transition{
-		"Backlog": []models.Transition{
-			models.Transition{
+		"Backlog": {
+			{
 				Name:     "In Progress",
 				ToStatus: models.Status{ID: 2},
 				Hooks:    []models.Hook{},
 			},
 		},
-		"In Progress": []models.Transition{
-			models.Transition{
+		"In Progress": {
+			{
 				Name:     "Done",
 				ToStatus: models.Status{ID: 3},
 				Hooks:    []models.Hook{},
 			},
-			models.Transition{
+			{
 				Name:     "Backlog",
 				ToStatus: models.Status{ID: 1},
 				Hooks:    []models.Hook{},
 			},
 		},
-		"Done": []models.Transition{
-			models.Transition{
+		"Done": {
+			{
 				Name:     "ReOpen",
 				ToStatus: models.Status{ID: 1},
 				Hooks:    []models.Hook{},
@@ -1042,31 +1042,31 @@ func (ms mockWorkflowStore) Get(w *models.Workflow) error {
 
 func (ms mockWorkflowStore) GetByProject(p models.Project) ([]models.Workflow, error) {
 	return []models.Workflow{
-		models.Workflow{
+		{
 			ID:   1,
 			Name: "Simple Workflow",
 			Transitions: map[string][]models.Transition{
-				"Backlog": []models.Transition{
-					models.Transition{
+				"Backlog": {
+					{
 						Name:     "In Progress",
 						ToStatus: models.Status{ID: 2},
 						Hooks:    []models.Hook{},
 					},
 				},
-				"In Progress": []models.Transition{
-					models.Transition{
+				"In Progress": {
+					{
 						Name:     "Done",
 						ToStatus: models.Status{ID: 3},
 						Hooks:    []models.Hook{},
 					},
-					models.Transition{
+					{
 						Name:     "Backlog",
 						ToStatus: models.Status{ID: 1},
 						Hooks:    []models.Hook{},
 					},
 				},
-				"Done": []models.Transition{
-					models.Transition{
+				"Done": {
+					{
 						Name:     "ReOpen",
 						ToStatus: models.Status{ID: 1},
 						Hooks:    []models.Hook{},
@@ -1075,31 +1075,31 @@ func (ms mockWorkflowStore) GetByProject(p models.Project) ([]models.Workflow, e
 			},
 		},
 
-		models.Workflow{
+		{
 			ID:   2,
 			Name: "Another Simple Workflow",
 			Transitions: map[string][]models.Transition{
-				"Backlog": []models.Transition{
-					models.Transition{
+				"Backlog": {
+					{
 						Name:     "In Progress",
 						ToStatus: models.Status{ID: 2},
 						Hooks:    []models.Hook{},
 					},
 				},
-				"In Progress": []models.Transition{
-					models.Transition{
+				"In Progress": {
+					{
 						Name:     "Done",
 						ToStatus: models.Status{ID: 3},
 						Hooks:    []models.Hook{},
 					},
-					models.Transition{
+					{
 						Name:     "Backlog",
 						ToStatus: models.Status{ID: 1},
 						Hooks:    []models.Hook{},
 					},
 				},
-				"Done": []models.Transition{
-					models.Transition{
+				"Done": {
+					{
 						Name:     "ReOpen",
 						ToStatus: models.Status{ID: 1},
 						Hooks:    []models.Hook{},
@@ -1112,31 +1112,31 @@ func (ms mockWorkflowStore) GetByProject(p models.Project) ([]models.Workflow, e
 
 func (ms mockWorkflowStore) GetAll() ([]models.Workflow, error) {
 	return []models.Workflow{
-		models.Workflow{
+		{
 			ID:   1,
 			Name: "Simple Workflow",
 			Transitions: map[string][]models.Transition{
-				"Backlog": []models.Transition{
-					models.Transition{
+				"Backlog": {
+					{
 						Name:     "In Progress",
 						ToStatus: models.Status{ID: 2},
 						Hooks:    []models.Hook{},
 					},
 				},
-				"In Progress": []models.Transition{
-					models.Transition{
+				"In Progress": {
+					{
 						Name:     "Done",
 						ToStatus: models.Status{ID: 3},
 						Hooks:    []models.Hook{},
 					},
-					models.Transition{
+					{
 						Name:     "Backlog",
 						ToStatus: models.Status{ID: 1},
 						Hooks:    []models.Hook{},
 					},
 				},
-				"Done": []models.Transition{
-					models.Transition{
+				"Done": {
+					{
 						Name:     "ReOpen",
 						ToStatus: models.Status{ID: 1},
 						Hooks:    []models.Hook{},
@@ -1145,31 +1145,31 @@ func (ms mockWorkflowStore) GetAll() ([]models.Workflow, error) {
 			},
 		},
 
-		models.Workflow{
+		{
 			ID:   2,
 			Name: "Another Simple Workflow",
 			Transitions: map[string][]models.Transition{
-				"Backlog": []models.Transition{
-					models.Transition{
+				"Backlog": {
+					{
 						Name:     "In Progress",
 						ToStatus: models.Status{ID: 2},
 						Hooks:    []models.Hook{},
 					},
 				},
-				"In Progress": []models.Transition{
-					models.Transition{
+				"In Progress": {
+					{
 						Name:     "Done",
 						ToStatus: models.Status{ID: 3},
 						Hooks:    []models.Hook{},
 					},
-					models.Transition{
+					{
 						Name:     "Backlog",
 						ToStatus: models.Status{ID: 1},
 						Hooks:    []models.Hook{},
 					},
 				},
-				"Done": []models.Transition{
-					models.Transition{
+				"Done": {
+					{
 						Name:     "ReOpen",
 						ToStatus: models.Status{ID: 1},
 						Hooks:    []models.Hook{},
