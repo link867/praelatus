@@ -2,6 +2,7 @@ package cli
 
 import "github.com/urfave/cli"
 
+// Run runs the cli of Praelatus with the given argv
 func Run(args []string) {
 	app := cli.NewApp()
 	app.Name = "praelatus"
@@ -37,9 +38,20 @@ func Run(args []string) {
 			},
 		},
 		{
-			Name:   "config",
-			Action: showConfig,
-			Usage:  "view the configuration for this instance, useful for debugging",
+			Name:  "config",
+			Usage: "various commands for interacting with praelatus config",
+			Subcommands: []cli.Command{
+				{
+					Name:   "show",
+					Usage:  "view the configuration for this instance, useful for debugging",
+					Action: showConfig,
+				},
+				{
+					Name:   "gen",
+					Usage:  "generate a config.json based on the current environment variables or defaults",
+					Action: genConfig,
+				},
+			},
 		},
 		{
 			Name:   "testdb",
@@ -50,6 +62,11 @@ func Run(args []string) {
 			Name:   "cleandb",
 			Usage:  "will clean the database (remove all tables), useful for testing",
 			Action: cleanDB,
+		},
+		{
+			Name:   "migratedb",
+			Usage:  "will migrate the database if it is migrateable",
+			Action: migrateDB,
 		},
 		{
 			// TODO expand upon this as necessary

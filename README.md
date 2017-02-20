@@ -10,9 +10,16 @@ If you're looking for the official web frontend it's
 
 ## What is Praelatus?
 
-Praelatus is a modern bug tracker and ticketing system inspired by JIRA, BugZilla, and the many support ticketing systems members of the Core Team have used throughout their careers.
+Praelatus is a modern bug tracker and ticketing system inspired by JIRA, 
+BugZilla, and the many support ticketing systems members of the Core Team 
+have used throughout their careers.
 
-Grown from frustration with today’s disparate and difficult methods of bug reporting, Praelatus aims to simplify the way other [Open Source](https://opensource.org/) projects operate. Through intuitive workflows and support for “Internet Driver’s License” accounts such as Github, Google, and Twitter, any user can submit a ticket in three clicks or less – including account creation – without the need of a user manual.
+Grown from frustration with today’s disparate and difficult methods of bug 
+reporting, Praelatus aims to simplify the way other 
+[Open Source](https://opensource.org/) projects operate. Through intuitive 
+workflows and support for “Internet Driver’s License” accounts such as Github, 
+Google, and Twitter, any user can submit a ticket in three clicks or less – 
+including account creation – without the need of a user manual.
 
 ## Contributing
 
@@ -27,11 +34,16 @@ The basics:
 
 All pull requests should go to the develop branch not master. Thanks!
 
-We follow the Contributor Covenant code of conduct, you can find it
-[here](https://github.com/chasinglogic/praelatus/blob/master/CODE_OF_CONDUCT.md)
+Need help getting started hacking on Praelatus? No problem we have docs for that!
+[Contribution Guidelines](https://github.com/praelatus/praelatus/blob/develop/CONTRIBUTING.md)
+[HACKING](https://doc.praelatus.io/contributing/HACKING)
+[REST API Reference](https://doc.praelatus.io/rest/api_reference/)
 
-Need help getting started hacking on Praelatus? No problem we have a
-[doc for that!](https://github.com/praelatus/praelatus/blob/develop/CONTRIBUTING.md)
+## Installation
+
+View our deployment guides for your platform: 
+    - [Linux](https://doc.praelatus.io/deployments/linux/)
+    - [Windows](https://doc.praelatus.io/deployments/windows/)
 
 ## License
 
@@ -53,7 +65,4 @@ Praelatus is distributed under the Apache License.
    limitations under the License.
 ```
 
-## Installation
 
-**TODO** For now Praelatus is in a *VERY* alpha state and so this documentation
-will be updated and written when there is something to write about.

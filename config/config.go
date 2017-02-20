@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
+	"strings"
 
 	"github.com/praelatus/praelatus/store"
 	"github.com/praelatus/praelatus/store/pg"
@@ -17,16 +17,20 @@ import (
 // some prequisite processing and return appropriate types.
 type Config struct {
 	DBURL        string
+	SessionURL   string
 	Port         string
-	DataDir      string
-	LogLocations string
-	DevMode      bool
+	ContextPath  string
+	LogLocations []string
+	SessionStore string
 }
 
 func (c Config) String() string {
-	return fmt.Sprintf(
-		"{\n\tDBURL: %s\n\tPort: %s\n\tDataDir: %s\n\tLogLocations: %s\n\tDevMode: %v\n}",
-		c.DBURL, c.Port, c.DataDir, c.LogLocations, c.DevMode)
+	b, e := json.MarshalIndent(c, "", "\t")
+	if e != nil {
+		return ""
+	}
+
+	return string(b)
 }
 
 // Cfg is the global config variable used in the helper methods of this package
@@ -39,11 +43,14 @@ func init() {
 		Cfg.DBURL = "postgres://postgres:postgres@localhost:5432/prae_dev?sslmode=disable"
 	}
 
-	dev := os.Getenv("PRAELATUS_DEV_MODE")
-	if dev == "" {
-		Cfg.DevMode = false
-	} else {
-		Cfg.DevMode = true
+	Cfg.SessionStore = os.Getenv("PRAELATUS_SESSION")
+	if Cfg.SessionStore == "" {
+		Cfg.SessionStore = "bolt"
+	}
+
+	Cfg.SessionURL = os.Getenv("PRAELATUS_SESSION_URL")
+	if Cfg.SessionURL == "" {
+		Cfg.SessionURL = "sessions.db"
 	}
 
 	Cfg.Port = os.Getenv("PRAELATUS_PORT")
@@ -51,34 +58,29 @@ func init() {
 		Cfg.Port = ":8080"
 	}
 
-	Cfg.LogLocations = os.Getenv("PRAELATUS_LOGGERS")
-	if Cfg.LogLocations == "" {
-		Cfg.LogLocations = "stdout"
+	Cfg.ContextPath = os.Getenv("PRAELATUS_CONTEXT_PATH")
+
+	Cfg.LogLocations = strings.Split(os.Getenv("PRAELATUS_LOGLOCATIONS"), ";")
+	if os.Getenv("PRAELATUS_LOGLOCATIONS") == "" {
+		Cfg.LogLocations = []string{"stdout"}
 	}
 
-	CfgFile := path.Join(os.Getenv("HOME"), ".praelatus")
-	f, err := os.Open(CfgFile)
+	f, err := os.Open("config.json")
 	if err != nil && !os.IsNotExist(err) {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	defer f.Close()
 
 	if os.IsNotExist(err) {
-		f, _ = os.Create(CfgFile)
-
-		byt, err := json.Marshal(Cfg)
-		if err != nil {
-			panic(err)
-		}
-
-		f.Write(byt)
 		return
 	}
 
 	jsn, err := ioutil.ReadAll(f)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	var c Config
@@ -86,23 +88,16 @@ func init() {
 	err = json.Unmarshal(jsn, &c)
 	if err != nil {
 		fmt.Println("Error unmarshaling config file defaulting to environment variable configuration")
-		fmt.Println(err)
-		return
+		os.Exit(1)
 	}
 
 	Cfg = c
 }
 
-// GetDbURL will return the environment variable PRAELATUS_DB if set, otherwise
+// DBURL will return the environment variable PRAELATUS_DB if set, otherwise
 // return the default development database url.
-func GetDbURL() string {
+func DBURL() string {
 	return Cfg.DBURL
-}
-
-// Dev will return a boolean indicating whether the app is runnning in dev
-// mode or not
-func Dev() bool {
-	return Cfg.DevMode
 }
 
 // Port will return the port / interfaces for the api to listen on based on the
@@ -114,15 +109,26 @@ func Port() string {
 // Store will return the correct data store based on the configuration of the
 // instance
 func Store() store.Store {
-	return pg.New(GetDbURL())
+	return pg.New(DBURL())
 }
 
 // SessionStore will return a session store with a default location
+// TODO support redis
 func SessionStore() store.SessionStore {
-	return bolt.New("sessions.db")
+	switch Cfg.SessionStore {
+	case "bolt":
+		return bolt.New(Cfg.SessionURL)
+	default:
+		return bolt.New(Cfg.SessionURL)
+	}
 }
 
-// GetRedis will get the redis cache location
-func GetRedis() string {
-	return ""
+// SessionURL will get the url to use for redis or file location for boltdb
+func SessionURL() string {
+	return Cfg.SessionURL
+}
+
+// ContextPath will return a context path if any is configured
+func ContextPath() string {
+	return Cfg.ContextPath
 }

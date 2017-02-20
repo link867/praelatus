@@ -12,7 +12,7 @@ import (
 func LogWriter() io.Writer {
 	var writers []io.Writer
 
-	for _, log := range strings.Split(Cfg.LogLocations, ";") {
+	for _, log := Cfg.LogLocations {
 		switch log {
 		case "stdout":
 			writers = append(writers, os.Stdout)
