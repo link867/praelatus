@@ -14,27 +14,27 @@ import (
 var DefaultWorkflow = models.Workflow{
 	Name: "Simple Workflow",
 	Transitions: map[string][]models.Transition{
-		"Backlog": []models.Transition{
-			models.Transition{
+		"Backlog": {
+			{
 				Name:     "In Progress",
 				ToStatus: models.Status{ID: 2},
 				Hooks:    []models.Hook{},
 			},
 		},
-		"In Progress": []models.Transition{
-			models.Transition{
+		"In Progress": {
+			{
 				Name:     "Done",
 				ToStatus: models.Status{ID: 3},
 				Hooks:    []models.Hook{},
 			},
-			models.Transition{
+			{
 				Name:     "Backlog",
 				ToStatus: models.Status{ID: 1},
 				Hooks:    []models.Hook{},
 			},
 		},
-		"Done": []models.Transition{
-			models.Transition{
+		"Done": {
+			{
 				Name:     "ReOpen",
 				ToStatus: models.Status{ID: 1},
 				Hooks:    []models.Hook{},
@@ -94,13 +94,13 @@ func SeedAll(s Store) error {
 // SeedLabels will add some test labesl to the database
 func SeedLabels(s Store) error {
 	labels := []models.Label{
-		models.Label{
+		{
 			Name: "test",
 		},
-		models.Label{
+		{
 			Name: "duplicate",
 		},
-		models.Label{
+		{
 			Name: "wontfix",
 		},
 	}
@@ -132,14 +132,14 @@ func SeedTickets(s Store) error {
 			Assignee:    models.User{ID: 1},
 			Status:      models.Status{ID: 1},
 			Labels: []models.Label{
-				models.Label{1, "test"},
+				{1, "test"},
 			},
 			Fields: []models.FieldValue{
-				models.FieldValue{
+				{
 					Name:  "Story Points",
 					Value: rand.Intn(100),
 				},
-				models.FieldValue{
+				{
 					Name:  "Priority",
 					Value: priorities,
 				},
@@ -159,19 +159,19 @@ func SeedTickets(s Store) error {
 // SeedStatuses will add some ticket statuses to the database
 func SeedStatuses(s Store) error {
 	statuses := []models.Status{
-		models.Status{
+		{
 			Name: "Backlog",
 		},
-		models.Status{
+		{
 			Name: "In Progress",
 		},
-		models.Status{
+		{
 			Name: "Done",
 		},
-		models.Status{
+		{
 			Name: "For Saving",
 		},
-		models.Status{
+		{
 			Name: "For Removing",
 		},
 	}
@@ -229,23 +229,23 @@ func SeedFields(s Store) error {
 	}
 
 	fields := []models.Field{
-		models.Field{
+		{
 			Name:     "Story Points",
 			DataType: "INT",
 		},
-		models.Field{
+		{
 			Name:     "TestField2",
 			DataType: "FLOAT",
 		},
-		models.Field{
+		{
 			Name:     "TestField3",
 			DataType: "INT",
 		},
-		models.Field{
+		{
 			Name:     "TestField4",
 			DataType: "DATE",
 		},
-		models.Field{
+		{
 			Name:     "Priority",
 			DataType: "OPT",
 			Options:  priorities,
@@ -279,17 +279,17 @@ func SeedFields(s Store) error {
 // SeedProjects will seed the given store with some test projects.
 func SeedProjects(s Store) error {
 	projects := []models.Project{
-		models.Project{
+		{
 			Name: "TEST Project",
 			Key:  "TEST",
 			Lead: models.User{ID: 1},
 		},
-		models.Project{
+		{
 			Name: "TEST Project 2",
 			Key:  "TEST2",
 			Lead: models.User{ID: 2},
 		},
-		models.Project{
+		{
 			Name: "TEST Project 3",
 			Key:  "TEST3",
 			Lead: models.User{ID: 2},
@@ -314,24 +314,24 @@ func SeedProjects(s Store) error {
 // SeedTeams will seed the database with some test Teams.
 func SeedTeams(s Store) error {
 	teams := []models.Team{
-		models.Team{
+		{
 			Name: "The A Team",
 			Lead: models.User{
 				ID: 1,
 			},
 			Members: []models.User{
-				models.User{ID: 1},
-				models.User{ID: 2},
+				{ID: 1},
+				{ID: 2},
 			},
 		},
-		models.Team{
+		{
 			Name: "The B Team",
 			Lead: models.User{
 				ID: 2,
 			},
 			Members: []models.User{
-				models.User{ID: 1},
-				models.User{ID: 2},
+				{ID: 1},
+				{ID: 2},
 			},
 		},
 	}
@@ -356,19 +356,19 @@ func SeedTeams(s Store) error {
 // SeedTicketTypes will seed the database with some test TicketTypes.
 func SeedTicketTypes(s Store) error {
 	types := []models.TicketType{
-		models.TicketType{
+		{
 			Name: "Bug",
 		},
-		models.TicketType{
+		{
 			Name: "Epic",
 		},
-		models.TicketType{
+		{
 			Name: "Story",
 		},
-		models.TicketType{
+		{
 			Name: "Feature",
 		},
-		models.TicketType{
+		{
 			Name: "Question",
 		},
 	}
