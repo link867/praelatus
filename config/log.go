@@ -7,7 +7,6 @@ import (
 	"io"
 	"log/syslog"
 	"os"
-	"strings"
 )
 
 // LogWriter will return an io.writer that is created based on environment
@@ -15,7 +14,7 @@ import (
 func LogWriter() io.Writer {
 	var writers []io.Writer
 
-	for _, log := range strings.Split(Cfg.LogLocations, ";") {
+	for _, log := range Cfg.LogLocations {
 		switch log {
 		case "stdout":
 			writers = append(writers, os.Stdout)
