@@ -1,3 +1,10 @@
+// Package store defines the interfaces we use for storing and retrieving
+// models. Managing data this way allows us to easily compose and change the
+// way/s that we store our models without changing the rest of the application.
+// (i.e. we can support multiple databases much more easily because of this
+// architecture). Any method which takes a pointer to a model will modify that
+// model in some way (usually filling out the missing data) otherwise the
+// method simply uses the provided model for reference.
 package store
 
 import (
@@ -10,6 +17,7 @@ import (
 var (
 	// ErrDuplicateEntry is returned when a unique constraint is violated.
 	ErrDuplicateEntry = errors.New("duplicate entry attempted")
+
 	// ErrNotFound is returned when an invalid resource is given or searched
 	// for
 	ErrNotFound = errors.New("no such resource")
@@ -21,7 +29,8 @@ var (
 	ErrSessionInvalid = errors.New("session invalid")
 )
 
-// Store is an interface for storing and retrieving models.
+// Store is implemented by any struct that has the ability to store all of the
+// available models in Praelatus
 type Store interface {
 	Users() UserStore
 	Teams() TeamStore
@@ -34,25 +43,27 @@ type Store interface {
 	Workflows() WorkflowStore
 }
 
-// SQLStore is an interface for a sql store so we can request direct
-// access to the database.
+// SQLStore is implemented by any store which wants to provide a direct sql.DB
+// connection to the database this is useful when migrating and testing
 type SQLStore interface {
 	Conn() *sql.DB
 }
 
-// Droppable should ideally be supported by all databases which can easily be
-// cleared of all data
+// Droppable is implemented by any store which allows for all of the data to be
+// wiped, this is useful for testing and debugging
 type Droppable interface {
 	Drop() error
 }
 
-// Migrater should be satisfied by any database which requires migrations
+// Migrater is implemented by any store which requires setup to be run for
+// example creating tables in a sql database or setting up collections in a
+// mongodb
 type Migrater interface {
 	Migrate() error
 }
 
-// SessionStore is an abstraction over using a caching system to store
-// user sessions
+// SessionStore is implemented by any struct supporting a simple key value
+// store, preferrably a fast one as this is used for storing user sessions
 type SessionStore interface {
 	Get(string) (models.User, error)
 	Set(string, models.User) error
@@ -94,7 +105,7 @@ type ProjectStore interface {
 	Remove(models.Project) error
 }
 
-// TypeStore is used to save and retrieve Ticket Types
+// TypeStore contains methods for storing and retrieving Ticket Types
 type TypeStore interface {
 	Get(*models.TicketType) error
 	GetAll() ([]models.TicketType, error)

@@ -1,3 +1,5 @@
+// Package cli contains all of the functions used in our cli, it additionally
+// is where the cli itsself is defined and ran
 package cli
 
 import "github.com/urfave/cli"
