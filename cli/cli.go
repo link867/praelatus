@@ -38,9 +38,20 @@ func Run(args []string) {
 			},
 		},
 		{
-			Name:   "config",
-			Action: showConfig,
-			Usage:  "view the configuration for this instance, useful for debugging",
+			Name:  "config",
+			Usage: "various commands for interacting with praelatus config",
+			Subcommands: []cli.Command{
+				{
+					Name:   "show",
+					Usage:  "view the configuration for this instance, useful for debugging",
+					Action: showConfig,
+				},
+				{
+					Name:   "gen",
+					Usage:  "generate a config.json based on the current environment variables or defaults",
+					Action: genConfig,
+				},
+			},
 		},
 		{
 			Name:   "testdb",
