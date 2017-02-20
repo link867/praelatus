@@ -153,10 +153,10 @@ do
     for arch in "${ARCHES[@]}"
     do
         echo "adding miscellaneous files to release"
+        mkdir build/$platform-$arch
         cp $STARTING_DIR/envfile.example $STARTING_DIR/build/$platform-$arch/
 
         echo "compiling the backend for $platform-$arch"
-        mkdir build/$platform-$arch
 
         GOOS=$platform
         GOARCH=$arch 
@@ -197,7 +197,7 @@ done
 
 # create the tag
 echo "tagging release..."
-git tag -a $TAG_NAME -m "$RELEASE_NAME"
+git tag -fa $TAG_NAME -m "$RELEASE_NAME"
 
 # push the tag
 echo "Pushing tags..."
@@ -209,9 +209,11 @@ if [ -z "$GITHUB_API_TOKEN" ]; then
 fi
 
 GITHUB_URL="https://api.github.com/repos/$OWNER/$PROGRAM/releases?access_token=$GITHUB_API_TOKEN"
+echo $GITHUB_URL
 JSON="{ \"tag_name\": \"$TAG_NAME\", \"name\": \"$RELEASE_NAME\", \"body\": \"$PROGRAM release $RELEASE_NAME\", \"target_commitsh\": \"master\" }"
 
 RESP=$(curl -X POST --data "$JSON" $GITHUB_URL)
+echo $RESP
 ASSETS_URL=$(echo "$RESP" | grep -oP '(?<="upload_url": ")(.*assets)')
 
 for pkg in "${PACKAGES[@]}"
