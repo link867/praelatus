@@ -63,7 +63,7 @@ type Migrater interface {
 }
 
 // SessionStore is implemented by any struct supporting a simple key value
-// store, preferrably a fast one as this is used for storing user sessions
+// store, preferably a fast one as this is used for storing user sessions
 type SessionStore interface {
 	Get(string) (models.User, error)
 	Set(string, models.User) error
