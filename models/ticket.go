@@ -49,3 +49,17 @@ type Label struct {
 func (l *Label) String() string {
 	return jsonString(l)
 }
+
+//Link represents tickets linked to one another
+type Link struct {
+	ID              int64  `json:"id"`
+	Name            string `json:"name"`
+	ToTicketID      int64  `json:"ticket_id"`
+	ToTicketSummary string `json:"ticket_summary"`
+	ToTicketKey     string `json:"ticket_key"`
+	Href            string `json:"href"`
+}
+
+func (l *Link) String() string {
+	return jsonString(l)
+}
