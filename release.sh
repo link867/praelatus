@@ -145,12 +145,16 @@ echo "cleaning up"
 cd $STARTING_DIR
 rm -rf build/frontend
 
+
 PACKAGES=()
 
 for platform in "${PLATFORMS[@]}"
 do
     for arch in "${ARCHES[@]}"
     do
+        echo "adding miscellaneous files to release"
+        cp $STARTING_DIR/envfile.example $STARTING_DIR/build/$platform-$arch/
+
         echo "compiling the backend for $platform-$arch"
         mkdir build/$platform-$arch
 
