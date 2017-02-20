@@ -132,7 +132,10 @@ func SeedTickets(s Store) error {
 			Assignee:    models.User{ID: 1},
 			Status:      models.Status{ID: 1},
 			Labels: []models.Label{
-				{1, "test"},
+				{
+					ID:   1,
+					Name: "test",
+				},
 			},
 			Fields: []models.FieldValue{
 				{
