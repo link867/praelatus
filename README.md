@@ -6,7 +6,7 @@ If you're looking for the official web frontend it's
 
 | Stable | Nightly |
 |:------:|:-------:|
-| [![Build Status](https://travis-ci.org/praelatus/backend.svg?branch=master)](https://travis-ci.org/praelatus/backend) | [![Build Status](https://travis-ci.org/praelatus/backend.svg?branch=develop)](https://travis-ci.org/praelatus/backend) |
+| [![Build Status](https://travis-ci.org/praelatus/praelatus.svg?branch=master)](https://travis-ci.org/praelatus/praelatus) | [![Build Status](https://travis-ci.org/praelatus/praelatus.svg?branch=develop)](https://travis-ci.org/praelatus/praelatus) |
 
 ## What is Praelatus?
 
