@@ -1,4 +1,4 @@
-# Praelatus [![License](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/chasinglogic/praelatus/blob/master/LICENSE) [![GoDoc](https://godoc.org/github.com/praelatus/praelatus/?status.svg)](https://godoc.org/github.com/praelatus/praelatus/) ![GoReportCard](https://goreportcard.com/badge/github.com/praelatus/praelatus/)
+# Praelatus [![License](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/chasinglogic/praelatus/blob/master/LICENSE) [![GoDoc](https://godoc.org/github.com/praelatus/praelatus?status.svg)](https://godoc.org/github.com/praelatus/praelatus/) ![GoReportCard](https://goreportcard.com/badge/github.com/praelatus/praelatus)
 An Open Source bug tracker and ticketing system.
 
 If you're looking for the official web frontend it's
@@ -6,7 +6,7 @@ If you're looking for the official web frontend it's
 
 | Stable | Nightly |
 |:------:|:-------:|
-| [![Build Status](https://travis-ci.org/praelatus/backend.svg?branch=master)](https://travis-ci.org/praelatus/backend) | [![Build Status](https://travis-ci.org/praelatus/backend.svg?branch=develop)](https://travis-ci.org/praelatus/backend) |
+| [![Build Status](https://travis-ci.org/praelatus/praelatus.svg?branch=master)](https://travis-ci.org/praelatus/praelatus) | [![Build Status](https://travis-ci.org/praelatus/praelatus.svg?branch=develop)](https://travis-ci.org/praelatus/praelatus) |
 
 ## What is Praelatus?
 

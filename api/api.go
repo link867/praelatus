@@ -1,3 +1,5 @@
+// Package api has our routers and handler methods for all of the available api
+// routes
 package api
 
 import (

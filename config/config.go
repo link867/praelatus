@@ -1,3 +1,5 @@
+// Package config defines the config struct and provides utility methods for
+// querying it. Additionally it handles loading the config.json if present
 package config
 
 import (
