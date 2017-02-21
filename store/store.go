@@ -41,6 +41,7 @@ type Store interface {
 	Projects() ProjectStore
 	Statuses() StatusStore
 	Workflows() WorkflowStore
+	Links() LinkStore
 }
 
 // SQLStore is implemented by any store which wants to provide a direct sql.DB
@@ -177,4 +178,14 @@ type LabelStore interface {
 	Remove(models.Label) error
 
 	Search(query string) ([]models.Label, error)
+}
+
+//LinkStore contains methods for storing and retieving Links
+type LinkStore interface {
+	Get(*models.Link) error
+	GetForTicket(models.Ticket) ([]models.Link, error)
+
+	New(*models.Link) error
+	Save(models.Link) error
+	Remove(models.Link) error
 }
