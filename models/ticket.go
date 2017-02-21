@@ -54,6 +54,7 @@ func (l *Label) String() string {
 type Link struct {
 	ID              int64  `json:"id"`
 	Name            string `json:"name"`
+	ParentID        int64  `json:"-"`
 	ToTicketID      int64  `json:"ticket_id"`
 	ToTicketSummary string `json:"ticket_summary"`
 	ToTicketKey     string `json:"ticket_key"`
