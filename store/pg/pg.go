@@ -32,6 +32,7 @@ type Store struct {
 	labels    *LabelStore
 	statuses  *StatusStore
 	teams     *TeamStore
+	links     *LinkStore
 }
 
 // New connects to the postgres database provided and returns a store
@@ -62,6 +63,7 @@ func New(conn string, replicas ...string) *Store {
 		types:     &TypeStore{d},
 		statuses:  &StatusStore{d},
 		teams:     &TeamStore{d},
+		links:     &LinkStore{d},
 	}
 
 	return s
@@ -110,6 +112,11 @@ func (pg *Store) Workflows() store.WorkflowStore {
 // Labels returns the underlying LabelStore for a postgres DB
 func (pg *Store) Labels() store.LabelStore {
 	return pg.labels
+}
+
+// Links returns the underlying LinkStore for a postgres DB
+func (pg *Store) Links() store.LinkStore {
+	return pg.links
 }
 
 // Conn implements store.SQLStore for postgres db
